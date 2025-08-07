@@ -12,4 +12,10 @@ export type BetType = {
     "amount": number,
     "side": "yes" | "no",
     "status": "pending" | "win" | "lose",
+    "question": string,
+    "result": "pending" | "yes" | "no",
+    lineData: {
+        yes: number,
+        no: number,
+    }
 }

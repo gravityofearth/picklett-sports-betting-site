@@ -65,7 +65,38 @@ export async function createBet({ username, lineId, side, amount }: { username: 
         const newBet = new betModel({ username, lineId: new mongoose.Types.ObjectId(lineId), side, amount, status: "pending" });
 
         const savedBet = await newBet.save();
-        return savedBet;
+        const completeBet = await betModel.aggregate([
+            { $match: { _id: savedBet._id } },
+            {
+                $lookup: {
+                    from: "lines",
+                    localField: "lineId",
+                    foreignField: "_id",
+                    as: "lineData"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$lineData",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    username: 1,
+                    amount: 1,
+                    createdAt: 1,
+                    lineId: 1,
+                    side: 1,
+                    status: 1,
+                    question: "$lineData.question",
+                    result: "$lineData.result",
+                    lineData: 1
+                }
+            }
+        ]);
+
+        return completeBet[0];
     } catch (error) {
         console.error('Error creating line:', error);
         throw error
@@ -76,7 +107,40 @@ export async function findBet(username: string) {
     await connectMongoDB()
     try {
         // Include password for login verification
-        const bet = await username === "admin" ? betModel.find() : betModel.find({ username })
+        const matchStage = username === "admin" ? {} : { username };
+        const bet = await betModel.aggregate([
+            { $match: matchStage },
+            {
+                $lookup: {
+                    from: "lines", // collection name in MongoDB
+                    localField: "lineId",
+                    foreignField: "_id", // or whatever the ID field is in lines collection
+                    as: "lineData"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$lineData",
+                    preserveNullAndEmptyArrays: true // keeps bets even if no matching line found
+                }
+            },
+            {
+                $project: {
+                    // Include all bet fields
+                    username: 1,
+                    amount: 1,
+                    createdAt: 1,
+                    lineId: 1,
+                    side: 1,
+                    status: 1,
+                    question: "$lineData.question",
+                    result: "$lineData.result",
+                    lineData: 1
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ]);
+
         return bet;
     } catch (error) {
         console.error('Error finding bet:', error);
@@ -92,9 +156,9 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             result: "pending"
         }, { result: winningSide }, { new: true })
         if (!result) {
-            throw new Error("Not found pending bet")
+            throw new Error("Not found pending line")
         }
-        const odd = convertAmerican2DecimalOdds(result[winningSide])
+        const odd = Number(result[winningSide])
 
         await betModel.updateMany({
             lineId: new mongoose.Types.ObjectId(lineId),

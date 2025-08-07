@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import jwt from "jsonwebtoken"
 import axios, { AxiosError } from "axios"
 import { BetType, LineType } from "@/types"
-import { convertAmerican2DecimalOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
+import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
+import BetTable from "@/components/BetTable"
 
 
 export default function HomePage() {
@@ -19,20 +20,6 @@ export default function HomePage() {
   const [line, setLine] = useState<LineType | null>(null)
   const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const [userBets, setUserBets] = useState<BetType[]>([])
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(5)
-
-  // Pagination logic
-  const totalPages = Math.ceil(userBets.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentBets = userBets.slice(startIndex, endIndex)
-
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)))
-  }
 
   const logout = () => {
     localStorage.removeItem("jwt")
@@ -109,7 +96,7 @@ export default function HomePage() {
         if (status === 201) {
           showToast("Successfully placed your bet", "success")
         }
-        setUserBets(v => ([...v, bet]))
+        setUserBets(v => ([bet, ...v]))
         localStorage.setItem("jwt", token)
         updateBalance()
         setSendingBetRequest(false)
@@ -121,12 +108,15 @@ export default function HomePage() {
   }
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div className="flex justify-between mb-6">
+      <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col gap-2">
           <span className="text-2xl">Welcome, {username}</span>
           <div>Balance: ${balance.toFixed(2)}</div>
         </div>
-        <button className="cursor-pointer" onClick={logout}>Logout</button>
+        <div className="flex gap-2">
+          {username === "admin" && <a href="/admin">Admin page</a>}
+          <button className="cursor-pointer" onClick={logout}>Logout</button>
+        </div>
       </div>
 
       {line ?
@@ -151,10 +141,10 @@ export default function HomePage() {
 
               <div className="flex gap-4 mb-4">
                 <button onClick={() => setSide("yes")} className={`flex-1 p-3 border border-gray-300 cursor-pointer hover:border-black/50 ${side === "yes" && "bg-black/70 text-white"}`}>
-                  YES {oddsFormat === "american" ? `(${line?.yes})` : `(${convertAmerican2DecimalOdds(line?.yes || 0)})`}
+                  YES {oddsFormat === "decimal" ? `(${line?.yes})` : `(${convertDecimal2AmericanOdds(line?.yes || 0)})`}
                 </button>
                 <button onClick={() => setSide("no")} className={`flex-1 p-3 border border-gray-300 cursor-pointer hover:border-black/50 ${side === "no" && "bg-black/70 text-white"}`}>
-                  NO {oddsFormat === "american" ? `(${line?.no})` : `(${convertAmerican2DecimalOdds(line?.no || 0)})`}
+                  NO {oddsFormat === "decimal" ? `(${line?.no})` : `(${convertDecimal2AmericanOdds(line?.no || 0)})`}
                 </button>
               </div>
             </div>
@@ -179,8 +169,8 @@ export default function HomePage() {
                 <div className="flex items-center text-4xl">
                   {amount && side &&
                     (side === "yes" ?
-                      (parseFloat(amount) * convertAmerican2DecimalOdds(line?.yes || 0)) :
-                      parseFloat(amount) * convertAmerican2DecimalOdds(line?.no || 0)
+                      (parseFloat(amount) * (line?.yes || 0)) :
+                      parseFloat(amount) * (line?.no || 0)
                     ).toFixed(2)
                   }
                 </div>
@@ -201,69 +191,7 @@ export default function HomePage() {
 
       }
 
-      <div className="border border-gray-200 p-6">
-
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2 text-left">Username</th>
-                <th className="p-2 text-left">Bet Amount</th>
-                <th className="p-2 text-left">Bet Side</th>
-                <th className="p-2 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentBets.map((bet, i) => (
-                <tr key={startIndex + i} className="border-b">
-                  <td className="p-2">{bet.username}</td>
-                  <td className="p-2">${bet.amount.toFixed(2)}</td>
-                  <td className="p-2">{bet.side}</td>
-                  <td className="p-2">{bet.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Pagination Controls */}
-        {userBets.length > itemsPerPage && (
-          <div className="flex justify-between items-center mt-4">
-            <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, userBets.length)} of {userBets.length} bets
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => goToPage(page)}
-                  className={`px-3 py-1 border ${
-                    currentPage === page
-                      ? "bg-black text-white border-black"
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <BetTable userBets={userBets} username={username} />
       <div className="flex justify-center gap-4 my-4">
         <button onClick={() => router.push("/deposit")} className="px-4 py-2 border border-gray-300">
           Deposit

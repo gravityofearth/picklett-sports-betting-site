@@ -60,3 +60,11 @@ export const convertAmerican2DecimalOdds = (americanOdds: number): number => {
         return Number((100 / Math.abs(americanOdds) + 1).toFixed(2))
     }
 }
+
+export const convertDecimal2AmericanOdds = (decimalOdds: number): number => {
+    if (decimalOdds > 2) {
+        return Math.floor((decimalOdds - 1) * 100)
+    } else {
+        return Math.ceil(-100 / (decimalOdds - 1))
+    }
+}
