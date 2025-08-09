@@ -1,5 +1,6 @@
 import userModel from "@/model/user";
 import connectMongoDB from "@/utils/mongodb";
+import mongoose from "mongoose";
 
 export async function createUser({ username, password }: { username: string, password: string }) {
     await connectMongoDB()
@@ -79,22 +80,21 @@ export async function authenticateUser(username: string, password: string) {
         throw error;
     }
 }
-export async function reduceUserBalance(username: string, amount: number) {
+export async function increaseBalance(username: string, amount: number, session: mongoose.mongo.ClientSession) {
     await connectMongoDB()
     try {
         const user = await userModel.findOneAndUpdate(
             { username },
             {
                 $inc: {
-                    balance: -amount
+                    balance: amount
                 }
             },
             {
                 new: true, // Return updated document
-                runValidators: true // Run schema validators
+                session,
             }
-        );
-
+        )
         if (!user) {
             throw new Error('User not found');
         }

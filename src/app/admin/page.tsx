@@ -1,6 +1,4 @@
 "use client"
-
-import jwt from "jsonwebtoken"
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import type React from "react"
@@ -9,6 +7,7 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { BetType } from "@/types"
 import BetTable from "@/components/BetTable"
+import Link from "next/link"
 
 export default function AdminPage() {
   const [question, setQuestion] = useState("")
@@ -63,7 +62,6 @@ export default function AdminPage() {
       question, yes: yesOdds, no: noOdds, endsAt, result: "pending", _id
     }, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ status, data: { line } }) => {
-        setSendingRequest(false)
         if (status === 201) {
           showToast("Successfully created betting line!", "success")
         }
@@ -73,9 +71,8 @@ export default function AdminPage() {
         setChanged(0)
       })
       .catch((e: AxiosError) => {
-        setSendingRequest(false)
         showToast(e.response?.statusText, "error")
-      })
+      }).finally(() => setSendingRequest(false))
   }
 
   const handleResolve = () => {
@@ -89,25 +86,17 @@ export default function AdminPage() {
         if (status === 200) {
           showToast("Successfully resolved betting", "success")
         }
-        setSendingRequest(false)
         fetchData()
       })
       .catch(e => {
-        setSendingRequest(false)
         showToast(e.response?.statusText, "error")
-      })
+      }).finally(() => setSendingRequest(false))
   }
   const logout = () => {
     localStorage.removeItem("jwt")
     router.push("/login")
   }
   useEffect(() => {
-    // Check if user is logged in
-    const username = (jwt.decode(localStorage.getItem("jwt")!) as any)?.username
-    if (!username || username !== "admin") {
-      router.push("/login")
-      return
-    }
     setLoading(true)
     fetchData()
   }, [])
@@ -137,9 +126,8 @@ export default function AdminPage() {
           setEndsAtStr(`${new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date().toLocaleTimeString("sv-SE")}`)
         }
         localStorage.setItem("jwt", token)
-        setLoading(false)
       })
-      .catch(() => {
+      .finally(() => {
         setLoading(false)
       })
     axios.get("/api/bet", { headers: { token: localStorage.getItem("jwt") } })
@@ -152,12 +140,20 @@ export default function AdminPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl">Admin Panel</h1>
         <div className="flex gap-2">
-          <a href="/home">Betting page</a>
+          <Link href="/home">Betting page</Link>
           <button className="cursor-pointer" onClick={logout}>Logout</button>
         </div>
       </div>
       {loading ? "Loading..." :
         <>
+          <div className="flex gap-4 justify-center mb-6">
+            <Link className="p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 cursor-pointer" href={"/admin/deposit"}>
+              Deposit History
+            </Link>
+            <Link className="p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 cursor-pointer" href={"/admin/withdraw"}>
+              Withdraw History
+            </Link>
+          </div>
           <div className="border border-gray-200 p-6 mb-6">
             <h2 className="text-lg mb-4">Set Betting Line</h2>
             <div>
@@ -290,6 +286,7 @@ export default function AdminPage() {
             </div>
           </div>
         </>}
+
       <BetTable userBets={userBets} username="admin" adminPage />
     </div>
   )

@@ -68,3 +68,6 @@ export const convertDecimal2AmericanOdds = (decimalOdds: number): number => {
         return Math.ceil(-100 / (decimalOdds - 1))
     }
 }
+export const validateCurrency = (val: string) => /^(0|[1-9][0-9]*)(\.[0-9]{0,2})?$/.test(val)
+export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(val)
+export const validateEthTx = (val: string) => /^0x[0-9a-fA-F]{64}$/.test(val)

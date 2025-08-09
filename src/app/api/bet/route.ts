@@ -1,6 +1,5 @@
 import { signToken } from "@/controller/auth";
-import { createBet, createLine, findBet, findLine, findLineById } from "@/controller/bet";
-import { createUser, findUserByUsername, reduceUserBalance } from "@/controller/user";
+import { findBet, findLine, findLineById, placeBet } from "@/controller/bet";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils";
@@ -13,10 +12,9 @@ export async function POST(request: NextRequest) {
     const { endsAt } = await findLineById(lineId)
     if (endsAt < new Date().getTime())
       return NextResponse.json({ error: "Bet already ended" }, { status: 400, statusText: "Bet already ended" });
-    const user = await reduceUserBalance(username, amount)
-    const new_token = signToken(user)
     // calc amount in user profile
-    const bet = await createBet({ lineId, username, amount, side })
+    const { bet, user } = await placeBet({ lineId, username, amount, side })
+    const new_token = signToken(user)
     return NextResponse.json({ bet, token: new_token }, { status: 201 });
 
   } catch (error: any) {

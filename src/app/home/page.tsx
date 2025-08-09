@@ -7,6 +7,7 @@ import axios, { AxiosError } from "axios"
 import { BetType, LineType } from "@/types"
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
 import BetTable from "@/components/BetTable"
+import Link from "next/link"
 
 
 export default function HomePage() {
@@ -107,14 +108,14 @@ export default function HomePage() {
       })
   }
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <div className="flex flex-col gap-2">
           <span className="text-2xl">Welcome, {username}</span>
           <div>Balance: ${balance.toFixed(2)}</div>
         </div>
         <div className="flex gap-2">
-          {username === "admin" && <a href="/admin">Admin page</a>}
+          {username === "admin" && <Link href="/admin">Admin page</Link>}
           <button className="cursor-pointer" onClick={logout}>Logout</button>
         </div>
       </div>
@@ -153,25 +154,30 @@ export default function HomePage() {
                 <label htmlFor="wager" className="block mb-2 text-sm">
                   Enter Amount
                 </label>
-                <input
-                  id="wager"
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full p-2 border border-gray-300"
-                  min="1"
-                  max={balance}
-                  step="0.01"
-                />
+                <div className="flex items-center border border-gray-300 p-2">
+                  <span className="px-1">$</span>
+                  <input
+                    id="wager"
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full border-0 focus:outline-none"
+                    min="1"
+                    max={balance}
+                    step="0.01"
+                  />
+                </div>
               </div>
               <div className="w-[50%] flex flex-col items-end">
                 <div className="mb-2 text-sm">Est. Payout</div>
                 <div className="flex items-center text-4xl">
                   {amount && side &&
-                    (side === "yes" ?
-                      (parseFloat(amount) * (line?.yes || 0)) :
-                      parseFloat(amount) * (line?.no || 0)
-                    ).toFixed(2)
+                    <>
+                      ${(side === "yes" ?
+                        (parseFloat(amount) * (line?.yes || 0)) :
+                        parseFloat(amount) * (line?.no || 0)
+                      ).toFixed(2)}
+                    </>
                   }
                 </div>
               </div>
@@ -193,12 +199,12 @@ export default function HomePage() {
 
       <BetTable userBets={userBets} username={username} />
       <div className="flex justify-center gap-4 my-4">
-        <button onClick={() => router.push("/deposit")} className="px-4 py-2 border border-gray-300">
+        <Link href="/deposit" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">
           Deposit
-        </button>
-        <button onClick={() => router.push("/withdraw")} className="px-4 py-2 border border-gray-300">
+        </Link>
+        <Link href="/withdraw" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">
           Withdraw
-        </button>
+        </Link>
       </div>
 
     </div>

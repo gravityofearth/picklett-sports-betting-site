@@ -5,6 +5,9 @@ import userModel from "@/model/user";
 import { convertAmerican2DecimalOdds } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
+import { increaseBalance } from "./user";
+import { createPlaceBetTransaction } from "./balanceTransaction";
+import balanceTransactionModel from "@/model/balanceTransaction";
 
 export async function createLine({ question, yes, no, endsAt, result }: { question: string, yes: number, no: number, endsAt: number, result: string }) {
     await connectMongoDB()
@@ -59,12 +62,30 @@ export async function findLineById(id: string) {
     }
 }
 
-export async function createBet({ username, lineId, side, amount }: { username: string, lineId: string, side: string, amount: number }) {
+export async function placeBet({ username, lineId, side, amount }: { username: string, lineId: string, side: string, amount: number }) {
     await connectMongoDB()
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
+        const user = await userModel.findOne({ username }).session(session);
+        if (!user || user.balance < amount) {
+            throw new Error('Insufficient balance');
+        }
+
         const newBet = new betModel({ username, lineId: new mongoose.Types.ObjectId(lineId), side, amount, status: "pending" });
 
-        const savedBet = await newBet.save();
+        const savedBet = await newBet.save({ session });
+        const updatedUser = await increaseBalance(username, -amount, session);
+        await createPlaceBetTransaction({
+            username, amount,
+            balanceBefore: user.balance,
+            balanceAfter: updatedUser.balance,
+            description: `Bet placed: ${side} for $${amount}`,
+            betId: savedBet._id,
+            lineId: new mongoose.Types.ObjectId(lineId),
+            session
+        })
         const completeBet = await betModel.aggregate([
             { $match: { _id: savedBet._id } },
             {
@@ -94,12 +115,19 @@ export async function createBet({ username, lineId, side, amount }: { username: 
                     lineData: 1
                 }
             }
-        ]);
+        ]).session(session);
+        await session.commitTransaction();
 
-        return completeBet[0];
+        return {
+            bet: completeBet[0],
+            user: updatedUser
+        }
     } catch (error) {
         console.error('Error creating line:', error);
+        await session.abortTransaction();
         throw error
+    } finally {
+        session.endSession();
     }
 }
 
@@ -150,11 +178,13 @@ export async function findBet(username: string) {
 
 export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
     await connectMongoDB()
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const result = await lineModel.findOneAndUpdate({
             _id: new mongoose.Types.ObjectId(lineId),
             result: "pending"
-        }, { result: winningSide }, { new: true })
+        }, { result: winningSide }, { new: true }).session(session)
         if (!result) {
             throw new Error("Not found pending line")
         }
@@ -164,12 +194,12 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             lineId: new mongoose.Types.ObjectId(lineId),
             status: "pending",
             side: winningSide
-        }, { status: "win" })
+        }, { status: "win" }).session(session)
         await betModel.updateMany({
             lineId: new mongoose.Types.ObjectId(lineId),
             status: "pending",
             side: winningSide === "yes" ? "no" : "yes"
-        }, { status: "lose" })
+        }, { status: "lose" }).session(session)
         // const winners = await betModel.find({ lineId: new mongoose.Types.ObjectId(lineId), status: "win" })
         // const groupedWinners = await betModel.aggregate([
         //     {
@@ -189,7 +219,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         // ]);
         // console.log(groupedWinners)
 
-        await betModel.aggregate([
+        const winningBetsData = await betModel.aggregate([
             // Match winning bets for the line
             {
                 $match: {
@@ -210,24 +240,103 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                     username: "$_id"
                 }
             },
-            // Merge into users collection to update balances
+            // Lookup current balance before update
             {
-                $merge: {
-                    into: "users", // Your users collection name
-                    on: "username",
-                    whenMatched: [
-                        {
-                            $set: {
-                                balance: { $add: ["$balance", "$$new.totalWinnings"] }
-                            }
-                        }
-                    ],
-                    whenNotMatched: "discard" // Don't create new users
+                $lookup: {
+                    from: "users",
+                    localField: "username",
+                    foreignField: "username",
+                    as: "currentUser"
+                }
+            },
+            {
+                $addFields: {
+                    balanceBefore: { $arrayElemAt: ["$currentUser.balance", 0] },
+                    balanceAfter: {
+                        $add: [
+                            { $arrayElemAt: ["$currentUser.balance", 0] },
+                            "$totalWinnings"
+                        ]
+                    }
                 }
             }
-        ])
+            // // Create transaction record
+            // {
+            //     $addFields: {
+            //         transaction: {
+            //             username: "$username",
+            //             type: "bet_win",
+            //             amount: "$totalWinnings",
+            //             balanceBefore: { $arrayElemAt: ["$currentUser.balance", 0] },
+            //             balanceAfter: {
+            //                 $add: [
+            //                     { $arrayElemAt: ["$currentUser.balance", 0] },
+            //                     "$totalWinnings"
+            //                 ]
+            //             },
+            //             timestamp: new Date(),
+            //             lineId: lineId
+            //         }
+            //     }
+            // },
+            // // Save transaction log
+            // {
+            //     $merge: {
+            //         into: "balance_transactions",
+            //         whenMatched: "replace",
+            //         whenNotMatched: "insert"
+            //     }
+            // },
+            // // Merge into users collection to update balances
+            // {
+            //     $merge: {
+            //         into: "users", // Your users collection name
+            //         on: "username",
+            //         whenMatched: [
+            //             {
+            //                 $set: {
+            //                     balance: { $add: ["$balance", "$$new.totalWinnings"] }
+            //                 }
+            //             }
+            //         ],
+            //         whenNotMatched: "discard" // Don't create new users
+            //     }
+            // }
+        ]).session(session)
+        // Create transaction records
+        const transactions = winningBetsData.map(bet => ({
+            username: bet.username,
+            type: "bet_win",
+            amount: bet.totalWinnings,
+            balanceBefore: bet.balanceBefore,
+            balanceAfter: bet.balanceAfter,
+            timestamp: new Date(),
+            lineId: new mongoose.Types.ObjectId(lineId),
+            description: `Bet win: on ${winningSide}`
+        }));
+        // Insert transaction logs
+        if (transactions.length > 0) {
+            await balanceTransactionModel.insertMany(transactions, { session });
+        }
+        // Update user balances
+        const balanceUpdates = winningBetsData.map(bet => ({
+            updateOne: {
+                filter: { username: bet.username },
+                update: {
+                    $inc: { balance: bet.totalWinnings },
+                    $set: { lastUpdated: new Date() }
+                }
+            }
+        }));
+        if (balanceUpdates.length > 0) {
+            await userModel.bulkWrite(balanceUpdates, { session });
+        }
+        await session.commitTransaction();
     } catch (error) {
         console.error('Error resolving bet:', error);
+        await session.abortTransaction();
         throw error
+    } finally {
+        session.endSession();
     }
 }
