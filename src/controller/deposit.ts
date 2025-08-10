@@ -13,6 +13,8 @@ export async function createDeposit({ username, sender, depositAmount }: { usern
     await connectMongoDB()
     try {
         const targetETH = Math.ceil((depositAmount + 1) / priceETH * 10 ** 8) / 10 ** 8
+        const { data: { result: { timestamp } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
+
         const newDeposit = new depositModel({
             username, sender, depositAmount,
             targetUSDT: Math.ceil(depositAmount),
@@ -21,7 +23,8 @@ export async function createDeposit({ username, sender, depositAmount }: { usern
             dedicatedWallet,
             tx: "undefined",
             result: "initiated",
-            reason: ""
+            reason: "",
+            blockTimestampAtCreated: timestamp,
         });
 
         const savedDeposit = await newDeposit.save();
@@ -41,6 +44,16 @@ export async function getDepositById(id: string) {
         throw error
     }
 }
+export async function getDepositByTx(tx: string) {
+    await connectMongoDB()
+    try {
+        const matching_tx = await depositModel.findOne({ tx })
+        return matching_tx
+    } catch (error) {
+        console.error('Error fetching deposit:', error);
+        throw error
+    }
+}
 export async function updateDeposit(id: string, coinType: string, tx: string, result: string, reason?: string, session?: mongoose.mongo.ClientSession) {
     await connectMongoDB()
     try {
@@ -54,8 +67,8 @@ export async function updateDeposit(id: string, coinType: string, tx: string, re
 export async function verifyDeposit(deposit: any, coinType: string, tx: string) {
     await connectMongoDB()
     try {
-        const { dedicatedWallet, sender, targetETH, targetUSDT, depositAmount, createdAt } = deposit
-        const { data: { result: { status } } } = await axios.get(`https://api.etherscan.io/api?module=transaction&action=gettxreceiptstatus&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
+        const { dedicatedWallet, sender, targetETH, targetUSDT, blockTimestampAtCreated } = deposit
+        const { data: { result: { status } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=transaction&action=gettxreceiptstatus&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
         if (status === 0) {
             await depositFailed(deposit.id, coinType, tx, "Submitted failed transaction")
             return
@@ -82,8 +95,7 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
                 return
             }
             const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${tx_result.blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-            const ts_match = new Date(createdAt).getTime() / 1000 < Number(BigInt(block_result.timestamp))
-            // && Number(BigInt(block_result.timestamp)) < new Date(createdAt).getTime() / 1000 + 10 * 60
+            const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
 
             if (!ts_match) {
                 await depositFailed(deposit.id, coinType, tx, "This transaction is made before deposit initiating")
@@ -117,7 +129,7 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
                 return
             }
             const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-            const ts_match = new Date(createdAt).getTime() / 1000 < Number(BigInt(block_result.timestamp))
+            const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
 
             if (!ts_match) {
                 await depositFailed(deposit.id, coinType, tx, "This transaction is made before deposit initiating")

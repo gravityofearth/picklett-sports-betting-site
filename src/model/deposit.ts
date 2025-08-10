@@ -42,6 +42,10 @@ const depositSchema = new mongoose.Schema({
         enum: ["initiated", "verifying", "failed", "success"],
     },
     reason: String,
+    blockTimestampAtCreated: {
+        type: String,
+        required: true,
+    },
 }, {
     timestamps: true, // Adds createdAt and updatedAt
 });
