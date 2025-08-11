@@ -75,8 +75,15 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
         }
 
         const { data: { result: { status } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=transaction&action=gettxreceiptstatus&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-        if (status !== 1) {
+        if (status !== "1") {
             await depositFailed(deposit.id, coinType, tx, "Submitted failed transaction")
+            return
+        }
+
+        const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${tx_result.blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
+        const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
+        if (!ts_match) {
+            await depositFailed(deposit.id, coinType, tx, "This transaction is made before deposit initiating")
             return
         }
 
@@ -100,16 +107,8 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
                 await depositFailed(deposit.id, coinType, tx, "Sent to different destination address")
                 return
             }
-            const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${tx_result.blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-            const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
-
-            if (!ts_match) {
-                await depositFailed(deposit.id, coinType, tx, "This transaction is made before deposit initiating")
-                return
-            }
-            await depositSuccess(deposit.id, coinType, tx)
         } else {
-            const { data: { result: { logs, blockNumber } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionReceipt&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
+            const { data: { result: { logs } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionReceipt&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
             const usdt_logs = logs.filter((v: any) =>
                 v?.address === "0xdac17f958d2ee523a2206206994597c13d831ec7"
                 && v?.topics?.length === 3
@@ -134,15 +133,17 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
                 await depositFailed(deposit.id, coinType, tx, "Amount sent is not the same as deposit detail")
                 return
             }
-            const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-            const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
-
-            if (!ts_match) {
-                await depositFailed(deposit.id, coinType, tx, "This transaction is made before deposit initiating")
-                return
-            }
-            await depositSuccess(deposit.id, coinType, tx)
         }
+
+        const { data: { result: { number: latestBlockNumber } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
+        const confirmations = Number(BigInt(latestBlockNumber) - BigInt(tx_result.blockNumber))
+        if (confirmations <= 6) {
+            await updateDeposit(deposit.id, coinType, tx, "verifying", `${confirmations} / 6 confirmations`)
+            setTimeout(() => verifyDeposit(deposit, coinType, tx), 12000);
+            return
+        }
+
+        await depositSuccess(deposit.id, coinType, tx)
 
     } catch (error) {
         console.error('Error fetching deposit:', error);

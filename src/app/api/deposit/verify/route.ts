@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     }
     const matching_tx = await getDepositByTx(tx)
     if (matching_tx) {
-      console.log(matching_tx)
       const updatedDeposit = await updateDeposit(id, coinType, tx, "failed", "Submitted transaction that is already processed by our system")
       return NextResponse.json({ deposit: updatedDeposit }, { status: 200 });
     }

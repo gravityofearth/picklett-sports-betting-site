@@ -32,8 +32,10 @@ export default function DepositPage() {
         setDeposit(deposit)
         setTimeOffset(new Date().getTime() - basets)
         if (deposit.result === "verifying") {
-          timeout = setTimeout(fetchDepositData, 5000)
+          timeout = setTimeout(fetchDepositData, 12000)
         }
+      }).catch((e) => {
+        showToast(e.message, "error")
       })
   }
   useEffect(() => {
@@ -93,6 +95,8 @@ export default function DepositPage() {
     }).then(({ data: { deposit } }) => {
       setDeposit(deposit)
       timeout = setTimeout(fetchDepositData, 5000)
+    }).catch((e) => {
+      showToast(e.message, "error")
     }).finally(() => {
       setDisableButton(true)
     })
@@ -118,6 +122,11 @@ export default function DepositPage() {
                 </button>
               </div>
             </div>
+            {deposit.coinType !== "undefined" &&
+              <div className="my-6 p-6 border border-green-500 text-sm text-green-700 bg-green-100">
+                Transaction will be confirmed after 6 confirmations on blockchain. <br /> Please wait... {deposit.reason}
+              </div>
+            }
             <div className="my-6">
               <p className="mb-2">
                 {deposit.coinType === "undefined" ? <span> Send </span> : <span> Sent </span>}
@@ -137,7 +146,7 @@ export default function DepositPage() {
                     <span> to following address within </span>
                     <span className="text-xl">{remainingTime}</span>
                   </> :
-                  <span>, now verifying...</span>
+                  <span>. Verifying transaction...</span>
                 }
               </p>
               <div className="w-full flex justify-center"><QRCodeImg className="w-32 h-32" value={deposit.dedicatedWallet} /></div>
