@@ -83,6 +83,10 @@ export default function HomePage() {
       showToast("Enter amount", "warn")
       return
     }
+    if (amount && (parseFloat(amount) < 5 || parseFloat(amount) > 50)) {
+      showToast("Out of range", "warn")
+      return
+    }
     if (amount && parseFloat(amount) > balance) {
       showToast("Invalid amount", "warn")
       return
@@ -153,7 +157,7 @@ export default function HomePage() {
             <div className="flex gap-4">
               <div className="mb-4 w-[50%]">
                 <label htmlFor="wager" className="block mb-2 text-sm">
-                  Enter Amount
+                  Enter Amount (<span className="text-red-700">Amount range: $5~$50</span>)
                 </label>
                 <div className="flex items-center border border-gray-300 p-2">
                   <span className="px-1">$</span>

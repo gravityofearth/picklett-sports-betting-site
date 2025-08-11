@@ -26,10 +26,6 @@ export default function DepositPage() {
       showToast("Minimum deposit amount is $5", "warn")
       return
     }
-    if (Number(depositAmount) > 50) {
-      showToast("Maximum deposit amount is $50", "warn")
-      return
-    }
     setSendingRequest(true)
     axios.post("/api/deposit/initiate", {
       sender: senderAddress,
@@ -63,7 +59,7 @@ export default function DepositPage() {
         <div>
           <div className="mb-4">
             <label htmlFor="senderAddress" className="block mb-2 text-sm">
-              Your Sender Address
+              Your Sender Address (<span className="text-red-700">Only Ethereum address is allowed!</span>)
             </label>
             <input
               id="senderAddress"
@@ -77,7 +73,7 @@ export default function DepositPage() {
 
           <div className="mb-4">
             <label htmlFor="depositAmount" className="block mb-2 text-sm">
-              Deposit Amount
+              Deposit Amount (<span className="text-red-700">Minimum deposit amount: $5</span>)
             </label>
             <div className="flex items-center border border-gray-300 p-2">
               <span className="text-3xl">$</span>

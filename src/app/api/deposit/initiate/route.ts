@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
   try {
     const { sender, depositAmount } = await request.json()
     if (depositAmount < 5) return NextResponse.json({ error: "Minimum deposit amount is $5" }, { status: 400, statusText: "Minimum deposit amount is $5" });
-    if (depositAmount > 50) return NextResponse.json({ error: "Maximum deposit amount is $50" }, { status: 400, statusText: "Maximum deposit amount is $50" });
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
     const deposit = await createDeposit({ username, sender, depositAmount })
