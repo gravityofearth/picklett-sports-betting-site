@@ -2,13 +2,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils";
-import { findDeposit } from "@/controller/deposit";
+import { findDeposit_no_initiated } from "@/controller/deposit";
 
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
-    const deposit = await findDeposit(username)
+    const deposit = await findDeposit_no_initiated(username)
     return NextResponse.json({ deposit }, { status: 200 });
 
   } catch (error: any) {

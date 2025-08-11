@@ -68,13 +68,19 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
     await connectMongoDB()
     try {
         const { dedicatedWallet, sender, targetETH, targetUSDT, blockTimestampAtCreated } = deposit
+        const { data: { result: tx_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionByHash&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
+        if (!tx_result) {
+            await depositFailed(deposit.id, coinType, tx, "Not found such transaction")
+            return
+        }
+
         const { data: { result: { status } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=transaction&action=gettxreceiptstatus&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-        if (status === 0) {
+        if (status !== 1) {
             await depositFailed(deposit.id, coinType, tx, "Submitted failed transaction")
             return
         }
+
         if (coinType === "ETH") {
-            const { data: { result: tx_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionByHash&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
             if (tx_result.to.toLowerCase() === "0xdac17f958d2ee523a2206206994597c13d831ec7") {
                 await depositFailed(deposit.id, coinType, tx, "Your chose ETH deposit, but sent USDT")
                 return
@@ -176,9 +182,9 @@ async function depositSuccess(id: string, coinType: string, tx: string) {
 async function depositFailed(id: string, coinType: string, tx: string, reason: string) {
     await updateDeposit(id, coinType, tx, "failed", reason)
 }
-export async function findDeposit(username: string) {
+export async function findDeposit_no_initiated(username: string) {
     await connectMongoDB()
-    const matchStage = username === "admin" ? {} : { username }
+    const matchStage = username === "admin" ? { result: { $ne: "initiated" } } : { username, result: { $ne: "initiated" } }
     const deposit = await depositModel.find(matchStage).sort({ createdAt: -1 })
     return deposit
 }

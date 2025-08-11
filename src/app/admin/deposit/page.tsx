@@ -16,12 +16,6 @@ export default function AdminDepositsPage() {
     localStorage.removeItem("jwt")
     router.push("/login")
   }
-  // useEffect(() => {
-  //   axios.get("/api/deposit", { headers: { token: localStorage.getItem("jwt") } })
-  //     .then(({ data: { deposit } }) => {
-  //       setUserDeposits(deposit)
-  //     })
-  // }, [])
   useEffect(() => {
     const storedUsername = (jwt.decode(localStorage.getItem("jwt")!) as any)?.username
     setUsername(storedUsername)
