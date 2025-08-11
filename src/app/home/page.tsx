@@ -8,6 +8,7 @@ import { BetType, LineType } from "@/types"
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
 import BetTable from "@/components/BetTable"
 import Link from "next/link"
+import Image from "next/image"
 
 
 export default function HomePage() {
@@ -198,12 +199,15 @@ export default function HomePage() {
       }
 
       <BetTable userBets={userBets} username={username} />
-      <div className="flex justify-center gap-4 my-4">
+      <div className="flex justify-center items-center gap-4 my-4">
         <Link href="/deposit" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">
           Deposit
         </Link>
         <Link href="/withdraw" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">
           Withdraw
+        </Link>
+        <Link href="https://discord.gg/4299eVWAFJ">
+          <Image alt="discord" width={40} height={10} src={"/discord.png"} />
         </Link>
       </div>
 

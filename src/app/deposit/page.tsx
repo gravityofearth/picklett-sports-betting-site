@@ -26,6 +26,10 @@ export default function DepositPage() {
       showToast("Minimum deposit amount is $5", "warn")
       return
     }
+    if (Number(depositAmount) > 50) {
+      showToast("Maximum deposit amount is $50", "warn")
+      return
+    }
     setSendingRequest(true)
     axios.post("/api/deposit/initiate", {
       sender: senderAddress,
