@@ -34,7 +34,7 @@ export default function LoginPage() {
         switch (e.status) {
           case 400:
           case 500:
-            showToast(e.response?.statusText, "error")
+            showToast(e.response?.statusText || "Unknown Error", "error")
             break;
           default:
             showToast("Unknown Error", "error")

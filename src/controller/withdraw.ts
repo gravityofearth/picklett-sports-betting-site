@@ -9,17 +9,17 @@ import balanceTransactionModel from "@/model/balanceTransaction";
 export async function createWithdraw({ username, wallet, amount }: { username: string, wallet: string, amount: number }) {
     await connectMongoDB()
     try {
-        const newDeposit = new withdrawModel({
+        const newWithdraw = new withdrawModel({
             username, wallet, amount,
             tx: "undefined",
             result: "requested",
             reason: ""
         });
 
-        const savedDeposit = await newDeposit.save();
-        return savedDeposit;
+        const savedWithdraw = await newWithdraw.save();
+        return savedWithdraw;
     } catch (error) {
-        console.error('Error creating deposit:', error);
+        console.error('Error creating withdraw:', error);
         throw error
     }
 }
@@ -52,7 +52,7 @@ export async function getWithdrawById(id: string) {
             {
                 $project: {
                     username: 1,
-                    createdAT: 1,
+                    createdAt: 1,
                     reason: 1,
                     amount: 1,
                     result: 1,
@@ -73,6 +73,10 @@ export async function approveWithdraw({ id, tx }: { id: string, tx: string }) {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
+        const result = await getWithdrawById(id)
+        if (result.amount > result.userbalance) {
+            throw new Error("Insufficient balance for withdrawl")
+        }
         const withdraw = await withdrawModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { result: "success", tx } }, { new: true }).session(session)
         const user = await userModel.findOne({ username: withdraw.username }).session(session);
         const updatedUser = await increaseBalance(withdraw.username, -withdraw.amount, session);

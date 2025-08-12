@@ -34,8 +34,8 @@ export default function DepositPage() {
         if (deposit.result === "verifying") {
           timeout = setTimeout(fetchDepositData, 12000)
         }
-      }).catch((e) => {
-        showToast(e.message, "error")
+      }).catch((e: AxiosError) => {
+        showToast(e.response?.statusText || "Unknown Error", "error")
       })
   }
   useEffect(() => {
@@ -95,8 +95,8 @@ export default function DepositPage() {
     }).then(({ data: { deposit } }) => {
       setDeposit(deposit)
       timeout = setTimeout(fetchDepositData, 5000)
-    }).catch((e) => {
-      showToast(e.message, "error")
+    }).catch((e: AxiosError) => {
+      showToast(e.response?.statusText || "Unknown Error", "error")
     }).finally(() => {
       setDisableButton(true)
     })

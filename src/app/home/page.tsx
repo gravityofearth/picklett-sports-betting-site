@@ -105,12 +105,10 @@ export default function HomePage() {
         setUserBets(v => ([bet, ...v]))
         localStorage.setItem("jwt", token)
         updateBalance()
-        setSendingBetRequest(false)
       })
       .catch((e: AxiosError) => {
-        showToast(e.response?.statusText, "error")
-        setSendingBetRequest(false)
-      })
+        showToast(e.response?.statusText || "Unknown Error", "error")
+      }).finally(() => setSendingBetRequest(false))
   }
   return (
     <div className="max-w-4xl mx-auto p-4">

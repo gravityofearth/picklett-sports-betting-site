@@ -71,7 +71,7 @@ export default function AdminPage() {
         setChanged(0)
       })
       .catch((e: AxiosError) => {
-        showToast(e.response?.statusText, "error")
+        showToast(e.response?.statusText || "Unknown Error", "error")
       }).finally(() => setSendingRequest(false))
   }
 
@@ -89,7 +89,7 @@ export default function AdminPage() {
         fetchData()
       })
       .catch(e => {
-        showToast(e.response?.statusText, "error")
+        showToast(e.response?.statusText || "Unknown Error", "error")
       }).finally(() => setSendingRequest(false))
   }
   const logout = () => {

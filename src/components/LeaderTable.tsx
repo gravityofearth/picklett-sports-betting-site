@@ -20,7 +20,8 @@ const LeaderTable = ({ leaders, adminPage }: { leaders: LeaderType[], adminPage?
 
     return (
         <div className="border border-gray-200 p-6">
-            <h2 className="text-lg mb-4 text-center">Leader Board</h2>
+            <h2 className="text-lg text-center">Leader Board</h2>
+            <div className=" my-2 text-sm">*Only more than 2 winstreak will show up in the leaderboard.</div>
             <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                     <thead>

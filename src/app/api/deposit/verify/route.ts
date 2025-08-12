@@ -5,10 +5,10 @@ import { getDepositById, getDepositByTx, updateDeposit, verifyDeposit } from "@/
 export async function POST(request: NextRequest) {
   try {
     const { id, coinType, tx } = await request.json()
-    if (!id || !coinType || !tx) return NextResponse.json({ error: "Bad request" }, { status: 400 });
+    if (!id || !coinType || !tx) return NextResponse.json({ error: "Bad request" }, { status: 400, statusText: "Bad request" });
     const deposit = await getDepositById(id)
-    if (!deposit) return NextResponse.json({ error: "Could not find matching deposit information" }, { status: 400 });
-    if (deposit.result !== "initiated") return NextResponse.json({ error: "Transaction is already processed" }, { status: 400 });
+    if (!deposit) return NextResponse.json({ error: "Could not find matching deposit information" }, { status: 400, statusText: "Could not find matching deposit information" });
+    if (deposit.result !== "initiated") return NextResponse.json({ error: "Transaction is already processed" }, { status: 400, statusText: "Transaction is already processed" });
     if (new Date(deposit.createdAt).getTime() + 10 * 60 * 1000 < new Date().getTime()) {
       const updatedDeposit = await updateDeposit(id, coinType, tx, "failed", "Transaction sent after expiring time")
       return NextResponse.json({ deposit: updatedDeposit }, { status: 200 });

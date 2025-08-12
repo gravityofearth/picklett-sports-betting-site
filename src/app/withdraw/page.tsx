@@ -39,8 +39,12 @@ export default function WithdrawPage() {
       showToast("Enter address correctly!", "warn")
       return
     }
-    if (isNaN(withdrawAmount) || withdrawAmount <= 0 || withdrawAmount > balance) {
-      showToast("Please enter a valid amount", "warn")
+    if (Number(withdrawAmount) < 20) {
+      showToast("Minimum withdrawl amount $20", "warn")
+      return
+    }
+    if (withdrawAmount > balance) {
+      showToast("Insufficient balance for withdrawl", "warn")
       return
     }
     setSendingRequest(true)
@@ -55,7 +59,7 @@ export default function WithdrawPage() {
         // router.push(`/withdraw/${withdraw._id}`)
       }
     }).catch((e: AxiosError) => {
-      showToast(e.response?.statusText, "error")
+      showToast(e.response?.statusText || "Unknown Error", "error")
     }).finally(() => setSendingRequest(false))
     showToast("Withdrawal request submitted successfully", "success")
     setWallet("")
@@ -76,7 +80,7 @@ export default function WithdrawPage() {
         <div>
           <div className="mb-4">
             <label htmlFor="senderAddress" className="block mb-2 text-sm">
-              Your Wallet Address
+              Your Wallet Address (<span className="text-red-700">Only Ethereum address is allowed!</span>)
             </label>
             <input
               id="senderAddress"
@@ -90,7 +94,7 @@ export default function WithdrawPage() {
 
           <div className="mb-4">
             <label htmlFor="depositAmount" className="block mb-2 text-sm">
-              Withdraw Amount
+              Withdraw Amount (<span className="text-red-700">Minimum withdrawal $20</span>)
             </label>
             <div className="flex items-center border border-gray-300 p-2">
               <span className="text-3xl">$</span>

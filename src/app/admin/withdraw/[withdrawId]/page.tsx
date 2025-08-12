@@ -2,7 +2,7 @@
 
 import { WithdrawType } from "@/types"
 import { showToast, validateEthTx } from "@/utils"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import type React from "react"
@@ -28,11 +28,17 @@ export default function WithdrawPage() {
       showToast("Invalid transaction ID", "warn")
       return
     }
+    if (!withdraw.userbalance || withdraw.amount > withdraw.userbalance) {
+      showToast("Insufficient user balance for withdrawl", "error")
+      return
+    }
     setSendingRequest(true)
     axios.post("/api/withdraw/approve", { id: withdraw._id, tx: tx.trim(), }, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { withdraw } }) => {
         setWithdraw(withdraw)
         showToast("You approved this withdrawl request", "success")
+      }).catch((e: AxiosError) => {
+        showToast(e.response?.statusText || "Unknown Error", "error")
       })
       .finally(() => {
         setSendingRequest(false)

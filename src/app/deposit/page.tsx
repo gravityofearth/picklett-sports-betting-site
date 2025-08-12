@@ -37,7 +37,7 @@ export default function DepositPage() {
         router.push(`/deposit/${deposit._id}`)
       }
     }).catch((e: AxiosError) => {
-      showToast(e.response?.statusText, "error")
+      showToast(e.response?.statusText || "Unknown Error", "error")
     }).finally(() => setSendingRequest(false))
   }
 
