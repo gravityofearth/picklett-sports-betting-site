@@ -4,7 +4,23 @@ export type LineType = {
     yes: number,
     no: number,
     endsAt: number,
-    result: string,
+    result: "yes" | "no" | "pending" | null,
+    createdAt: string,
+}
+export type LineCardAdminType = {
+    yes_decimal: string;
+    no_decimal: string;
+    yes_american: string;
+    no_american: string;
+    endsAtStr: string;
+    oddsFormat: "american" | "decimal";
+    changed: number;
+    winning_side: string;
+}
+export type LineCardUserType = {
+    amount: string;
+    side: "yes" | "no" | null,
+    oddsFormat: "american" | "decimal",
 }
 export type BetType = {
     username: string,

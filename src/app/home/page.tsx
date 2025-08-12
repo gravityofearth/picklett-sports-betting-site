@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import jwt from "jsonwebtoken"
 import axios, { AxiosError } from "axios"
-import { BetType, LineType } from "@/types"
-import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
+import { BetType, LineCardUserType, LineType } from "@/types"
+import { convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
 import BetTable from "@/components/BetTable"
 import Link from "next/link"
 import Image from "next/image"
@@ -13,13 +13,21 @@ import Image from "next/image"
 
 export default function HomePage() {
   const [username, setUsername] = useState("")
-  const [balance, setBalance] = useState<number>(0) // Mock balance
-  const [amount, setAmount] = useState("")
-  const [side, setSide] = useState<"yes" | "no" | null>(null)
-  const [oddsFormat, setOddsFormat] = useState<"american" | "decimal">("decimal")
-  const [timeRemaining, setTimeRemaining] = useState("")
+  const [balance, setBalance] = useState<number>(0) // Mock balance 
   const router = useRouter()
-  const [line, setLine] = useState<LineType | null>(null)
+  const [timeOffset, setTimeOffset] = useState(0)
+  const [lines, _setLines] = useState<(LineType & LineCardUserType)[]>([])
+  const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardUserType)[]>> = (update) => {
+    if (typeof update === 'function') {
+      _setLines(prev => {
+        const newVal = (update as (prev: (LineType & LineCardUserType)[]) => (LineType & LineCardUserType)[])(prev);
+        return newVal.sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      });
+    } else {
+      _setLines(update.sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+    }
+  };
+  const [timeRemains, setTimeRemains] = useState<{ id: string, text: string }[]>([])
   const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const [userBets, setUserBets] = useState<BetType[]>([])
 
@@ -37,8 +45,14 @@ export default function HomePage() {
     setUsername(storedUsername)
   }
   useEffect(() => {
-    axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } }).then(({ data: { line, token } }) => {
-      setLine(line)
+    axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } }).then(({ data: { lines: returned_lines, token, basets } }: { data: { lines: LineType[], token: string, basets: number } }) => {
+      setLines(returned_lines.map(v => ({
+        ...v,
+        amount: "",
+        oddsFormat: "decimal",
+        side: null,
+      })))
+      setTimeOffset(new Date().getTime() - basets)
       localStorage.setItem("jwt", token)
       updateBalance()
     })
@@ -50,52 +64,49 @@ export default function HomePage() {
 
   }, [])
   useEffect(() => {
-    // Mock countdown timer
     const interval = setInterval(() => {
-      // Just for demo purposes
-      const timestampDiff = (line?.endsAt || 0) - Math.floor(new Date().getTime())
-      setTimeRemaining(convertTimestamp2HumanReadablePadded(timestampDiff))
-
-      if (timestampDiff < 0) {
-        clearInterval(interval)
-        return
-      }
+      const timesRemaining = lines.map(line => {
+        const timestampDiff = line.endsAt - Math.floor(new Date().getTime()) + timeOffset
+        return {
+          id: line._id,
+          text: convertTimestamp2HumanReadablePadded(timestampDiff)
+        }
+      })
+      setTimeRemains(timesRemaining)
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [line?.endsAt])
+  }, [lines])
 
-  const handleBet = () => {
-    if (!line) {
-      showToast("Betting line not found", "warn")
-      return
-    }
-    const timestampDiff = (line?.endsAt || 0) - Math.floor(new Date().getTime())
+  const handleBet = (_id: string) => {
+    const selectedLine = lines.filter(v => v._id === _id)[0];
+    if (!selectedLine) return
+    const timestampDiff = (selectedLine.endsAt || 0) - Math.floor(new Date().getTime())
     if (timestampDiff < 0) {
       showToast("Bet already ended", "warn")
       return
     }
-    if (!side) {
+    if (!selectedLine.side) {
       showToast("Select bet side", "warn")
       return
     }
-    if (amount?.trim() === "") {
+    if (selectedLine.amount.trim() === "") {
       showToast("Enter amount", "warn")
       return
     }
-    if (amount && (parseFloat(amount) < 5 || parseFloat(amount) > 50)) {
+    if ((parseFloat(selectedLine.amount) < 5 || parseFloat(selectedLine.amount) > 50)) {
       showToast("Out of range", "warn")
       return
     }
-    if (amount && parseFloat(amount) > balance) {
+    if (parseFloat(selectedLine.amount) > balance) {
       showToast("Invalid amount", "warn")
       return
     }
     setSendingBetRequest(true)
-    const amountInNumber = parseFloat(amount)
+    const amountInNumber = parseFloat(selectedLine.amount)
     axios.post("/api/bet", {
-      lineId: line._id,
-      side,
+      lineId: selectedLine._id,
+      side: selectedLine.side,
       amount: amountInNumber
     }, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ status, data: { bet, token } }) => {
@@ -105,6 +116,14 @@ export default function HomePage() {
         setUserBets(v => ([bet, ...v]))
         localStorage.setItem("jwt", token)
         updateBalance()
+        setLines(l => ([
+          ...l.filter(lf => lf._id !== _id),
+          {
+            ...selectedLine,
+            amount: "",
+            side: null,
+          }
+        ]))
       })
       .catch((e: AxiosError) => {
         showToast(e.response?.statusText || "Unknown Error", "error")
@@ -123,84 +142,98 @@ export default function HomePage() {
           <button className="cursor-pointer" onClick={logout}>Logout</button>
         </div>
       </div>
-
-      {line ?
-        <>
-          <div className="border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg mb-4 text-center">{line?.question}</h2>
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <div className="text-sm"> </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">Odds format:</span>
-                  <select
-                    value={oddsFormat}
-                    onChange={(e) => setOddsFormat(e.target.value as "american" | "decimal")}
-                    className="text-sm p-1 border border-gray-300"
-                  >
-                    <option value="decimal">Decimal</option>
-                    <option value="american">American</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mb-4">
-                <button onClick={() => setSide("yes")} className={`flex-1 p-3 border border-gray-300 cursor-pointer hover:border-black/50 ${side === "yes" && "bg-black/70 text-white"}`}>
-                  YES {oddsFormat === "decimal" ? `(${line?.yes})` : `(${convertDecimal2AmericanOdds(line?.yes || 0)})`}
-                </button>
-                <button onClick={() => setSide("no")} className={`flex-1 p-3 border border-gray-300 cursor-pointer hover:border-black/50 ${side === "no" && "bg-black/70 text-white"}`}>
-                  NO {oddsFormat === "decimal" ? `(${line?.no})` : `(${convertDecimal2AmericanOdds(line?.no || 0)})`}
-                </button>
+      <div className="grid grid-cols-2 gap-4 w-full">
+        {lines.map(line =>
+          <div key={line._id} className="border border-gray-200 p-6 mb-6">
+            <h2 className="text-lg mb-4 text-center">{line.question}</h2>
+            <div className="mb-4 grid grid-cols-3 gap-2">
+              <button onClick={() => setLines(prevLines => ([
+                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                {
+                  ...line,
+                  side: "yes"
+                }
+              ]))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "yes" && "bg-black/70 text-white"}`}>
+                YES {line.oddsFormat === "decimal" ? `(${line.yes})` : `(${convertDecimal2AmericanOdds(line.yes || 0)})`}
+              </button>
+              <button onClick={() => setLines(prevLines => ([
+                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                {
+                  ...line,
+                  side: "no"
+                }
+              ]))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "no" && "bg-black/70 text-white"}`}>
+                NO {line.oddsFormat === "decimal" ? `(${line.no})` : `(${convertDecimal2AmericanOdds(line.no || 0)})`}
+              </button>
+              <div className="flex flex-col justify-end items-end">
+                <span className="text-sm">Odds format:</span>
+                <select
+                  value={line.oddsFormat}
+                  onChange={(e) => setLines(prevLines => ([
+                    ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                    {
+                      ...line,
+                      oddsFormat: e.target.value as "american" | "decimal"
+                    }
+                  ]))}
+                  className="text-sm p-1 border border-gray-300"
+                >
+                  <option value="decimal">Decimal</option>
+                  <option value="american">American</option>
+                </select>
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="mb-4 w-[50%]">
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between">
                 <label htmlFor="wager" className="block mb-2 text-sm">
                   Enter Amount (<span className="text-red-700">Amount range: $5~$50</span>)
                 </label>
+                <div className="mb-2 text-sm">Est. Payout</div>
+              </div>
+              <div className="flex justify-between">
                 <div className="flex items-center border border-gray-300 p-2">
                   <span className="px-1">$</span>
                   <input
                     id="wager"
                     type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    value={line.amount}
+                    onChange={(e) => setLines(prevLines => ([
+                      ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                      {
+                        ...line,
+                        amount: e.target.value
+                      }
+                    ]))}
                     className="w-full border-0 focus:outline-none"
                     min="1"
                     max={balance}
                     step="0.01"
                   />
                 </div>
-              </div>
-              <div className="w-[50%] flex flex-col items-end">
-                <div className="mb-2 text-sm">Est. Payout</div>
-                <div className="flex items-center text-4xl">
-                  {amount && side &&
-                    <>
-                      ${(side === "yes" ?
-                        (parseFloat(amount) * (line?.yes || 0)) :
-                        parseFloat(amount) * (line?.no || 0)
-                      ).toFixed(2)}
-                    </>
-                  }
-                </div>
+                {line.amount && line.side &&
+                  <span className="flex items-center text-4xl">
+                    ${(line.side === "yes" ?
+                      (parseFloat(line.amount) * (line.yes || 0)) :
+                      parseFloat(line.amount) * (line.no || 0)
+                    ).toFixed(2)}
+                  </span>
+                }
               </div>
             </div>
 
-            <button onClick={handleBet}
-              className="w-full p-2 text-white bg-black mb-4 hover:bg-black/80 cursor-pointer disabled:cursor-not-allowed" disabled={sendingBetRequest}>
+            <button onClick={() => handleBet(line._id)}
+              className="w-full mt-4 p-2 text-white bg-black mb-4 hover:bg-black/80 cursor-pointer disabled:cursor-not-allowed" disabled={sendingBetRequest}>
               Place Bet
             </button>
 
-            <div className="text-center mb-2">Time remaining: {timeRemaining}</div>
+            <div className="text-center mb-2">Time remaining: {timeRemains.filter(v => v.id === line._id)[0]?.text}</div>
 
 
           </div>
-
-        </> : <div className="mb-4 text-center">No current active betting</div>
-
-      }
-
+        )
+        }
+        {lines.length === 0 && <div className="mb-4 text-center col-span-2">No current active betting</div>}
+      </div>
       <BetTable userBets={userBets} username={username} />
       <div className="flex justify-center items-center gap-4 my-4">
         <Link href="/deposit" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">

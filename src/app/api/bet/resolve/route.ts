@@ -1,6 +1,4 @@
-import { signToken } from "@/controller/auth";
-import { createLine, findLine, resolveBet, updateLine } from "@/controller/bet";
-import { createUser, findUserByUsername } from "@/controller/user";
+import { resolveBet } from "@/controller/bet";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils";

@@ -1,5 +1,5 @@
 import { signToken } from "@/controller/auth";
-import { findBet, findLine, findLineById, placeBet } from "@/controller/bet";
+import { findBet, findLineById, placeBet } from "@/controller/bet";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils";

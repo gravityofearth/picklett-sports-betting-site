@@ -83,12 +83,11 @@ function sendDiscordWebhook(line: any, isUpdated?: boolean) {
         axios.post(discord_webhook_url, webhook_payload)
     }
 }
-export async function findLine() {
+export async function findPendingLines() {
     await connectMongoDB()
     try {
-        // Include password for login verification
-        const line = await lineModel.findOne({ result: "pending" })
-        return line;
+        const lines = await lineModel.find({ result: "pending" })
+        return lines;
     } catch (error) {
         console.error('Error finding line:', error);
         throw error
