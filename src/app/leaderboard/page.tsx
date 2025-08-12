@@ -43,6 +43,7 @@ export default function HomePage() {
         </div>
         <div className="flex gap-2">
           {username === "admin" && <Link href="/admin">Admin page</Link>}
+          <Link href="/home">Back</Link>
           <button className="cursor-pointer" onClick={logout}>Logout</button>
         </div>
       </div>
