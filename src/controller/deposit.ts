@@ -155,7 +155,7 @@ async function depositSuccess(id: string, coinType: string, tx: string) {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { username, depositAmount } = await updateDeposit(id, coinType, tx, "success", undefined, session)
+        const { username, depositAmount } = await updateDeposit(id, coinType, tx, "success", "", session)
         const user = await userModel.findOne({ username }).session(session);
         const updatedUser = await increaseBalance(username, depositAmount, session);
         const newBalance = new balanceTransactionModel({
