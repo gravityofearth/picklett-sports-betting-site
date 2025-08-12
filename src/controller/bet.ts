@@ -8,13 +8,14 @@ import mongoose from "mongoose";
 import { increaseBalance } from "./user";
 import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
-
+import axios from "axios";
+const discord_webhook_url = process.env.DISCORD_WEBHOOK
 export async function createLine({ question, yes, no, endsAt, result }: { question: string, yes: number, no: number, endsAt: number, result: string }) {
     await connectMongoDB()
     try {
         const newLine = new lineModel({ question, yes, no, endsAt, result });
-
         const savedLine = await newLine.save();
+        sendDiscordWebhook(newLine)
         return savedLine;
     } catch (error) {
         console.error('Error creating line:', error);
@@ -31,14 +32,57 @@ export async function updateLine({ question, yes, no, endsAt, result, _id }: { q
             },
             { new: true }
         )
-
+        sendDiscordWebhook(updatedLine, true)
         return updatedLine;
     } catch (error) {
         console.error('Error creating line:', error);
         throw error
     }
 }
-
+function sendDiscordWebhook(line: any, isUpdated?: boolean) {
+    if (discord_webhook_url) {
+        const webhook_payload = {
+            "username": "Picklett Line Announcement",
+            "avatar_url": "https://cdn.discordapp.com/avatars/592720707981410304/4887cbde76665c21df2e9bed925bbeb9.webp?size=128",
+            "content": "",
+            "embeds": [
+                {
+                    "author": {
+                        "name": "picklett.com",
+                        "url": "https://www.picklett.com",
+                        "icon_url": "https://www.picklett.com/favicon.ico"
+                    },
+                    "title": `${isUpdated ? "Line Updated" : "New Line Started"} on Picklett.com`,
+                    "url": "https://www.picklett.com/home",
+                    "description": `# ${line.question}`,
+                    "color": 15258703,
+                    "fields": [
+                        {
+                            "name": "Yes Odds",
+                            "value": `${line.yes}`,
+                            "inline": true
+                        },
+                        {
+                            "name": "No Odds",
+                            "value": `${line.no}`,
+                            "inline": true
+                        },
+                        {
+                            "name": "Endline",
+                            "value": `${new Date(line.endsAt).toUTCString()}`,
+                            "inline": false
+                        }
+                    ],
+                    "footer": {
+                        "text": "Powered by Picklett.com",
+                        "icon_url": "https://www.picklett.com/favicon.ico"
+                    }
+                }
+            ]
+        }
+        axios.post(discord_webhook_url, webhook_payload)
+    }
+}
 export async function findLine() {
     await connectMongoDB()
     try {
