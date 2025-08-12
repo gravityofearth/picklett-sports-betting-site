@@ -42,7 +42,7 @@ export async function updateLine({ question, yes, no, endsAt, result, _id }: { q
 function sendDiscordWebhook(line: any, isUpdated?: boolean) {
     if (discord_webhook_url) {
         const webhook_payload = {
-            "username": "Picklett Line Announcement",
+            "username": "Picklett Live Alert",
             "avatar_url": "https://cdn.discordapp.com/avatars/592720707981410304/4887cbde76665c21df2e9bed925bbeb9.webp?size=128",
             "content": "",
             "embeds": [
@@ -52,7 +52,7 @@ function sendDiscordWebhook(line: any, isUpdated?: boolean) {
                         "url": "https://www.picklett.com",
                         "icon_url": "https://www.picklett.com/favicon.ico"
                     },
-                    "title": `${isUpdated ? "Line Updated" : "New Line Started"} on Picklett.com`,
+                    "title": `Click here to predict`,
                     "url": "https://www.picklett.com/home",
                     "description": `# ${line.question}`,
                     "color": 15258703,
@@ -68,7 +68,7 @@ function sendDiscordWebhook(line: any, isUpdated?: boolean) {
                             "inline": true
                         },
                         {
-                            "name": "Endline",
+                            "name": "Game start timing",
                             "value": `${new Date(line.endsAt).toUTCString()}`,
                             "inline": false
                         }
