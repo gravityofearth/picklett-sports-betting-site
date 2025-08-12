@@ -9,6 +9,7 @@ export async function createUser({ username, password }: { username: string, pas
             username,
             password,
             balance: 0,
+            winstreak: 0,
             // firstName: 'John',
             // lastName: 'Doe',
             // email: 'john.doe@example.com',
@@ -58,13 +59,13 @@ export async function authenticateUser(username: string, password: string) {
         const user = await userModel.findOne({ username }).select('+password');
 
         if (!user) {
-            throw new Error('User not found');
+            throw new Error('Your credential is not correct');
         }
 
         const isPasswordCorrect = await user.correctPassword(password, user.password);
 
         if (!isPasswordCorrect) {
-            throw new Error('Incorrect password');
+            throw new Error('Your credential is not correct');
         }
 
         // Update last login
@@ -102,6 +103,16 @@ export async function increaseBalance(username: string, amount: number, session:
         return user;
     } catch (error) {
         console.error('Error updating profile:', error);
+        throw error
+    }
+}
+export async function genLeaders() {
+    await connectMongoDB()
+    try {
+        const leaders = await userModel.find({ winstreak: { $gte: 2 } }).sort({ winstreak: -1 })
+        return leaders;
+    } catch (error) {
+        console.error('Error generating leaders:', error);
         throw error
     }
 }

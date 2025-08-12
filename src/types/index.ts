@@ -45,3 +45,4 @@ export type WithdrawType = {
     result: "requested" | "failed" | "success",
     reason?: string,
 }
+export type LeaderType = { username: string; winstreak: number }

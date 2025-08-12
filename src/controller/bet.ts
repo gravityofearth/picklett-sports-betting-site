@@ -328,8 +328,118 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                 }
             }
         }));
-        if (balanceUpdates.length > 0) {
-            await userModel.bulkWrite(balanceUpdates, { session });
+
+        const winstreaks = await betModel.aggregate([
+            // Stage 1: Sort by username and time to ensure proper ordering
+            {
+                $sort: {
+                    username: 1,
+                    createdAt: 1
+                }
+            },
+
+            // Stage 2: Group by username to collect all bets per user
+            {
+                $group: {
+                    _id: "$username",
+                    bets: {
+                        $push: {
+                            status: "$status",
+                            time: "$createdAt"
+                        }
+                    }
+                }
+            },
+
+            // Stage 3: Find the latest lose time and count wins after that time
+            {
+                $addFields: {
+                    // Find all lose times
+                    loseTimes: {
+                        $filter: {
+                            input: "$bets",
+                            cond: { $eq: ["$$this.status", "lose"] }
+                        }
+                    }
+                }
+            },
+
+            // Stage 4: Calculate the latest lose time
+            {
+                $addFields: {
+                    latestLoseTime: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$loseTimes" }, 0] },
+                            then: {
+                                $max: "$loseTimes.time"
+                            },
+                            else: null
+                        }
+                    }
+                }
+            },
+
+            // Stage 5: Count wins after the latest lose time
+            {
+                $addFields: {
+                    winsAfterLatestLose: {
+                        $cond: {
+                            if: { $ne: ["$latestLoseTime", null] },
+                            then: {
+                                $size: {
+                                    $filter: {
+                                        input: "$bets",
+                                        cond: {
+                                            $and: [
+                                                { $eq: ["$$this.status", "win"] },
+                                                { $gt: ["$$this.time", "$latestLoseTime"] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            else: {
+                                // If no lose found, count all wins
+                                $size: {
+                                    $filter: {
+                                        input: "$bets",
+                                        cond: { $eq: ["$$this.status", "win"] }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            // Stage 6: Project final result
+            {
+                $project: {
+                    username: "$_id",
+                    winsAfterLatestLose: 1,
+                    latestLoseTime: 1, // Optional: include for debugging
+                    _id: 0
+                }
+            },
+
+            // Stage 7: Sort by username for consistent output
+            {
+                $sort: {
+                    username: 1
+                }
+            }
+        ]).session(session)
+        const winstreakUpdates = winstreaks.map(winstreak => ({
+            updateOne: {
+                filter: { username: winstreak.username },
+                update: {
+                    $set: { winstreak: winstreak.winsAfterLatestLose }
+                }
+            }
+        }));
+        const userUpdates = [...balanceUpdates, ...winstreakUpdates]
+        if (userUpdates.length > 0) {
+            await userModel.bulkWrite(userUpdates, { session });
         }
         await session.commitTransaction();
     } catch (error) {

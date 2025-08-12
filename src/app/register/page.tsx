@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const router = useRouter();
   const handleRegister = async () => {
     if (username?.trim() === "") {
@@ -23,6 +24,7 @@ export default function LoginPage() {
       showToast("Password mismatching", "warn")
       return
     }
+    setSendingBetRequest(true)
     axios.post("/api/register", { username, password })
       .then(({ status, data: { token } }) => {
         if (status === 201) {
@@ -43,7 +45,7 @@ export default function LoginPage() {
             showToast("Unknown Error", "error")
             break;
         }
-      })
+      }).finally(() => setSendingBetRequest(false))
 
   }
 
@@ -90,7 +92,7 @@ export default function LoginPage() {
               required
             />
           </div>
-          <button onClick={handleRegister} className="w-full p-2 text-white bg-black cursor-pointer hover:bg-black/80">
+          <button onClick={handleRegister} className="w-full p-2 text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingBetRequest}>
             Register
           </button>
           <div className="text-black/60 text-sm text-center my-7">Do you have an account? <Link href="./login" className="text-black/80 underline">Log in</Link></div>

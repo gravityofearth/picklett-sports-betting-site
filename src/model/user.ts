@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: [0, 'Balance cannot be negative'],
     },
+    winstreak: {
+        type: Number,
+        required: true,
+        min: [0, 'Winstreak cannot be negative'],
+    },
 
     // // Profile Information
     // bio: {
