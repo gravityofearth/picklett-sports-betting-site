@@ -15,10 +15,10 @@ const rawLine: LineType & LineCardAdminType = {
   question: "",
   endsAt: new Date().getTime() + 24 * 60 * 60 * 1000,
   endsAtStr: `${new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date().toLocaleTimeString("sv-SE")}`,
-  yes: 1,
+  yes: 2,
   yes_american: "",
   yes_decimal: "",
-  no: 1,
+  no: 2,
   no_american: "",
   no_decimal: "",
   oddsFormat: "decimal",
@@ -50,9 +50,20 @@ export default function AdminPage() {
   const [userBets, setUserBets] = useState<BetType[]>([])
   const [yesRate, setYesRate] = useState(50)
   const handleLine = (_id: string) => {
-    setSendingRequest(true);
-
     const selectedLine = lines.filter(v => v._id === _id)[0];
+    if (selectedLine.question.trim() === "") {
+      showToast("Please input Question name", "warn")
+      return
+    }
+    if (selectedLine.oddsFormat === "decimal" && (Number(selectedLine.yes_decimal) < 1 || Number(selectedLine.no_decimal) < 1)) {
+      showToast("Please input odds value correctly", "warn")
+      return
+    }
+    if (selectedLine.oddsFormat === "american" && (Math.abs(Number(selectedLine.yes_american)) < 100 || Math.abs(Number(selectedLine.no_american)) < 100)) {
+      showToast("Please input odds value correctly", "warn")
+      return
+    }
+    setSendingRequest(true);
     (_id === "new" ? axios.post : axios.put)("/api/line", {
       question: selectedLine.question,
       yes: selectedLine.yes,
@@ -116,11 +127,18 @@ export default function AdminPage() {
   }, [])
 
   const total = userBets.filter(v => v.status === "pending").length
-  const yesCount = userBets.filter(v => v.status === "pending" && v.side === "yes").length
+  const [lineBetRate, setLineBetRate] = useState<{ id: string, yes: number, no: number, rate: number }[]>([])
   useEffect(() => {
-    const yesRate = Math.floor(yesCount * 100 / total)
     setYesRate(yesRate)
-  }, [userBets])
+    const betRate = lines.map(line => {
+      const betsAtLine = userBets.filter(bet => bet.status === "pending" && bet.lineId === line._id)
+      const yes = betsAtLine.filter(v => v.side === "yes").length
+      const no = betsAtLine.filter(v => v.side === "no").length
+      const rate = Math.floor(yes * 100 / (yes + no))
+      return { id: line._id, yes, no, rate }
+    })
+    setLineBetRate(betRate)
+  }, [userBets, lines])
   const fetchData = () => {
     axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { lines: returned_lines, token } }: { data: { lines: LineType[], token: string } }) => {
@@ -286,12 +304,12 @@ export default function AdminPage() {
                             {
                               ...line,
                               oddsFormat: e.target.value as "american" | "decimal",
-                              yes: e.target.value === "american" ? Number(line.yes_decimal) : convertAmerican2DecimalOdds(Number(line.yes_american)),
-                              no: e.target.value === "american" ? Number(line.no_decimal) : convertAmerican2DecimalOdds(Number(line.no_american)),
+                              yes: e.target.value === "american" ? Number(line.yes_decimal || 2) : convertAmerican2DecimalOdds(Number(line.yes_american || 100)),
+                              no: e.target.value === "american" ? Number(line.no_decimal || 2) : convertAmerican2DecimalOdds(Number(line.no_american || 100)),
                               yes_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.yes_american))}` : line.yes_decimal,
                               no_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.no_american))}` : line.no_decimal,
-                              yes_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.yes_decimal))}` : line.yes_american,
-                              no_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.no_decimal))}` : line.no_american,
+                              yes_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.yes_decimal || 2))}` : line.yes_american,
+                              no_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.no_decimal || 2))}` : line.no_american,
                             }
                           ]))}
                           className="text-sm px-1 border border-gray-300 w-full h-[26px]"
@@ -335,11 +353,11 @@ export default function AdminPage() {
                     <div className="">
                       {/* <div className="text-lg mb-4">Total Bets Placed</div> */}
                       <div className="h-4 bg-gray-200 w-full">
-                        <div className="h-full bg-gray-600" style={{ width: `${yesRate}%` }}></div>
+                        <div className="h-full bg-gray-600" style={{ width: `${lineBetRate.filter(v => v.id === line._id)[0]?.rate}%` }}></div>
                       </div>
                       <div className="flex justify-between text-xs mt-1">
-                        <span>{yesCount} YES </span>
-                        <span>{total - yesCount} NO </span>
+                        <span>{lineBetRate.filter(v => v.id === line._id)[0]?.yes || 0} YES </span>
+                        <span>{lineBetRate.filter(v => v.id === line._id)[0]?.no || 0} NO </span>
                       </div>
                     </div>
                     <hr className="w-full my-6 border-gray-400" />

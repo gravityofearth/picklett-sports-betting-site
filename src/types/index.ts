@@ -24,7 +24,7 @@ export type LineCardUserType = {
 }
 export type BetType = {
     username: string,
-    // lineId: string,
+    lineId?: string,
     amount: number,
     side: "yes" | "no",
     status: "pending" | "win" | "lose",

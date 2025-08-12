@@ -54,19 +54,23 @@ export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
 }
 export const convertAmerican2DecimalOdds = (americanOdds: number): number => {
     // Convert American odds to decimal
-    if (americanOdds > 0) {
+    if (americanOdds >= 100) {
         return Number((americanOdds / 100 + 1).toFixed(2))
-    } else {
+    }
+    if (americanOdds <= -100) {
         return Number((100 / Math.abs(americanOdds) + 1).toFixed(2))
     }
+    return 2
 }
 
 export const convertDecimal2AmericanOdds = (decimalOdds: number): number => {
-    if (decimalOdds > 2) {
+    if (decimalOdds >= 2) {
         return Math.floor((decimalOdds - 1) * 100)
-    } else {
+    }
+    if (decimalOdds > 1) {
         return Math.ceil(-100 / (decimalOdds - 1))
     }
+    return -100
 }
 export const validateCurrency = (val: string) => /^(0|[1-9][0-9]*)(\.[0-9]{0,2})?$/.test(val)
 export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(val)
