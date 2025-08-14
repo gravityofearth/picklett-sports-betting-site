@@ -8,6 +8,7 @@ import Link from "next/link"
 import { showToast, validateCurrency, validateEthAddress } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 export default function DepositPage() {
   const [senderAddress, setSenderAddress] = useState("")
   const [depositAmount, setDepositAmount] = useState("")
@@ -53,9 +54,12 @@ export default function DepositPage() {
 
       <Link href="/home" className="mb-4 px-4 py-2 border border-gray-300 block w-fit">Back to Home</Link>
 
-      <div className="border border-gray-200 p-6">
-        <h1 className="text-lg mb-6">Deposit Funds</h1>
-
+      <div className="flex flex-col gap-6 border border-gray-200 p-6">
+        <div className="flex gap-2 items-center">
+          <h1 className="text-lg">Deposit Funds</h1>
+          <Image alt="eth-logo" src="/Ethericon.png" width={28} height={28} />
+          <Image alt="usdt-logo" src="/USDTicon.png" width={28} height={28} />
+        </div>
         <div>
           <div className="mb-4">
             <label htmlFor="senderAddress" className="block mb-2 text-sm">
