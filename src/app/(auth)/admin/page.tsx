@@ -2,12 +2,10 @@
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import type React from "react"
-
-import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { BetType, LineCardAdminType, LineType } from "@/types"
 import BetTable from "@/components/BetTable"
-import Link from "next/link"
+import { useUser } from "@/store"
 
 const rawLine: LineType & LineCardAdminType = {
   _id: "new",
@@ -44,9 +42,9 @@ export default function AdminPage() {
       ]);
     }
   };
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [sendingRequest, setSendingRequest] = useState(false)
+  const { setToken } = useUser()
   const [userBets, setUserBets] = useState<BetType[]>([])
   const [yesRate, setYesRate] = useState(50)
   const handleLine = (_id: string) => {
@@ -117,16 +115,11 @@ export default function AdminPage() {
         showToast(e.response?.statusText || "Unknown Error", "error")
       }).finally(() => setSendingRequest(false))
   }
-  const logout = () => {
-    localStorage.removeItem("jwt")
-    router.push("/login")
-  }
   useEffect(() => {
     setLoading(true)
     fetchData()
   }, [])
 
-  const total = userBets.filter(v => v.status === "pending").length
   const [lineBetRate, setLineBetRate] = useState<{ id: string, yes: number, no: number, rate: number }[]>([])
   useEffect(() => {
     setYesRate(yesRate)
@@ -159,7 +152,7 @@ export default function AdminPage() {
         } else {
           setLines([newLine])
         }
-        localStorage.setItem("jwt", token)
+        setToken(token)
       })
       .finally(() => {
         setLoading(false)
@@ -171,23 +164,8 @@ export default function AdminPage() {
   }
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl">Admin Panel</h1>
-        <div className="flex gap-2">
-          <Link href="/home">Betting page</Link>
-          <button className="cursor-pointer" onClick={logout}>Logout</button>
-        </div>
-      </div>
       {loading ? "Loading..." :
         <>
-          <div className="flex gap-4 justify-center mb-6">
-            <Link className="p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 cursor-pointer" href={"/admin/deposit"}>
-              Deposit History
-            </Link>
-            <Link className="p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 cursor-pointer" href={"/admin/withdraw"}>
-              Withdraw History
-            </Link>
-          </div>
           <div className="grid grid-cols-2 gap-4 pb-6">
             {lines.map((line) =>
               <div key={line._id} className="w-full border border-gray-200 p-6">
@@ -380,7 +358,7 @@ export default function AdminPage() {
                             ]))}
                             className="w-full p-2 border border-gray-300"
                           >
-                            <option value="">Select winning side</option>
+                            <option value="">Select</option>
                             <option value="yes">YES</option>
                             <option value="no">NO</option>
                           </select>

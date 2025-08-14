@@ -5,9 +5,11 @@ import Link from "next/link"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { useRouter } from "next/navigation"
+import { useUser } from "@/store"
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const { setToken } = useUser()
   const [confirmPassword, setConfirmPassword] = useState("")
   const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const router = useRouter();
@@ -28,7 +30,7 @@ export default function LoginPage() {
     axios.post("/api/register", { username, password })
       .then(({ status, data: { token } }) => {
         if (status === 201) {
-          localStorage.setItem("jwt", token)
+          setToken(token)
           showToast("Successfully registered!", "success")
           router.push("/home")
         }

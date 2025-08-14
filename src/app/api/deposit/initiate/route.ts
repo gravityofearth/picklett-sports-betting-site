@@ -6,11 +6,10 @@ import { createDeposit } from "@/controller/deposit";
 
 export async function POST(request: NextRequest) {
   try {
-    const { sender, depositAmount } = await request.json()
-    if (depositAmount < 5) return NextResponse.json({ error: "Minimum deposit amount is $5" }, { status: 400, statusText: "Minimum deposit amount is $5" });
+    const { sender } = await request.json()
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
-    const deposit = await createDeposit({ username, sender, depositAmount })
+    const deposit = await createDeposit({ username, sender })
     return NextResponse.json({ deposit }, { status: 201 });
 
   } catch (error: any) {

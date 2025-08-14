@@ -1,20 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import jwt from "jsonwebtoken"
 import axios, { AxiosError } from "axios"
 import { BetType, LineCardUserType, LineType } from "@/types"
 import { convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
 import BetTable from "@/components/BetTable"
-import Link from "next/link"
-import Image from "next/image"
+import { useUser } from "@/store"
 
 
 export default function HomePage() {
-  const [username, setUsername] = useState("")
-  const [balance, setBalance] = useState<number>(0) // Mock balance 
-  const router = useRouter()
+  const { username, balance, setToken } = useUser()
   const [timeOffset, setTimeOffset] = useState(0)
   const [lines, _setLines] = useState<(LineType & LineCardUserType)[]>([])
   const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardUserType)[]>> = (update) => {
@@ -31,36 +26,24 @@ export default function HomePage() {
   const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const [userBets, setUserBets] = useState<BetType[]>([])
 
-  const logout = () => {
-    localStorage.removeItem("jwt")
-    router.push("/login")
-  }
-  const updateBalance = () => {
-    setBalance((jwt.decode(localStorage.getItem("jwt")!) as any)?.balance || 0)
-    const storedUsername = (jwt.decode(localStorage.getItem("jwt")!) as any)?.username
-    if (!storedUsername) {
-      router?.push("/login")
-      return
-    }
-    setUsername(storedUsername)
-  }
   useEffect(() => {
-    axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } }).then(({ data: { lines: returned_lines, token, basets } }: { data: { lines: LineType[], token: string, basets: number } }) => {
-      setLines(returned_lines.map(v => ({
-        ...v,
-        amount: "",
-        oddsFormat: "decimal",
-        side: null,
-      })))
-      setTimeOffset(new Date().getTime() - basets)
-      localStorage.setItem("jwt", token)
-      updateBalance()
-    })
+    axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } })
+      .then(
+        ({ data: { lines: returned_lines, token, basets } }: { data: { lines: LineType[], token: string, basets: number } }) => {
+          setLines(returned_lines.map(v => ({
+            ...v,
+            amount: "",
+            oddsFormat: "decimal",
+            side: null,
+          })))
+          setTimeOffset(new Date().getTime() - basets)
+          setToken(token)
+        }
+      )
     axios.get("/api/bet", { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { bet } }) => {
         setUserBets(bet)
       })
-    updateBalance()
 
   }, [])
   useEffect(() => {
@@ -114,8 +97,7 @@ export default function HomePage() {
           showToast("Successfully placed your bet", "success")
         }
         setUserBets(v => ([bet, ...v]))
-        localStorage.setItem("jwt", token)
-        updateBalance()
+        setToken(token)
         setLines(l => ([
           ...l.filter(lf => lf._id !== _id),
           {
@@ -130,19 +112,8 @@ export default function HomePage() {
       }).finally(() => setSendingBetRequest(false))
   }
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col gap-2">
-          <span className="text-2xl">Welcome, {username}</span>
-          <div>Balance: ${balance.toFixed(2)}</div>
-        </div>
-        <div className="flex gap-2">
-          {username === "admin" && <Link href="/admin">Admin page</Link>}
-          <Link href="/leaderboard">Leaderboard</Link>
-          <button className="cursor-pointer" onClick={logout}>Logout</button>
-        </div>
-      </div>
-      <div className="text-center text-lg p-4 border-4 border-gray-300 border-double">Welcome to Picklett!<br/>Your sports betting bookie that does not want you to go broke overnight.<br/>Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
+    <>
+      <div className="text-center text-lg p-4 border-4 border-gray-300 border-double">Welcome to Picklett!<br />Your sports betting bookie that does not want you to go broke overnight.<br />Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
       <div className="grid grid-cols-2 gap-4 w-full">
         {lines.map(line =>
           <div key={line._id} className="border border-gray-200 p-6">
@@ -235,19 +206,8 @@ export default function HomePage() {
         }
         {lines.length === 0 && <div className="mb-4 text-center col-span-2">No current active betting</div>}
       </div>
-      <BetTable userBets={userBets} username={username} />
-      <div className="flex justify-center items-center gap-4 my-4">
-        <Link href="/deposit" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">
-          Deposit
-        </Link>
-        <Link href="/withdraw" className="px-4 py-2 border border-gray-300 hover:bg-gray-50">
-          Withdraw
-        </Link>
-        <Link href="https://discord.gg/4299eVWAFJ">
-          <Image alt="discord" width={40} height={10} src={"/discord.png"} />
-        </Link>
-      </div>
+      {username && <BetTable userBets={userBets} username={username} />}
 
-    </div>
+    </>
   )
 }

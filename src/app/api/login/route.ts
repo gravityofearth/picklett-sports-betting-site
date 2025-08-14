@@ -1,8 +1,9 @@
 import { signToken } from "@/controller/auth";
-import { authenticateUser, createUser, findUserByUsername } from "@/controller/user";
+import { authenticateUser, findUserByUsername } from "@/controller/user";
 import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "@/utils";
 
-// This endpoint should be called by a cron job service
 export async function POST(request: NextRequest) {
   try {
 
@@ -14,6 +15,19 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Error processing commissions:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500, statusText: error.message });
+  }
+}
+export async function GET(request: NextRequest) {
+  try {
+    const request_token = request.headers.get('token') || '';
+    const { username }: any = jwt.verify(request_token, JWT_SECRET)
+    const user = await findUserByUsername(username)
+    const token = signToken(user)
+    return NextResponse.json({ token }, { status: 200 });
+
+  } catch (error: any) {
+    console.error("Error finding user:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500, statusText: error.message });
   }
 }

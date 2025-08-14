@@ -1,33 +1,22 @@
 "use client"
 
 import type React from "react"
-
-import jwt from "jsonwebtoken"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { showToast, validateCurrency, validateEthAddress } from "@/utils"
 import axios, { AxiosError } from "axios"
 import WithdrawTable from "@/components/WithdrawTable"
 import { WithdrawType } from "@/types"
+import { useUser } from "@/store"
 
 export default function WithdrawPage() {
-  const [balance, setBalance] = useState(0)
-  const [username, setUsername] = useState("")
+  const { username, balance } = useUser()
   const [wallet, setWallet] = useState("")
   const [amount, setAmount] = useState("")
   const [sendingRequest, setSendingRequest] = useState(false)
   const [withdraws, setWithdraws] = useState<WithdrawType[]>([])
-  const router = useRouter()
 
   useEffect(() => {
-    const storedUsername = (jwt.decode(localStorage.getItem("jwt")!) as any)?.username
-    if (!storedUsername) {
-      router?.push("/login")
-      return
-    }
-    setUsername(storedUsername)
-    setBalance((jwt.decode(localStorage.getItem("jwt")!) as any)?.balance || 0)
     axios.get("/api/withdraw", { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { withdraw } }) => {
         setWithdraws(withdraw)
@@ -51,9 +40,7 @@ export default function WithdrawPage() {
     axios.post("/api/withdraw", {
       wallet,
       amount: Number(amount),
-    }, {
-      headers: { token: localStorage.getItem("jwt") }
-    }).then(({ status, data: { withdraw } }) => {
+    }, { headers: { token: localStorage.getItem("jwt") } }).then(({ status, data: { withdraw } }) => {
       if (status === 201) {
         setWithdraws(v => ([withdraw, ...v]))
         // router.push(`/withdraw/${withdraw._id}`)
@@ -125,8 +112,7 @@ export default function WithdrawPage() {
 
         <p className="mt-4 text-sm text-gray-500">Withdrawals are processed manually within 24h.</p>
       </div>
-
-      <WithdrawTable withdraws={withdraws} username={username} />
+      {username && <WithdrawTable withdraws={withdraws} username={username} />}
     </div>
   )
 }

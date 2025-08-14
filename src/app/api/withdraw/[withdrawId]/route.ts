@@ -1,9 +1,13 @@
-
+import jwt from "jsonwebtoken"
 import { getWithdrawById } from "@/controller/withdraw";
 import { NextRequest, NextResponse } from "next/server";
+import { JWT_SECRET } from "@/utils";
 export async function GET(request: NextRequest, { params }: { params: any }) {
   try {
     const { withdrawId } = await params;
+    const token = request.headers.get('token') || '';
+    const { username }: any = jwt.verify(token, JWT_SECRET)
+    if (username !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unauthorized request" });
     const withdraw = await getWithdrawById(withdrawId)
     return NextResponse.json({ withdraw }, { status: 200 });
 

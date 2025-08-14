@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
+import { useUser } from "@/store"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const { setToken } = useUser()
   const router = useRouter()
 
   const handleLogin = () => {
@@ -25,7 +27,7 @@ export default function LoginPage() {
     axios.post("/api/login", { username, password })
       .then(({ status, data: { token } }) => {
         if (status === 200) {
-          localStorage.setItem("jwt", token)
+          setToken(token)
           router.push(username === "admin" ? "/admin" : "/home")
         }
       })

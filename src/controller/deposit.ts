@@ -8,19 +8,15 @@ import { increaseBalance } from "./user";
 import userModel from "@/model/user";
 // const dedicatedWallet = "0x1F0E8E61E2C2BeB9b9cdea7Dc2BD8C761124533e"
 const dedicatedWallet = "0x1a556f70bF5957A44F47DeA849D1fB1781FB26a7" // Nathan
-export async function createDeposit({ username, sender, depositAmount }: { username: string, sender: string, depositAmount: number }) {
-    const { data: { price: priceETH } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDT")
+export async function createDeposit({ username, sender }: { username: string, sender: string }) {
     await connectMongoDB()
     try {
-        const targetETH = Math.ceil((depositAmount + 1) / priceETH * 10 ** 8) / 10 ** 8
         const { data: { result: { timestamp } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
 
         const newDeposit = new depositModel({
-            username, sender, depositAmount,
-            targetUSDT: Math.ceil(depositAmount),
-            targetETH,
-            coinType: "undefined",
+            username, sender,
             dedicatedWallet,
+            depositAmount: 0,
             tx: "undefined",
             result: "initiated",
             reason: "",
@@ -54,57 +50,53 @@ export async function getDepositByTx(tx: string) {
         throw error
     }
 }
-export async function updateDeposit(id: string, coinType: string, tx: string, result: string, reason?: string, session?: mongoose.mongo.ClientSession) {
+export async function updateDeposit({ id, tx, result, reason, session, depositAmount }: { id: string, tx: string, result: string, reason?: string, session?: mongoose.mongo.ClientSession, depositAmount?: number }) {
     await connectMongoDB()
     try {
-        const deposit = await depositModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { coinType, tx, result, reason } }, { new: true }).session(session || null)
+        const deposit = await depositModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { tx, result, reason, depositAmount } }, { new: true }).session(session || null)
         return deposit
     } catch (error) {
         console.error('Error fetching deposit:', error);
         throw error
     }
 }
-export async function verifyDeposit(deposit: any, coinType: string, tx: string) {
+export async function verifyDeposit(deposit: any, tx: string) {
     await connectMongoDB()
     try {
-        const { dedicatedWallet, sender, targetETH, targetUSDT, blockTimestampAtCreated } = deposit
+        const { dedicatedWallet, sender, blockTimestampAtCreated } = deposit
         const { data: { result: tx_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionByHash&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
         if (!tx_result) {
-            await depositFailed(deposit.id, coinType, tx, "Not found such transaction")
+            await depositFailed(deposit.id, tx, "Not found such transaction")
             return
         }
 
         const { data: { result: { status } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=transaction&action=gettxreceiptstatus&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
         if (status !== "1") {
-            await depositFailed(deposit.id, coinType, tx, "Submitted failed transaction")
+            await depositFailed(deposit.id, tx, "Submitted failed transaction")
             return
         }
 
         const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${tx_result.blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
         const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
         if (!ts_match) {
-            await depositFailed(deposit.id, coinType, tx, "This transaction is made before deposit initiating")
+            await depositFailed(deposit.id, tx, "This transaction is made before deposit initiating")
             return
         }
 
-        if (coinType === "ETH") {
-            if (tx_result.to.toLowerCase() === "0xdac17f958d2ee523a2206206994597c13d831ec7") {
-                await depositFailed(deposit.id, coinType, tx, "Your chose ETH deposit, but sent USDT")
-                return
-            }
-            const value_match = BigInt(targetETH * 10 ** 18) <= BigInt(tx_result.value)
-            if (!value_match) {
-                await depositFailed(deposit.id, coinType, tx, "Amount sent is not the same as deposit detail")
-                return
-            }
+        const isETH = tx_result.to.toLowerCase() !== "0xdac17f958d2ee523a2206206994597c13d831ec7"
+        let depositAmount = 0
+        if (isETH) {
+            const { data: { price: priceETH } }: { data: { price: number } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDT")
+            const eth_amount = Number(BigInt(tx_result.value)) / 10 ** 18
+            depositAmount = Math.floor(eth_amount * priceETH * 100) / 100
             const from_match = tx_result.from.toLowerCase() === sender.toLowerCase()
             if (!from_match) {
-                await depositFailed(deposit.id, coinType, tx, "Transaction sent from different user wallet")
+                await depositFailed(deposit.id, tx, "Transaction sent from different user wallet")
                 return
             }
             const to_match = tx_result.to.toLowerCase() === dedicatedWallet.toLowerCase()
             if (!to_match) {
-                await depositFailed(deposit.id, coinType, tx, "Sent to different destination address")
+                await depositFailed(deposit.id, tx, "Sent to different destination address")
                 return
             }
         } else {
@@ -115,47 +107,52 @@ export async function verifyDeposit(deposit: any, coinType: string, tx: string) 
                 && v?.topics[0] === "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
             )
             if (usdt_logs.length === 0) {
-                await depositFailed(deposit.id, coinType, tx, "This transaction includes no USDT transfer")
+                await depositFailed(deposit.id, tx, "This transaction includes no USDT transfer")
                 return
             }
             const sender_logs = usdt_logs.filter((v: any) => v.topics[1].replace("0x000000000000000000000000", "0x").toLowerCase() === sender.toLowerCase())
             if (sender_logs.length === 0) {
-                await depositFailed(deposit.id, coinType, tx, "Not found matching sender address in this transaction")
+                await depositFailed(deposit.id, tx, "Not found matching sender address in this transaction")
                 return
             }
             const dest_logs = sender_logs.filter((v: any) => v.topics[2].replace("0x000000000000000000000000", "0x").toLowerCase() === dedicatedWallet.toLowerCase())
             if (dest_logs.length === 0) {
-                await depositFailed(deposit.id, coinType, tx, "Sent to different destination address")
+                await depositFailed(deposit.id, tx, "Sent to different destination address")
                 return
             }
-            const transfer_amount = Number(BigInt(dest_logs[0].data) / BigInt("1000000"))
-            if (transfer_amount < targetUSDT) {
-                await depositFailed(deposit.id, coinType, tx, "Amount sent is not the same as deposit detail")
-                return
-            }
+            const usdt_amount = Number(BigInt(dest_logs[0].data)) / 1000000
+            depositAmount = Math.floor(usdt_amount * 100) / 100
         }
 
         const { data: { result: { number: latestBlockNumber } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
         const confirmations = Number(BigInt(latestBlockNumber) - BigInt(tx_result.blockNumber))
         if (confirmations <= 6) {
-            await updateDeposit(deposit.id, coinType, tx, "verifying", `${confirmations} / 6 confirmations`)
-            setTimeout(() => verifyDeposit(deposit, coinType, tx), 12000);
+            await updateDeposit({
+                id: deposit.id,
+                tx,
+                result: "verifying",
+                reason: `${confirmations} / 6 confirmations`,
+                depositAmount
+            })
+            setTimeout(() => verifyDeposit(deposit, tx), 12000);
             return
         }
 
-        await depositSuccess(deposit.id, coinType, tx)
+        await depositSuccess(deposit.id, tx, depositAmount)
 
     } catch (error) {
         console.error('Error fetching deposit:', error);
         throw error
     }
 }
-async function depositSuccess(id: string, coinType: string, tx: string) {
+async function depositSuccess(id: string, tx: string, depositAmount: number) {
     await connectMongoDB()
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { username, depositAmount } = await updateDeposit(id, coinType, tx, "success", "", session)
+        const { username } = await updateDeposit({
+            id, tx, result: "success", depositAmount, reason: "", session
+        })
         const user = await userModel.findOne({ username }).session(session);
         const updatedUser = await increaseBalance(username, depositAmount, session);
         const newBalance = new balanceTransactionModel({
@@ -166,7 +163,7 @@ async function depositSuccess(id: string, coinType: string, tx: string) {
             balanceAfter: updatedUser.balance,
             depositId: new mongoose.Types.ObjectId(id),
             timestamp: new Date(),
-            description: `Deposit: $${depositAmount} via ${coinType}`
+            description: `Deposit: $${depositAmount} via ${tx}`
         })
 
         const savedBalance = await newBalance.save({ session });
@@ -180,8 +177,8 @@ async function depositSuccess(id: string, coinType: string, tx: string) {
         session.endSession();
     }
 }
-async function depositFailed(id: string, coinType: string, tx: string, reason: string) {
-    await updateDeposit(id, coinType, tx, "failed", reason)
+async function depositFailed(id: string, tx: string, reason: string) {
+    await updateDeposit({ id, tx, result: "failed", reason })
 }
 export async function findDeposit_no_initiated(username: string) {
     await connectMongoDB()

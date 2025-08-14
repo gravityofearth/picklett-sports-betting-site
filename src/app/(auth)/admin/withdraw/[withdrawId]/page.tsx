@@ -1,5 +1,4 @@
 "use client"
-
 import { WithdrawType } from "@/types"
 import { showToast, validateEthTx } from "@/utils"
 import axios, { AxiosError } from "axios"
@@ -15,7 +14,7 @@ export default function WithdrawPage() {
   const [reason, setReason] = useState("")
   const params = useParams();
   useEffect(() => {
-    axios.get(`/api/withdraw/${params.withdrawId}`)
+    axios.get(`/api/withdraw/${params.withdrawId}`, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { withdraw } }) => setWithdraw(withdraw))
   }, [])
   const submitApprove = () => {
@@ -62,9 +61,6 @@ export default function WithdrawPage() {
   }
   return (
     <div className="max-w-2xl mx-auto p-4">
-
-      <Link href="/admin/withdraw" className="mb-4 px-4 py-2 border border-gray-300 block w-fit">Back</Link>
-
       <div className="border border-gray-200 p-6">
         {withdraw &&
           <>

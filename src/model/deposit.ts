@@ -9,22 +9,9 @@ const depositSchema = new mongoose.Schema({
         required: true,
         match: [/^0x[0-9a-fA-F]{40}$/, 'Invalid Ethereum Address']
     },
-    targetUSDT: {
-        type: Number,
-        required: true,
-    },
-    targetETH: {
-        type: Number,
-        required: true,
-    },
-    coinType: {
-        type: String,
-        required: true,
-        enum: ['ETH', 'USDT', "undefined"],
-    },
     depositAmount: {
         type: Number,
-        required: true,
+        required: false,
     },
     dedicatedWallet: {
         type: String,

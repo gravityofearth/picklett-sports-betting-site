@@ -4,22 +4,28 @@ import { getDepositById, getDepositByTx, updateDeposit, verifyDeposit } from "@/
 
 export async function POST(request: NextRequest) {
   try {
-    const { id, coinType, tx } = await request.json()
-    if (!id || !coinType || !tx) return NextResponse.json({ error: "Bad request" }, { status: 400, statusText: "Bad request" });
+    const { id, tx } = await request.json()
+    if (!id || !tx) return NextResponse.json({ error: "Bad request" }, { status: 400, statusText: "Bad request" });
     const deposit = await getDepositById(id)
     if (!deposit) return NextResponse.json({ error: "Could not find matching deposit information" }, { status: 400, statusText: "Could not find matching deposit information" });
     if (deposit.result !== "initiated") return NextResponse.json({ error: "Transaction is already processed" }, { status: 400, statusText: "Transaction is already processed" });
     if (new Date(deposit.createdAt).getTime() + 10 * 60 * 1000 < new Date().getTime()) {
-      const updatedDeposit = await updateDeposit(id, coinType, tx, "failed", "Transaction sent after expiring time")
+      const updatedDeposit = await updateDeposit({
+        id, tx, result: "failed", reason: "Transaction sent after expiring time"
+      })
       return NextResponse.json({ deposit: updatedDeposit }, { status: 200 });
     }
     const matching_tx = await getDepositByTx(tx)
     if (matching_tx) {
-      const updatedDeposit = await updateDeposit(id, coinType, tx, "failed", "Submitted transaction that is already processed by our system")
+      const updatedDeposit = await updateDeposit({
+        id, tx, result: "failed", reason: "Submitted transaction that is already processed by our system"
+      })
       return NextResponse.json({ deposit: updatedDeposit }, { status: 200 });
     }
-    const updatedDeposit = await updateDeposit(id, coinType, tx, "verifying")
-    await verifyDeposit(updatedDeposit, coinType, tx)
+    const updatedDeposit = await updateDeposit({
+      id, tx, result: "verifying"
+    })
+    await verifyDeposit(updatedDeposit, tx)
     return NextResponse.json({ deposit: updatedDeposit }, { status: 200 });
 
   } catch (error: any) {

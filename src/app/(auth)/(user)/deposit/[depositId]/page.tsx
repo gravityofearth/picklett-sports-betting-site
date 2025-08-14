@@ -19,7 +19,6 @@ export default function DepositPage() {
   const [disableButton, setDisableButton] = useState(false)
   const [copyContent, setCopyContent] = useState(svgCopy)
   const [deposit, setDeposit] = useState<DepositType | null>(null)
-  const [coinType, setCoinType] = useState<"USDT" | "ETH" | null>(null)
   const [remainingTime, setRemainingTime] = useState("")
   const [timeOffset, setTimeOffset] = useState(0)
   const router = useRouter()
@@ -75,10 +74,6 @@ export default function DepositPage() {
       showToast("Your deposit quote is already expired", "warn")
       return
     }
-    if (!coinType) {
-      showToast("Please choose whether you send ETH or USDT", "warn")
-      return
-    }
     if (!tx || tx.trim() === "") {
       showToast("Enter transaction ID correctly", "warn")
       return
@@ -90,7 +85,6 @@ export default function DepositPage() {
     setDisableButton(true)
     axios.post("/api/deposit/verify", {
       id: deposit._id,
-      coinType,
       tx,
     }).then(({ data: { deposit } }) => {
       setDeposit(deposit)
@@ -104,44 +98,20 @@ export default function DepositPage() {
   return (
     <div className="max-w-2xl mx-auto p-4">
 
-      <Link href="/home" className="mb-4 px-4 py-2 border border-gray-300 block w-fit">Back to Home</Link>
-
       <div className="border border-gray-200 p-6">
         <h1 className="text-lg mb-6">Deposit Funds</h1>
         {deposit &&
           <>
-            <div className="flex flex-col gap-2 text-sm">
-              <span className="text-lg">Your Deposit Amount is ${deposit.depositAmount}.</span>
-              <span>Which token do you want to use to pay?</span>
-              <div className="w-full flex gap-2">
-                <button onClick={() => setCoinType("USDT")} className={`w-full p-3 border border-gray-300 cursor-pointer ${(deposit.coinType === "undefined" ? coinType : deposit.coinType) === "USDT" ? "bg-black/70 text-white" : "hover:bg-black/20"} disabled:cursor-not-allowed`} disabled={deposit.coinType !== "undefined"}>
-                  Pay with USDT ({deposit.targetUSDT})
-                </button>
-                <button onClick={() => setCoinType("ETH")} className={`w-full p-3 border border-gray-300 cursor-pointer ${(deposit.coinType === "undefined" ? coinType : deposit.coinType) === "ETH" ? "bg-black/70 text-white" : "hover:bg-black/20"} disabled:cursor-not-allowed`} disabled={deposit.coinType !== "undefined"}>
-                  Pay with ETH ({deposit.targetETH})
-                </button>
-              </div>
-            </div>
-            {deposit.coinType !== "undefined" &&
-              <div className="my-6 p-6 border border-green-500 text-sm text-green-700 bg-green-100">
+            {deposit.tx !== "undefined" && deposit.reason !== "" &&
+              <div className="my-6 p-6 border border-yellow-500 text-sm text-yellow-700 bg-yellow-100">
                 Transaction will be confirmed after 6 confirmations on blockchain. <br /> Please wait... {deposit.reason}
               </div>
             }
             <div className="my-6">
               <p className="mb-2">
-                {deposit.coinType === "undefined" ? <span> Send </span> : <span> Sent </span>}
-                {(coinType || deposit.coinType !== "undefined") &&
-                  <button disabled={deposit.coinType !== "undefined"} onClick={() => {
-                    navigator.clipboard.writeText(`${coinType === "USDT" ? deposit.targetUSDT : deposit.targetETH}`)
-                      .then(() => showToast(`Copied ${coinType === "USDT" ? deposit.targetUSDT : deposit.targetETH} to clipboard`, "info"))
-                  }} >
-                    <code className="flex-1 px-2 py-1 rounded-md bg-gray-200 font-mono text-xl overflow-x-auto cursor-pointer text-green-600">
-                      {(deposit.coinType === "undefined" ? coinType : deposit.coinType) === "USDT" ? deposit.targetUSDT : deposit.targetETH}
-                    </code>
-                  </button>
-                }
-                <span> {deposit.coinType === "undefined" ? coinType : deposit.coinType}</span>
-                {deposit.coinType === "undefined" ?
+                {deposit.tx === "undefined" ? <span> Send ETH or USDT </span> : <span> Sent </span>}
+
+                {deposit.tx === "undefined" ?
                   <>
                     <span> to following address within </span>
                     <span className="text-xl">{remainingTime}</span>
@@ -179,6 +149,9 @@ export default function DepositPage() {
                 <button onClick={handleVerify} className="flex-1 p-2 text-white bg-black cursor-pointer hover:bg-black/80 disabled:bg-black/50 disabled:cursor-not-allowed" disabled={disableButton}>
                   Verify Deposit
                 </button>
+              </div>
+              <div className="py-6 text-sm text-yellow-700 italic">
+                * When you send ETH, your deposit amount may differ slightly due to changes in ETH's price.
               </div>
             </div>
           </>
