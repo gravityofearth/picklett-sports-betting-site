@@ -83,10 +83,11 @@ function sendDiscordWebhook(line: any, isUpdated?: boolean) {
         axios.post(discord_webhook_url, webhook_payload)
     }
 }
-export async function findPendingLines() {
+export async function findPendingLines(role: string) {
     await connectMongoDB()
     try {
-        const lines = await lineModel.find({ result: "pending" })
+        const filter = role === "admin" ? { result: "pending" } : { result: "pending", endsAt: { $gt: new Date().getTime() } }
+        const lines = await lineModel.find(filter)
         return lines;
     } catch (error) {
         console.error('Error finding line:', error);

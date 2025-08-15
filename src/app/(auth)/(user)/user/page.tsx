@@ -204,7 +204,7 @@ export default function HomePage() {
           </div>
         )
         }
-        {lines.length === 0 && <div className="mb-4 text-center col-span-2">No current active betting</div>}
+        {lines.length === 0 && <div className="mb-4 text-center col-span-2">Theres no lines at the moment, please go to the discord to suggest a line you would like!</div>}
       </div>
       {username && <BetTable userBets={userBets} username={username} />}
 

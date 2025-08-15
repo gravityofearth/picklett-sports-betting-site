@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const { role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
     const line = await createLine({ question, yes, no, endsAt, result })
-    const lines = await findPendingLines()
+    const lines = await findPendingLines(role)
     return NextResponse.json({ lines }, { status: 201 });
 
   } catch (error: any) {
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest) {
     const { role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
     const line = await updateLine({ question, yes, no, endsAt, result, _id })
-    const lines = await findPendingLines()
+    const lines = await findPendingLines(role)
     return NextResponse.json({ lines }, { status: 202 });
 
   } catch (error: any) {
@@ -40,10 +40,10 @@ export async function PUT(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const lines = await findPendingLines()
     const token = request.headers.get('token') || '';
-    const { username }: any = jwt.verify(token, JWT_SECRET)
+    const { username, role }: any = jwt.verify(token, JWT_SECRET)
     const user = await findUserByUsername(username)
+    const lines = await findPendingLines(role)
     const new_token = signToken(user)
     return NextResponse.json({ lines, token: new_token, basets: new Date().getTime() }, { status: 200 });
 
