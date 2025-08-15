@@ -10,6 +10,7 @@ export async function createUser({ username, password }: { username: string, pas
             password,
             balance: 0,
             winstreak: 0,
+            role: "user",
             // firstName: 'John',
             // lastName: 'Doe',
             // email: 'john.doe@example.com',

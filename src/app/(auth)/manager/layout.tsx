@@ -12,7 +12,7 @@ export default function AuthLayout({
     const router = useRouter()
     useEffect(() => {
         if (!role) return
-        if (role !== "admin") {
+        if (role !== "manager") {
             router.push("/login")
             return
         }

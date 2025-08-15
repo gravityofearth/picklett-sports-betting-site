@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: [0, 'Winstreak cannot be negative'],
     },
+    role: {
+        type: String,
+        required: true,
+    },
 
     // // Profile Information
     // bio: {

@@ -55,7 +55,7 @@ export default function WithdrawPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      <Link href="/home" className="mb-4 px-4 py-2 border border-gray-300 block w-fit">Back to Home</Link>
+      <Link href="/user" className="mb-4 px-4 py-2 border border-gray-300 block w-fit">Back to Home</Link>
 
       <div className="border border-gray-200 p-6 mb-6">
         <h1 className="text-lg mb-6">Withdraw Funds</h1>

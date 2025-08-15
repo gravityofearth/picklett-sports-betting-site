@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
+import jwt from "jsonwebtoken"
 import { useUser } from "@/store"
 
 export default function LoginPage() {
@@ -28,7 +29,8 @@ export default function LoginPage() {
       .then(({ status, data: { token } }) => {
         if (status === 200) {
           setToken(token)
-          router.push(username === "admin" ? "/admin" : "/home")
+          const role = (jwt.decode(token) as any)?.role
+          router.push(`/${role}`)
         }
       })
       .catch((e: AxiosError) => {

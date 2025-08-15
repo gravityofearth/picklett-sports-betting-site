@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
   try {
     const { id, tx } = await request.json()
     const token = request.headers.get('token') || '';
-    const { username }: any = jwt.verify(token, JWT_SECRET)
-    if (username !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unauthorized request" });
+    const { role }: any = jwt.verify(token, JWT_SECRET)
+    if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unauthorized request" });
     const withdraw = await approveWithdraw({ id, tx })
     return NextResponse.json({ withdraw }, { status: 200 });
 

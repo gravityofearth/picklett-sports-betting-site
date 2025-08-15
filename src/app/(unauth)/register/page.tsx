@@ -32,7 +32,7 @@ export default function LoginPage() {
         if (status === 201) {
           setToken(token)
           showToast("Successfully registered!", "success")
-          router.push("/home")
+          router.push("/user")
         }
       })
       .catch((e: AxiosError) => {

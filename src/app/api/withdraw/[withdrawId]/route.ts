@@ -6,8 +6,8 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
   try {
     const { withdrawId } = await params;
     const token = request.headers.get('token') || '';
-    const { username }: any = jwt.verify(token, JWT_SECRET)
-    if (username !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unauthorized request" });
+    const { role }: any = jwt.verify(token, JWT_SECRET)
+    if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unauthorized request" });
     const withdraw = await getWithdrawById(withdrawId)
     return NextResponse.json({ withdraw }, { status: 200 });
 

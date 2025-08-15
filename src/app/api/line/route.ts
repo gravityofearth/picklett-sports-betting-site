@@ -1,6 +1,6 @@
 import { signToken } from "@/controller/auth";
 import { createLine, findPendingLines, updateLine } from "@/controller/bet";
-import { createUser, findUserByUsername } from "@/controller/user";
+import { findUserByUsername } from "@/controller/user";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils";
@@ -10,8 +10,8 @@ export async function POST(request: NextRequest) {
     const { question, yes, no, endsAt } = await request.json()
     const result = "pending"
     const token = request.headers.get('token') || '';
-    const { username }: any = jwt.verify(token, JWT_SECRET)
-    if (username !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
+    const { role }: any = jwt.verify(token, JWT_SECRET)
+    if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
     const line = await createLine({ question, yes, no, endsAt, result })
     const lines = await findPendingLines()
     return NextResponse.json({ lines }, { status: 201 });
@@ -26,8 +26,8 @@ export async function PUT(request: NextRequest) {
     const { question, yes, no, endsAt, _id } = await request.json()
     const result = "pending"
     const token = request.headers.get('token') || '';
-    const { username }: any = jwt.verify(token, JWT_SECRET)
-    if (username !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
+    const { role }: any = jwt.verify(token, JWT_SECRET)
+    if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
     const line = await updateLine({ question, yes, no, endsAt, result, _id })
     const lines = await findPendingLines()
     return NextResponse.json({ lines }, { status: 202 });
