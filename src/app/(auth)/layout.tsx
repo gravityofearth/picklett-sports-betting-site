@@ -28,18 +28,20 @@ export default function UserLayout({
                     <div>Balance: ${balance.toFixed(2)}</div>
                 </div>
                 <div className="flex justify-end items-center gap-5">
-                    <Link href={`/${role}`}>Home</Link>
-                    <div className="w-[1px] h-4 bg-gray-500"></div>
-                    <Link href="/leaderboard">Leaderboard</Link>
-                    <div className="w-[1px] h-4 bg-gray-500"></div>
-                    {role !== "manager" &&
+                    {role !== "user" &&
                         <>
-                            <Link href={role === "admin" ? "/admin/deposit" : "/deposit"}>Deposit</Link>
-                            <div className="w-[1px] h-4 bg-gray-500"></div>
-                            <Link href={role === "admin" ? "/admin/withdraw" : "/withdraw"}>Withdraw</Link>
+                            <Link href={`/${role}`}>Admin</Link>
                             <div className="w-[1px] h-4 bg-gray-500"></div>
                         </>
                     }
+                    <Link href={`/user`}>Home</Link>
+                    <div className="w-[1px] h-4 bg-gray-500"></div>
+                    <Link href="/leaderboard">Leaderboard</Link>
+                    <div className="w-[1px] h-4 bg-gray-500"></div>
+                    <Link href={role === "admin" ? "/admin/deposit" : "/deposit"}>Deposit</Link>
+                    <div className="w-[1px] h-4 bg-gray-500"></div>
+                    <Link href={role === "admin" ? "/admin/withdraw" : "/withdraw"}>Withdraw</Link>
+                    <div className="w-[1px] h-4 bg-gray-500"></div>
                     <Link href="https://discord.gg/4299eVWAFJ">
                         <Image alt="discord" width={25} height={10} src={"/discord.png"} />
                     </Link>

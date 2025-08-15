@@ -1,5 +1,5 @@
 "use client"
-import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, showToast } from "@/utils"
+import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, showToast, validateCurrency } from "@/utils"
 import axios, { AxiosError } from "axios"
 import type React from "react"
 import { useEffect, useState } from "react"
@@ -11,8 +11,8 @@ const rawLine: LineType & LineCardAdminType = {
     _id: "new",
     changed: 0,
     question: "",
-    endsAt: new Date().getTime() + 24 * 60 * 60 * 1000,
-    endsAtStr: `${new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date().toLocaleTimeString("sv-SE")}`,
+    endsAt: new Date().getTime() + 10 * 60 * 1000,
+    endsAtStr: `${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleTimeString("sv-SE")}`,
     yes: 2,
     yes_american: "",
     yes_decimal: "",
@@ -171,9 +171,8 @@ export default function AdminPage() {
                 <>
                     <div className="grid grid-cols-2 gap-4 pb-6">
                         {lines.map((line) =>
-                            <div key={line._id} className="w-full border border-gray-200 p-6">
+                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-200"}`}>
                                 <div className="">
-                                    {/* <h2 className="text-lg mb-4">Set Betting Line</h2> */}
                                     <div>
                                         <div className="mb-4">
                                             <label htmlFor="question" className="block mb-2 text-lg">
@@ -205,15 +204,18 @@ export default function AdminPage() {
                                                         id="yesOdds"
                                                         type="text"
                                                         value={line.yes_decimal}
-                                                        onChange={(e) => setLines(prevLines => ([
-                                                            ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                            {
-                                                                ...line,
-                                                                yes_decimal: e.target.value,
-                                                                changed: 1,
-                                                                yes: Number(e.target.value),
-                                                            }
-                                                        ]))}
+                                                        onChange={(e) => {
+                                                            if (!validateCurrency(e.target.value)) return
+                                                            setLines(prevLines => ([
+                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                                                                {
+                                                                    ...line,
+                                                                    yes_decimal: e.target.value,
+                                                                    changed: 1,
+                                                                    yes: Number(e.target.value),
+                                                                }
+                                                            ]))
+                                                        }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="1.8"
                                                     /> :
@@ -221,15 +223,18 @@ export default function AdminPage() {
                                                         id="yesOdds"
                                                         type="text"
                                                         value={line.yes_american}
-                                                        onChange={(e) => setLines(prevLines => ([
-                                                            ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                            {
-                                                                ...line,
-                                                                yes_american: e.target.value,
-                                                                changed: 1,
-                                                                yes: convertAmerican2DecimalOdds(Number(e.target.value))
-                                                            }
-                                                        ]))}
+                                                        onChange={(e) => {
+                                                            if (!validateCurrency(e.target.value)) return
+                                                            setLines(prevLines => ([
+                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                                                                {
+                                                                    ...line,
+                                                                    yes_american: e.target.value,
+                                                                    changed: 1,
+                                                                    yes: convertAmerican2DecimalOdds(Number(e.target.value))
+                                                                }
+                                                            ]))
+                                                        }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="-110"
                                                     />
@@ -245,15 +250,18 @@ export default function AdminPage() {
                                                         id="noOdds"
                                                         type="text"
                                                         value={line.no_decimal}
-                                                        onChange={(e) => setLines(prevLines => ([
-                                                            ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                            {
-                                                                ...line,
-                                                                no_decimal: e.target.value,
-                                                                changed: 1,
-                                                                no: Number(e.target.value),
-                                                            }
-                                                        ]))}
+                                                        onChange={(e) => {
+                                                            if (!validateCurrency(e.target.value)) return
+                                                            setLines(prevLines => ([
+                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                                                                {
+                                                                    ...line,
+                                                                    no_decimal: e.target.value,
+                                                                    changed: 1,
+                                                                    no: Number(e.target.value),
+                                                                }
+                                                            ]))
+                                                        }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="1.2"
                                                     /> :
@@ -261,15 +269,18 @@ export default function AdminPage() {
                                                         id="noOdds"
                                                         type="text"
                                                         value={line.no_american}
-                                                        onChange={(e) => setLines(prevLines => ([
-                                                            ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                            {
-                                                                ...line,
-                                                                no_american: e.target.value,
-                                                                changed: 1,
-                                                                no: convertAmerican2DecimalOdds(Number(e.target.value)),
-                                                            }
-                                                        ]))}
+                                                        onChange={(e) => {
+                                                            if (!validateCurrency(e.target.value)) return
+                                                            setLines(prevLines => ([
+                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
+                                                                {
+                                                                    ...line,
+                                                                    no_american: e.target.value,
+                                                                    changed: 1,
+                                                                    no: convertAmerican2DecimalOdds(Number(e.target.value)),
+                                                                }
+                                                            ]))
+                                                        }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="-180"
                                                     />
@@ -322,7 +333,7 @@ export default function AdminPage() {
                                             />
                                         </div>
 
-                                        <button onClick={() => handleLine(line._id)} className="w-full p-2 text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingRequest || line.changed < 1}>
+                                        <button onClick={() => handleLine(line._id)} className={`w-full p-2 text-white cursor-pointer disabled:cursor-not-allowed ${line._id === "new" ? "bg-blue-600 disabled:bg-blue-400 hover:bg-blue-700" : "bg-black disabled:bg-black/50 hover:bg-black/80"}`} disabled={sendingRequest || line.changed < 1}>
                                             {line._id === "new" ? "+ Create" : "Update"} Line
                                         </button>
                                     </div>

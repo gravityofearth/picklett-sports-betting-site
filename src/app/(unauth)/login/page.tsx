@@ -29,8 +29,7 @@ export default function LoginPage() {
       .then(({ status, data: { token } }) => {
         if (status === 200) {
           setToken(token)
-          const role = (jwt.decode(token) as any)?.role
-          router.push(`/${role}`)
+          router.push(`/user`)
         }
       })
       .catch((e: AxiosError) => {
