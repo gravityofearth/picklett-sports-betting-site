@@ -172,7 +172,7 @@ export default function AdminPage() {
             {loading ? "Loading..." :
                 <>
                     <div className="w-full grid grid-cols-2 max-sm:grid-cols-1 gap-4 pb-6">
-                        {lines.filter(v => role === "admin" || v.openedBy === username).map((line) =>
+                        {lines.filter(v => role === "admin" || v._id === "new" || v.openedBy === username).map((line) =>
                             <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-200"}`}>
                                 <div className="">
                                     <div>
