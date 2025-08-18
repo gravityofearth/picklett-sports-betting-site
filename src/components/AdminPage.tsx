@@ -2,30 +2,32 @@
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, showToast, validateCurrency } from "@/utils"
 import axios, { AxiosError } from "axios"
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { BetType, LineCardAdminType, LineType } from "@/types"
 import BetTable from "@/components/BetTable"
 import { useUser } from "@/store"
+import { usePathname } from "next/navigation"
 
-const rawLine: LineType & LineCardAdminType = {
-    _id: "new",
-    changed: 0,
-    question: "",
-    endsAt: new Date().getTime() + 10 * 60 * 1000,
-    endsAtStr: `${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleTimeString("sv-SE")}`,
-    yes: 2,
-    yes_american: "",
-    yes_decimal: "",
-    no: 2,
-    no_american: "",
-    no_decimal: "",
-    oddsFormat: "decimal",
-    result: "pending",
-    winning_side: "",
-    createdAt: "",
-    openedBy: ""
-}
 export default function AdminPage() {
+    const pathname = usePathname()
+    const rawLine: LineType & LineCardAdminType = useMemo(() => ({
+        _id: "new",
+        changed: 0,
+        question: "",
+        endsAt: new Date().getTime() + 10 * 60 * 1000,
+        endsAtStr: `${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleTimeString("sv-SE")}`,
+        yes: 2,
+        yes_american: "",
+        yes_decimal: "",
+        no: 2,
+        no_american: "",
+        no_decimal: "",
+        oddsFormat: "decimal",
+        result: "pending",
+        winning_side: "",
+        createdAt: "",
+        openedBy: ""
+    }), [pathname])
     const [lines, _setLines] = useState<(LineType & LineCardAdminType)[]>([rawLine])
     const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardAdminType)[]>> = (update) => {
         if (typeof update === 'function') {

@@ -18,8 +18,8 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        // const startsAt = 1754791413000
-        // const endsAt = 1755655413000
+        // const startsAt = 1755302400000
+        // const endsAt = 1755734400000
         const startDate = new Date(startsAt);
         const endDate = new Date(endsAt);
 

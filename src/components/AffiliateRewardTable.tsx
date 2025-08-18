@@ -39,8 +39,8 @@ const AffiliateRewardTable = ({ rewards, adminPage }: { rewards: AffiliateReward
                         {currentRewards.map((reward, i) => (
                             <tr key={startIndex + i} className="border-b">
                                 <td className="p-2 whitespace-nowrap text-sm">
-                                    <p>{new Date(reward.startsAt).toLocaleDateString("sv-SE")}~</p>
-                                    <p>&nbsp;&nbsp;{new Date(reward.endsAt).toLocaleDateString("sv-SE")}</p>
+                                    <p>{new Date(reward.startsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}~</p>
+                                    <p>&nbsp;&nbsp;{new Date(reward.endsAt - 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}</p>
                                 </td>
                                 {adminPage && <td className="p-2">{reward.referrer}</td>}
                                 <td className="p-2 text-center">{reward.detail.length}</td>
