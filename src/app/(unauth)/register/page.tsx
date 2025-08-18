@@ -1,12 +1,18 @@
 "use client"
 import type React from "react"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@/store"
-export default function LoginPage() {
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Home />
+    </Suspense>)
+}
+const Home = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [ref, setRef] = useState("")
