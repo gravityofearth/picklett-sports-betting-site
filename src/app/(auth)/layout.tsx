@@ -35,8 +35,8 @@ export default function UserLayout({
                         </>
                     }
                     <Link href={`/user`} className={`${pathname === "/user" ? "text-purple-600" : ""}`}>Home</Link>
-                    {/* <div className="w-[1px] h-4 bg-gray-500"></div>
-                    <Link href={`/affiliate`} className={`${pathname === "/affiliate" ? "text-purple-600" : ""}`}>Affiliate</Link> */}
+                    <div className="w-[1px] h-4 bg-gray-500"></div>
+                    <Link href={`/affiliate`} className={`${pathname === "/affiliate" ? "text-purple-600" : ""}`}>Affiliate</Link>
                     <div className="w-[1px] h-4 bg-gray-500"></div>
                     <Link href="/leaderboard" className={`${pathname === "/leaderboard" ? "text-purple-600" : ""}`}>Leaderboard</Link>
                     <div className="w-[1px] h-4 bg-gray-500"></div>

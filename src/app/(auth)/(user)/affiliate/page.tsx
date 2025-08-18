@@ -1,16 +1,27 @@
 "use client"
+import AffiliateRewardTable from "@/components/AffiliateRewardTable"
 import { svgCopy, svgCopyOk } from "@/components/SVG"
 import { useUser } from "@/store"
+import { AffiliateRewardType } from "@/types"
+import axios from "axios"
 import { useEffect, useState } from "react"
 
 export default function AffiliatePage() {
     const [copyContent, setCopyContent] = useState(svgCopy)
     const [referralLink, setReferralLink] = useState("")
+    const { role } = useUser()
+    const [rewards, setRewards] = useState<AffiliateRewardType[]>([])
     const { ref } = useUser()
     useEffect(() => {
         if (!ref) return
         setReferralLink(`https://www.picklett.com/register?ref=${ref}`)
     }, [ref])
+    useEffect(() => {
+        axios.get("/api/affiliate", { headers: { token: localStorage.getItem("jwt") } })
+            .then(({ data: { rewards } }: { data: { rewards: AffiliateRewardType[] } }) => {
+                setRewards(rewards)
+            })
+    }, [])
     const copyToClipboard = async (text: string) => {
         try {
             await navigator.clipboard.writeText(text)
@@ -30,6 +41,7 @@ export default function AffiliatePage() {
                     {copyContent}
                 </button>
             </div>
+            <AffiliateRewardTable rewards={rewards} adminPage={role === "admin"} />
         </div>
     )
 }

@@ -1,12 +1,25 @@
 import affiliateRewardModel from "@/model/affiliateReward";
+import balanceTransactionModel from "@/model/balanceTransaction";
 import userModel from "@/model/user";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
-export const distributeAffiliateRewards = async ({ startsAt, endsAt, timestamp }: { startsAt: number; endsAt: number; timestamp: number; }) => {
+export async function getAffiliates({ role, referrer }: { role: string, referrer: string }) {
+    await connectMongoDB()
+    try {
+        const deposit = await affiliateRewardModel.find(role === "admin" ? {} : { referrer })
+        return deposit
+    } catch (error) {
+        console.error('Error fetching deposit:', error);
+        throw error
+    }
+}
+export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsAt: number; endsAt: number; }) => {
     await connectMongoDB()
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
+        // const startsAt = 1754791413000
+        // const endsAt = 1755655413000
         const startDate = new Date(startsAt);
         const endDate = new Date(endsAt);
 
@@ -119,7 +132,7 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt, timestamp }
                             referee: "$referees",
                             amount: "$refereeTotal"
                         }
-                    }
+                    },
                 }
             },
             {
@@ -128,26 +141,94 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt, timestamp }
                     totalBetPlaceAmount: { $lt: -100 }
                 }
             },
+            {
+                $addFields: {
+                    startsAt: startsAt,
+                    endsAt: endsAt,
+                    timestamp: new Date().getTime(),
+                    revenue: { $multiply: ["$totalAmount", -1] },
+                    totalBets: { $multiply: ["$totalBetPlaceAmount", -1] },
+                    earning: { $multiply: ["$totalAmount", -0.05] },
+                }
+            },
 
             // Stage 8: Final projection to match desired output format
             {
                 $project: {
                     referrer: "$_id",
                     // referees: 1,
-                    revenue: "$totalAmount",
-                    totalBets: "$totalBetPlaceAmount",
+                    revenue: 1,
+                    totalBets: 1,
                     detail: "$refereeDetails",
+                    startsAt: 1,
+                    endsAt: 1,
+                    timestamp: 1,
+                    earning: 1,
                     _id: 0
                 }
-            }
+            },
+
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "referrer",
+                    foreignField: "username",
+                    as: "currentUser"
+                }
+            },
+            {
+                $addFields: {
+                    balanceBefore: { $arrayElemAt: ["$currentUser.balance", 0] },
+                    balanceAfter: {
+                        $add: [
+                            { $arrayElemAt: ["$currentUser.balance", 0] },
+                            "$earning"
+                        ]
+                    }
+                }
+            },
+            // Stage 8: Final projection to match desired output format
+            {
+                $project: {
+                    referrer: 1,
+                    // referees: 1,
+                    revenue: 1,
+                    totalBets: 1,
+                    detail: 1,
+                    startsAt: 1,
+                    endsAt: 1,
+                    timestamp: 1,
+                    earning: 1,
+                    balanceBefore: 1,
+                    balanceAfter: 1,
+                    _id: 0
+                }
+            },
         ]).session(session)
-        const data = affiliateRewards.map(v => ({
-            startsAt, endsAt, timestamp,
-            ...v
-        }))
-        await affiliateRewardModel.create(data, { session })
+        if (affiliateRewards.length > 0) {
+            await affiliateRewardModel.insertMany(affiliateRewards, { session })
+            const rewardUpdates = affiliateRewards.map(reward => ({
+                updateOne: {
+                    filter: { username: reward.referrer },
+                    update: {
+                        $inc: { balance: reward.earning },
+                    }
+                }
+            }));
+            const transactions = affiliateRewards.map(reward => ({
+                username: reward.referrer,
+                type: "affiliate_reward",
+                amount: reward.earning,
+                balanceBefore: reward.balanceBefore,
+                balanceAfter: reward.balanceAfter,
+                timestamp: new Date(),
+                description: `Affiliate Reward for cycle: ${new Date(startsAt).toLocaleDateString("sv-SE")} ~ ${new Date(endsAt).toLocaleDateString("sv-SE")}`
+            }));
+            await userModel.bulkWrite(rewardUpdates, { session });
+            await balanceTransactionModel.insertMany(transactions, { session });
+        }
         await session.commitTransaction();
-        return data
+        return affiliateRewards
     } catch (error) {
         console.error('Error getting affiliate rewards in affiliate system:', error);
         await session.abortTransaction();

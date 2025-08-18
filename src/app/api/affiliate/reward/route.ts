@@ -6,8 +6,7 @@ export async function POST(request: NextRequest) {
         const token = request.headers.get('token') || ''
         if (token !== AFFILIATE_REWARD_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
         const { startsAt, endsAt } = getTimestampPeriod()
-        const timestamp = new Date().getTime()
-        const data = await distributeAffiliateRewards({ startsAt, endsAt, timestamp })
+        const data = await distributeAffiliateRewards({ startsAt, endsAt })
         return NextResponse.json(data, { status: 200 })
     } catch (error: any) {
         console.error("Error distributing rewards:", error);

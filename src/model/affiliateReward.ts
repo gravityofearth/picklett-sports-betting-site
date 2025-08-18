@@ -20,6 +20,10 @@ const affiliateRewardSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    earning: {
+        type: Number,
+        required: true,
+    },
     totalBets: {
         type: Number,
         required: true,

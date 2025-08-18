@@ -60,3 +60,16 @@ export type WithdrawType = {
     reason?: string,
 }
 export type LeaderType = { username: string; winstreak: number }
+export type AffiliateRewardType = {
+    startsAt: number,
+    endsAt: number,
+    timestamp: number,
+    referrer: string,
+    revenue: number,
+    earning: number,
+    totalBets: number,
+    detail: {
+        amount: number,
+        referee: string
+    }[],
+}
