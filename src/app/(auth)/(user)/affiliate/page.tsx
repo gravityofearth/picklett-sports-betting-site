@@ -32,9 +32,12 @@ export default function AffiliatePage() {
     }
     return (
         <div className="flex flex-col gap-6 p-4">
-            <div className="text-center text-lg w-full p-4 border-4 border-gray-300 border-double">Spread the word!<br />Use your referral link to invite friends and collect rewards for every bet they make!</div>
+            <div className="my-6 p-6 border border-yellow-500 text-sm text-yellow-700 bg-yellow-100">
+                <p>Invite your friends to join our platform using the link below.</p>
+                <p>As an affiliate, you will earn rewards every 5 days, once your referrals place bets exceeding $100 generating revenue for our site.</p>
+            </div>
             <div className="flex items-center justify-center">
-                <code onClick={() => copyToClipboard(referralLink)} className="p-2 bg-gray-100 font-mono text-sm overflow-x-auto border-[1px] border-gray-400 cursor-pointer w-fit">
+                <code onClick={() => copyToClipboard(referralLink)} className="p-2 bg-gray-100 font-mono text-sm break-all border-[1px] border-gray-400 cursor-pointer w-fit">
                     {referralLink}
                 </code>
                 <button onClick={() => copyToClipboard(referralLink)} className="p-2 ml-2 border border-gray-300 cursor-pointer rounded-md">
