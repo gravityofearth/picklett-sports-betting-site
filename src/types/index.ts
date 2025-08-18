@@ -6,6 +6,7 @@ export type LineType = {
     endsAt: number,
     result: "yes" | "no" | "pending" | null,
     createdAt: string,
+    openedBy: string,
 }
 export type LineCardAdminType = {
     yes_decimal: string;

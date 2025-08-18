@@ -10,9 +10,9 @@ export async function POST(request: NextRequest) {
     const { question, yes, no, endsAt } = await request.json()
     const result = "pending"
     const token = request.headers.get('token') || '';
-    const { role }: any = jwt.verify(token, JWT_SECRET)
+    const { username, role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
-    const line = await createLine({ question, yes, no, endsAt, result })
+    const line = await createLine({ question, yes, no, endsAt, result, openedBy: username })
     const lines = await findPendingLines(role)
     return NextResponse.json({ lines }, { status: 201 });
 

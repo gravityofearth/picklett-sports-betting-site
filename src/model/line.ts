@@ -20,9 +20,11 @@ const lineSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['pending', 'yes', 'no'],
-    }
-
-
+    },
+    openedBy: {
+        type: String,
+        required: true,
+    },
 }, {
     timestamps: true, // Adds createdAt and updatedAt
 });

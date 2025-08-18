@@ -1,18 +1,24 @@
 "use client"
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@/store"
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [ref, setRef] = useState("")
   const { setToken } = useUser()
   const [confirmPassword, setConfirmPassword] = useState("")
   const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const router = useRouter();
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    setRef(searchParams.get('ref') || "")
+  }, [searchParams])
   const handleRegister = async () => {
     if (username?.trim() === "") {
       showToast("Invalid username", "warn")
@@ -27,7 +33,7 @@ export default function LoginPage() {
       return
     }
     setSendingBetRequest(true)
-    axios.post("/api/register", { username, password })
+    axios.post("/api/register", { username, password, ref: ref.trim() })
       .then(({ status, data: { token } }) => {
         if (status === 201) {
           setToken(token)

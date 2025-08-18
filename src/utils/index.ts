@@ -26,6 +26,7 @@ export const showToast = (msg: ToastContent<unknown>, type: "info" | "error" | "
     }
 };
 export const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secure-jwt-secret-key-change-this';
+export const AFFILIATE_REWARD_SECRET = 'O5I5g9w5ho7DKybR4BVWUSsnu61cSF0vQy';
 export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
     let totalSeconds = Math.floor(timestampDiff / 1000);
     if (totalSeconds <= 0) return "Ended"
@@ -71,6 +72,14 @@ export const convertDecimal2AmericanOdds = (decimalOdds: number): number => {
         return Math.ceil(-100 / (decimalOdds - 1))
     }
     return -100
+}
+export function generateReferralCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 export const validateCurrency = (val: string) => /^$|^-$|^-?(0|[1-9][0-9]*)(\.[0-9]{0,2})?$/.test(val)
 export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(val)

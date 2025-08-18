@@ -1,8 +1,9 @@
 import userModel from "@/model/user";
+import { generateReferralCode } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
 
-export async function createUser({ username, password }: { username: string, password: string }) {
+export async function createUser({ username, password, refby }: { username: string, password: string, refby: string }) {
     await connectMongoDB()
     try {
         const newUser = new userModel({
@@ -11,6 +12,8 @@ export async function createUser({ username, password }: { username: string, pas
             balance: 0,
             winstreak: 0,
             role: "user",
+            ref: generateReferralCode(),
+            refby,
             // firstName: 'John',
             // lastName: 'Doe',
             // email: 'john.doe@example.com',
@@ -48,7 +51,17 @@ export async function findUserByUsername(username: string) {
     await connectMongoDB()
     try {
         // Include password for login verification
-        const user = await userModel.findOne({ username }).select('+password');
+        const user = await userModel.findOne({ username })
+        return user;
+    } catch (error) {
+        console.error('Error finding user:', error);
+    }
+}
+export async function findUserByRef(ref: string) {
+    await connectMongoDB()
+    try {
+        // Include password for login verification
+        const user = await userModel.findOne({ ref })
         return user;
     } catch (error) {
         console.error('Error finding user:', error);

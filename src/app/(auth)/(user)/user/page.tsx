@@ -114,7 +114,7 @@ export default function HomePage() {
   return (
     <>
       <div className="text-center text-lg p-4 border-4 border-gray-300 border-double">Welcome to Picklett!<br />Your sports betting bookie that does not want you to go broke overnight.<br />Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
-      <div className="grid grid-cols-2 gap-4 w-full">
+      <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4 w-full">
         {lines.map(line =>
           <div key={line._id} className="border border-gray-200 p-6">
             <h2 className="text-lg mb-4 text-center">{line.question}</h2>
@@ -206,7 +206,7 @@ export default function HomePage() {
         }
         {lines.length === 0 && <div className="mb-4 text-center col-span-2">Theres no lines at the moment, please go to the discord to suggest a line you would like!</div>}
       </div>
-      {username && <BetTable userBets={userBets} username={username} />}
+      {username && <BetTable userBets={userBets} username={username} adminPage={username === "admin"} />}
 
     </>
   )

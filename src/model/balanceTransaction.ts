@@ -4,7 +4,7 @@ const balanceTransactionSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['bet_placed', 'bet_win', 'bet_loss', 'deposit', 'withdraw', 'refund']
+        enum: ['bet_placed', 'bet_win', 'deposit', 'withdraw', 'winstreak_reward', "affiliate_reward"]
     },
     amount: { type: Number, required: true }, // Positive for credits, negative for debits
     balanceBefore: { type: Number, required: true },

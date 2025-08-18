@@ -1,3 +1,5 @@
+export const svgCopy = () => <svg className="w-4 h-4"><use href="#svg-copy" /></svg>
+export const svgCopyOk = () => <svg className="w-4 h-4"><use href="#svg-copy-ok" /></svg>
 const SVGs = () => {
     return (
         <div className="hidden">

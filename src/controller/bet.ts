@@ -10,10 +10,10 @@ import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
 import axios from "axios";
 const discord_webhook_url = process.env.DISCORD_WEBHOOK
-export async function createLine({ question, yes, no, endsAt, result }: { question: string, yes: number, no: number, endsAt: number, result: string }) {
+export async function createLine({ question, yes, no, endsAt, result, openedBy }: { question: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
     await connectMongoDB()
     try {
-        const newLine = new lineModel({ question, yes, no, endsAt, result });
+        const newLine = new lineModel({ question, yes, no, endsAt, result, openedBy });
         const savedLine = await newLine.save();
         sendDiscordWebhook(newLine)
         return savedLine;

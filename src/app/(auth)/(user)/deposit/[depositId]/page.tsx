@@ -1,18 +1,13 @@
 "use client"
 
 import type React from "react"
-
-import jwt from "jsonwebtoken"
-import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
-import { showToast, validateCurrency, validateEthAddress, validateEthTx } from "@/utils"
+import { useState, useEffect } from "react"
+import { showToast, validateEthTx } from "@/utils"
 import axios, { AxiosError } from "axios"
 import QRCodeImg from "@/components/QRCodeImg"
 import { DepositType } from "@/types"
-import betModel from "@/model/bet"
 import { useParams, useRouter } from "next/navigation"
-const svgCopy = () => <svg className="w-4 h-4"><use href="#svg-copy" /></svg>
-const svgCopyOk = () => <svg className="w-4 h-4"><use href="#svg-copy-ok" /></svg>
+import { svgCopy, svgCopyOk } from "@/components/SVG"
 
 export default function DepositPage() {
   const [tx, setTx] = useState("")

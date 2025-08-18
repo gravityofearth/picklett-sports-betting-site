@@ -23,6 +23,7 @@ const rawLine: LineType & LineCardAdminType = {
     result: "pending",
     winning_side: "",
     createdAt: "",
+    openedBy: ""
 }
 export default function AdminPage() {
     const [lines, _setLines] = useState<(LineType & LineCardAdminType)[]>([rawLine])
@@ -42,7 +43,7 @@ export default function AdminPage() {
             ]);
         }
     };
-    const { role } = useUser()
+    const { username, role } = useUser()
     const [loading, setLoading] = useState(true)
     const [sendingRequest, setSendingRequest] = useState(false)
     const { setToken } = useUser()
@@ -120,7 +121,7 @@ export default function AdminPage() {
     useEffect(() => {
         setLoading(true)
         fetchData()
-    }, [])
+    }, [role])
 
     const [lineBetRate, setLineBetRate] = useState<{ id: string, yes: number, no: number, rate: number }[]>([])
     useEffect(() => {
@@ -135,6 +136,7 @@ export default function AdminPage() {
         setLineBetRate(betRate)
     }, [userBets, lines])
     const fetchData = () => {
+        if (!role) return
         axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } })
             .then(({ data: { lines: returned_lines, token } }: { data: { lines: LineType[], token: string } }) => {
                 const newLine = lines.filter(v => v._id === "new")[0]
@@ -166,11 +168,11 @@ export default function AdminPage() {
             })
     }
     return (
-        <div className="max-w-4xl mx-auto p-4">
+        <div className="w-full max-w-4xl mx-auto p-4">
             {loading ? "Loading..." :
                 <>
-                    <div className="grid grid-cols-2 gap-4 pb-6">
-                        {lines.map((line) =>
+                    <div className="w-full grid grid-cols-2 max-sm:grid-cols-1 gap-4 pb-6">
+                        {lines.filter(v => role === "admin" || v.openedBy === username).map((line) =>
                             <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-200"}`}>
                                 <div className="">
                                     <div>
@@ -194,7 +196,7 @@ export default function AdminPage() {
                                             />
                                         </div>
 
-                                        <div className="grid grid-cols-3 gap-4 mb-4">
+                                        <div className="grid grid-cols-3 gap-4 mb-4 items-end">
                                             <div className="col-span-1">
                                                 <label htmlFor="yesOdds" className="block mb-2 text-sm">
                                                     Yes Odds
@@ -337,10 +339,10 @@ export default function AdminPage() {
                                             {line._id === "new" ? "+ Create" : "Update"} Line
                                         </button>
                                     </div>
-
                                 </div>
                                 {line._id !== "new" && role === "admin" &&
                                     <>
+                                        <div className="pt-4 text-sm"> <span className="italic">* Opened by:</span> {line.openedBy} </div>
                                         <hr className="w-full my-6 border-gray-400" />
                                         <div className="">
                                             {/* <div className="text-lg mb-4">Total Bets Placed</div> */}
@@ -391,7 +393,7 @@ export default function AdminPage() {
                     </div>
                 </>}
 
-            {role === "admin" && <BetTable userBets={userBets} username="admin" adminPage />}
+            {role === "admin" && <BetTable userBets={userBets} username="admin" adminPage={role === "admin"} />}
         </div>
     )
 }

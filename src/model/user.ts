@@ -48,6 +48,15 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: [0, 'Balance cannot be negative'],
     },
+    ref: {
+        type: String,
+        unique: true,
+        required: true,
+    },
+    refby: {
+        type: String,
+        required: false,
+    },
     winstreak: {
         type: Number,
         required: true,
@@ -195,6 +204,7 @@ const userSchema = new mongoose.Schema({
 // userSchema.index({ username: 1 });
 // userSchema.index({ 'address.city': 1, 'address.country': 1 });
 userSchema.index({ createdAt: -1 });
+userSchema.index({ refField: 1 }, { unique: true });
 
 // Pre-save middleware to hash password
 userSchema.pre('save', async function (next) {
