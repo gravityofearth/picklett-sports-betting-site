@@ -66,7 +66,7 @@ export default function WithdrawPage() {
           <>
             <div className="flex flex-col gap-2 text-sm">
               <span className="text-lg">Username: {withdraw.username}</span>
-              {withdraw.userbalance && <span className="text-lg">User account balance: ${withdraw.userbalance.toFixed(2)}</span>}
+              {withdraw.result === "requested" && withdraw.userbalance && withdraw.userbalance > 0 ? <span className="text-lg">User account balance: ${withdraw.userbalance.toFixed(2)}</span> : <></>}
               <span className="text-lg">Withdraw Amount: ${withdraw.amount}</span>
               <span className="text-lg">Wallet Address: <code className="text-sm break-all">{withdraw.wallet}</code></span>
               <span className="text-lg">Status: {withdraw.result}</span>
