@@ -60,15 +60,15 @@ export default function WithdrawPage() {
       })
   }
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-2xl w-full mx-auto p-4">
       <div className="border border-gray-200 p-6">
         {withdraw &&
           <>
             <div className="flex flex-col gap-2 text-sm">
               <span className="text-lg">Username: {withdraw.username}</span>
-              {withdraw.userbalance && <span className="text-lg">User account balance: ${withdraw.userbalance}</span>}
+              {withdraw.userbalance && <span className="text-lg">User account balance: ${withdraw.userbalance.toFixed(2)}</span>}
               <span className="text-lg">Withdraw Amount: ${withdraw.amount}</span>
-              <span className="text-lg">Wallet Address: <code className="text-sm">{withdraw.wallet}</code></span>
+              <span className="text-lg">Wallet Address: <code className="text-sm break-all">{withdraw.wallet}</code></span>
               <span className="text-lg">Status: {withdraw.result}</span>
             </div>
             {

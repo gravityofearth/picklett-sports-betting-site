@@ -91,7 +91,7 @@ export default function DepositPage() {
     })
   }
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-2xl w-full mx-auto p-4">
 
       <div className="border border-gray-200 p-6">
         <h1 className="text-lg mb-6">Deposit Funds</h1>
@@ -116,7 +116,7 @@ export default function DepositPage() {
               </p>
               <div className="w-full flex justify-center"><QRCodeImg className="w-32 h-32" value={deposit.dedicatedWallet} /></div>
               <div className="flex items-center">
-                <code onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="flex-1 p-2 bg-gray-100 font-mono text-sm overflow-x-auto">
+                <code onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="flex-1 p-2 bg-gray-100 font-mono text-sm overflow-x-auto break-all">
                   {deposit.dedicatedWallet}
                 </code>
                 <button onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="p-2 ml-2 border border-gray-300 cursor-pointer rounded-md">

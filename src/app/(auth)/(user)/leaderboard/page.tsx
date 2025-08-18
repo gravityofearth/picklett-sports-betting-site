@@ -16,7 +16,7 @@ export default function HomePage() {
       <div className="flex flex-col items-center gap-6">
         <div className="text-center text-lg p-4 border-4 border-gray-300 border-double"><span className="underline font-bold">Leaderboard & Rewards<br/></span>
         Stay on top of the action with our live leaderboard, showcasing players on winning streaks of 2 or more. Aim higher to unlock instant exclusive bonuses straight to your balance from $50 at 5 wins, to $250 at 10 wins. The more you win, the greater the rewards. (You dont need to bet on every game, just choose the ones you have confidence in!)</div>
-        <div className="border border-gray-200 p-6 w-1/2">
+        <div className="border border-gray-200 p-6 max-w-md w-full">
           <h2 className="text-lg mb-4 text-center">Reward Table</h2>
           <div>
             <table className="w-full border-collapse">

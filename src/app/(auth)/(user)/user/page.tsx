@@ -160,7 +160,7 @@ export default function HomePage() {
                 <label htmlFor="wager" className="block mb-2 text-sm">
                   Enter Amount (<span className="text-red-700">Amount range: $5~$50</span>)
                 </label>
-                <div className="mb-2 text-sm">Est. Payout</div>
+                <div className="mb-2 text-sm text-right">Est. Payout</div>
               </div>
               <div className="flex justify-between">
                 <div className="flex items-center border border-gray-300 p-2">

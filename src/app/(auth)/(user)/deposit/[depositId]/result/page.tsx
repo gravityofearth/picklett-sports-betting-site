@@ -21,7 +21,7 @@ export default function DepositPage() {
     }
   }, [deposit])
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-2xl w-full mx-auto p-4">
       <div className="border border-gray-200 p-6">
         {deposit &&
           <>
@@ -30,9 +30,9 @@ export default function DepositPage() {
             <div className="flex flex-col gap-2 text-sm">
               <span className="text-lg">Username: {deposit.username}</span>
               {Number(deposit.depositAmount) > 0 && <span className="text-lg">Deposit Amount: ${deposit.depositAmount}</span>}
-              <span className="text-lg">Sender: <br /> <code className="text-sm">{deposit.sender}</code></span>
-              <span className="text-lg">Dedicated address:  <br /><code className="text-sm">{deposit.dedicatedWallet}</code></span>
-              <span className="text-lg">Transaction:  <br /><code className="text-sm">{deposit.tx}</code></span>
+              <span className="text-lg">Sender: <br /> <code className="text-sm break-all">{deposit.sender}</code></span>
+              <span className="text-lg">Dedicated address:  <br /><code className="text-sm break-all">{deposit.dedicatedWallet}</code></span>
+              <span className="text-lg">Transaction:  <br /><code className="text-sm break-all">{deposit.tx}</code></span>
             </div>
           </>
         }
