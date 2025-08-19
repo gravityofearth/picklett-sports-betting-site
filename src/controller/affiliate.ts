@@ -36,14 +36,6 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
                 }
             },
 
-            // Stage 2: Group referees by referrer
-            {
-                $group: {
-                    _id: "$refby",
-                    referees: { $push: "$username" }
-                }
-            },
-
             // Stage 3: Lookup lines that match criteria (not pending, within date range)
             {
                 $lookup: {
@@ -66,17 +58,12 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
                 }
             },
 
-            // Stage 4: Unwind referees to process each referee individually
-            {
-                $unwind: "$referees"
-            },
-
             // Stage 5: Lookup balance transactions for each referee
             {
                 $lookup: {
                     from: "balancetransactions",
                     let: {
-                        referee: "$referees",
+                        referee: "$username",
                         lineIds: { $map: { input: "$validLines", as: "line", in: "$$line._id" } }
                     },
                     pipeline: [
@@ -123,13 +110,13 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
             // Stage 7: Group back by referrer and sum all referee totals
             {
                 $group: {
-                    _id: "$_id",
-                    referees: { $push: "$referees" },
+                    _id: "$refby",
+                    referees: { $push: "$username" },
                     totalAmount: { $sum: "$refereeTotal" },
                     totalBetPlaceAmount: { $sum: "$refereeBetPlaceTotal" },
                     refereeDetails: {
                         $push: {
-                            referee: "$referees",
+                            referee: "$username",
                             amount: "$refereeTotal"
                         }
                     },
@@ -152,26 +139,10 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
                 }
             },
 
-            // Stage 8: Final projection to match desired output format
-            {
-                $project: {
-                    referrer: "$_id",
-                    // referees: 1,
-                    revenue: 1,
-                    totalBets: 1,
-                    detail: "$refereeDetails",
-                    startsAt: 1,
-                    endsAt: 1,
-                    timestamp: 1,
-                    earning: 1,
-                    _id: 0
-                }
-            },
-
             {
                 $lookup: {
                     from: "users",
-                    localField: "referrer",
+                    localField: "_id",
                     foreignField: "username",
                     as: "currentUser"
                 }
@@ -190,11 +161,11 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
             // Stage 8: Final projection to match desired output format
             {
                 $project: {
-                    referrer: 1,
+                    referrer: "$_id",
                     // referees: 1,
                     revenue: 1,
                     totalBets: 1,
-                    detail: 1,
+                    detail: "$refereeDetails",
                     startsAt: 1,
                     endsAt: 1,
                     timestamp: 1,
