@@ -10,8 +10,8 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get('token') || '';
     const { role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
-    await resolveBet(lineId, winningSide)
-    return NextResponse.json("OK", { status: 200 });
+    const resolvedLine = await resolveBet(lineId, winningSide)
+    return NextResponse.json({ resolvedLine }, { status: 200 });
 
   } catch (error: any) {
     console.error("Error processing commissions:", error);

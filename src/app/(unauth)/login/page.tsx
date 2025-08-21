@@ -2,19 +2,25 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
-import jwt from "jsonwebtoken"
 import { useUser } from "@/store"
 
-export default function LoginPage() {
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPage />
+    </Suspense>)
+}
+function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const { setToken } = useUser()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleLogin = () => {
     if (username?.trim() === "") {
@@ -29,7 +35,8 @@ export default function LoginPage() {
       .then(({ status, data: { token } }) => {
         if (status === 200) {
           setToken(token)
-          router.push(`/user`)
+          const target = searchParams.get("redirect")
+          router.push(target || `/user`)
         }
       })
       .catch((e: AxiosError) => {
@@ -49,7 +56,8 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md p-6 border border-gray-200">
-        <h1 className="mb-6 text-xl font-normal text-center">Enter Username & Password to Start Betting</h1>
+        <div className="w-full flex justify-center"><img src="/favicon.ico" /></div>
+        <h1 className="mb-6 text-xl font-normal text-center">Picklett</h1>
         <div>
           <div className="mb-4">
             <label htmlFor="username" className="block mb-2 text-sm font-normal">

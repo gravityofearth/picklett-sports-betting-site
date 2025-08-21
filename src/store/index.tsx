@@ -26,8 +26,8 @@ const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const regex = /^\/deposit\/[a-f0-9]{24}(?:\/result)?$/;
         localStorage.setItem("jwt", token)
-        if (!regex.test(pathname) && pathname !== "/register" && (token === "LOGOUT" || token === "null")) {
-            router.push("/login")
+        if (!regex.test(pathname) && pathname !== "/register" && !window.location.href.includes("redirect") && (token === "LOGOUT" || token === "null")) {
+            router.push(["admin", "manager", "login"].some(v => window.location.href.includes(v)) ? `/login` : `/login?redirect=${window.location.href}`)
             return
         }
         const decodedToken: any = jwt.decode(token)

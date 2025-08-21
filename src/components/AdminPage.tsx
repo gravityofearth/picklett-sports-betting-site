@@ -1,5 +1,5 @@
 "use client"
-import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, showToast, validateCurrency } from "@/utils"
+import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast, validateCurrency } from "@/utils"
 import axios, { AxiosError } from "axios"
 import type React from "react"
 import { useEffect, useMemo, useState } from "react"
@@ -28,24 +28,26 @@ export default function AdminPage() {
         createdAt: "",
         openedBy: ""
     }), [pathname])
-    const [lines, _setLines] = useState<(LineType & LineCardAdminType)[]>([rawLine])
-    const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardAdminType)[]>> = (update) => {
-        if (typeof update === 'function') {
-            _setLines(prev => {
-                const newVal = (update as (prev: (LineType & LineCardAdminType)[]) => (LineType & LineCardAdminType)[])(prev);
-                return [
-                    newVal.filter(v => v._id === "new")[0],
-                    ...newVal.filter(v => v._id !== "new").sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-                ];
-            });
-        } else {
-            _setLines([
-                update.filter(v => v._id === "new")[0],
-                ...update.filter(v => v._id !== "new").sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-            ]);
-        }
-    };
+    const [lines, setLines] = useState<(LineType & LineCardAdminType)[]>([rawLine])
+    // const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardAdminType)[]>> = (update) => {
+    //     if (typeof update === 'function') {
+    //         _setLines(prev => {
+    //             const newVal = (update as (prev: (LineType & LineCardAdminType)[]) => (LineType & LineCardAdminType)[])(prev);
+    //             return [
+    //                 newVal.filter(v => v._id === "new")[0],
+    //                 ...newVal.filter(v => v._id !== "new").sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    //             ];
+    //         });
+    //     } else {
+    //         _setLines([
+    //             update.filter(v => v._id === "new")[0],
+    //             ...update.filter(v => v._id !== "new").sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    //         ]);
+    //     }
+    // };
     const { username, role } = useUser()
+    const [timeRemains, setTimeRemains] = useState<{ id: string, text: string }[]>([])
+    const [timeOffset, setTimeOffset] = useState(0)
     const [loading, setLoading] = useState(true)
     const [sendingRequest, setSendingRequest] = useState(false)
     const { setToken } = useUser()
@@ -124,7 +126,19 @@ export default function AdminPage() {
         setLoading(true)
         fetchData()
     }, [role])
-
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const timesRemaining = lines.map(line => {
+                const timestampDiff = line.endsAt - Math.floor(new Date().getTime()) + timeOffset
+                return {
+                    id: line._id,
+                    text: convertTimestamp2HumanReadablePadded(timestampDiff)
+                }
+            })
+            setTimeRemains(timesRemaining)
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [lines])
     const [lineBetRate, setLineBetRate] = useState<{ id: string, yes: number, no: number, rate: number }[]>([])
     useEffect(() => {
         setYesRate(yesRate)
@@ -140,7 +154,7 @@ export default function AdminPage() {
     const fetchData = () => {
         if (!role) return
         axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } })
-            .then(({ data: { lines: returned_lines, token } }: { data: { lines: LineType[], token: string } }) => {
+            .then(({ data: { lines: returned_lines, token, basets } }: { data: { lines: LineType[], token: string, basets: number } }) => {
                 const newLine = lines.filter(v => v._id === "new")[0]
                 if (returned_lines) {
                     setLines([newLine,
@@ -159,6 +173,7 @@ export default function AdminPage() {
                     setLines([newLine])
                 }
                 setToken(token)
+                setTimeOffset(new Date().getTime() - basets)
             })
             .finally(() => {
                 setLoading(false)
@@ -186,14 +201,11 @@ export default function AdminPage() {
                                                 id="question"
                                                 type="text"
                                                 value={line.question}
-                                                onChange={(e) => setLines(prevLines => ([
-                                                    ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                    {
-                                                        ...line,
-                                                        question: e.target.value,
-                                                        changed: 1,
-                                                    }
-                                                ]))}
+                                                onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                    ...line,
+                                                    question: e.target.value,
+                                                    changed: 1,
+                                                } : prevLineItem))}
                                                 className="w-full p-2 border border-gray-300"
                                             />
                                         </div>
@@ -210,15 +222,12 @@ export default function AdminPage() {
                                                         value={line.yes_decimal}
                                                         onChange={(e) => {
                                                             if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => ([
-                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                                {
-                                                                    ...line,
-                                                                    yes_decimal: e.target.value,
-                                                                    changed: 1,
-                                                                    yes: Number(e.target.value),
-                                                                }
-                                                            ]))
+                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                                ...line,
+                                                                yes_decimal: e.target.value,
+                                                                changed: 1,
+                                                                yes: Number(e.target.value),
+                                                            } : prevLineItem))
                                                         }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="1.8"
@@ -229,15 +238,12 @@ export default function AdminPage() {
                                                         value={line.yes_american}
                                                         onChange={(e) => {
                                                             if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => ([
-                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                                {
-                                                                    ...line,
-                                                                    yes_american: e.target.value,
-                                                                    changed: 1,
-                                                                    yes: convertAmerican2DecimalOdds(Number(e.target.value))
-                                                                }
-                                                            ]))
+                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                                ...line,
+                                                                yes_american: e.target.value,
+                                                                changed: 1,
+                                                                yes: convertAmerican2DecimalOdds(Number(e.target.value))
+                                                            } : prevLineItem))
                                                         }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="-110"
@@ -256,15 +262,12 @@ export default function AdminPage() {
                                                         value={line.no_decimal}
                                                         onChange={(e) => {
                                                             if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => ([
-                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                                {
-                                                                    ...line,
-                                                                    no_decimal: e.target.value,
-                                                                    changed: 1,
-                                                                    no: Number(e.target.value),
-                                                                }
-                                                            ]))
+                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                                ...line,
+                                                                no_decimal: e.target.value,
+                                                                changed: 1,
+                                                                no: Number(e.target.value),
+                                                            } : prevLineItem))
                                                         }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="1.2"
@@ -275,15 +278,12 @@ export default function AdminPage() {
                                                         value={line.no_american}
                                                         onChange={(e) => {
                                                             if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => ([
-                                                                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                                {
-                                                                    ...line,
-                                                                    no_american: e.target.value,
-                                                                    changed: 1,
-                                                                    no: convertAmerican2DecimalOdds(Number(e.target.value)),
-                                                                }
-                                                            ]))
+                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                                ...line,
+                                                                no_american: e.target.value,
+                                                                changed: 1,
+                                                                no: convertAmerican2DecimalOdds(Number(e.target.value)),
+                                                            } : prevLineItem))
                                                         }}
                                                         className="w-full px-2 border border-gray-300"
                                                         placeholder="-180"
@@ -295,19 +295,16 @@ export default function AdminPage() {
                                                 <select
                                                     id="odd-selector"
                                                     value={line.oddsFormat}
-                                                    onChange={(e) => setLines(prevLines => ([
-                                                        ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                        {
-                                                            ...line,
-                                                            oddsFormat: e.target.value as "american" | "decimal",
-                                                            yes: e.target.value === "american" ? Number(line.yes_decimal || 2) : convertAmerican2DecimalOdds(Number(line.yes_american || 100)),
-                                                            no: e.target.value === "american" ? Number(line.no_decimal || 2) : convertAmerican2DecimalOdds(Number(line.no_american || 100)),
-                                                            yes_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.yes_american))}` : line.yes_decimal,
-                                                            no_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.no_american))}` : line.no_decimal,
-                                                            yes_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.yes_decimal || 2))}` : line.yes_american,
-                                                            no_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.no_decimal || 2))}` : line.no_american,
-                                                        }
-                                                    ]))}
+                                                    onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                        ...line,
+                                                        oddsFormat: e.target.value as "american" | "decimal",
+                                                        yes: e.target.value === "american" ? Number(line.yes_decimal || 2) : convertAmerican2DecimalOdds(Number(line.yes_american || 100)),
+                                                        no: e.target.value === "american" ? Number(line.no_decimal || 2) : convertAmerican2DecimalOdds(Number(line.no_american || 100)),
+                                                        yes_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.yes_american))}` : line.yes_decimal,
+                                                        no_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.no_american))}` : line.no_decimal,
+                                                        yes_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.yes_decimal || 2))}` : line.yes_american,
+                                                        no_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.no_decimal || 2))}` : line.no_american,
+                                                    } : prevLineItem))}
                                                     className="text-sm px-1 border border-gray-300 w-full h-[26px]"
                                                 >
                                                     <option value="decimal">Decimal</option>
@@ -324,15 +321,12 @@ export default function AdminPage() {
                                                 id="cutoffTime"
                                                 type="datetime-local"
                                                 value={line.endsAtStr}
-                                                onChange={(e) => setLines(prevLines => ([
-                                                    ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                    {
-                                                        ...line,
-                                                        endsAtStr: e.target.value,
-                                                        changed: 1,
-                                                        endsAt: (new Date(e.target.value)).getTime(),
-                                                    }
-                                                ]))}
+                                                onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                    ...line,
+                                                    endsAtStr: e.target.value,
+                                                    changed: 1,
+                                                    endsAt: (new Date(e.target.value)).getTime(),
+                                                } : prevLineItem))}
                                                 className="w-full p-2 border border-gray-300"
                                             />
                                         </div>
@@ -342,6 +336,7 @@ export default function AdminPage() {
                                         </button>
                                     </div>
                                 </div>
+                                <div className="text-center my-2">Time remaining: {timeRemains.filter(v => v.id === line._id)[0]?.text}</div>
                                 {line._id !== "new" && role === "admin" &&
                                     <>
                                         <div className="pt-4 text-sm"> <span className="italic">* Opened by:</span> {line.openedBy} </div>
@@ -367,13 +362,10 @@ export default function AdminPage() {
                                                     </label>
                                                     <select
                                                         value={line.winning_side}
-                                                        onChange={(e) => setLines(prevLines => ([
-                                                            ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                                                            {
-                                                                ...line,
-                                                                winning_side: e.target.value,
-                                                            }
-                                                        ]))}
+                                                        onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                            ...line,
+                                                            winning_side: e.target.value,
+                                                        } : prevLineItem))}
                                                         className="w-full p-2 border border-gray-300"
                                                     >
                                                         <option value="">Select</option>

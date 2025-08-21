@@ -11,17 +11,17 @@ import { useUser } from "@/store"
 export default function HomePage() {
   const { username, balance, setToken } = useUser()
   const [timeOffset, setTimeOffset] = useState(0)
-  const [lines, _setLines] = useState<(LineType & LineCardUserType)[]>([])
-  const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardUserType)[]>> = (update) => {
-    if (typeof update === 'function') {
-      _setLines(prev => {
-        const newVal = (update as (prev: (LineType & LineCardUserType)[]) => (LineType & LineCardUserType)[])(prev);
-        return newVal.sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      });
-    } else {
-      _setLines(update.sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-    }
-  };
+  const [lines, setLines] = useState<(LineType & LineCardUserType)[]>([])
+  // const setLines: React.Dispatch<React.SetStateAction<(LineType & LineCardUserType)[]>> = (update) => {
+  //   if (typeof update === 'function') {
+  //     _setLines(prev => {
+  //       const newVal = (update as (prev: (LineType & LineCardUserType)[]) => (LineType & LineCardUserType)[])(prev);
+  //       return newVal.sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  //     });
+  //   } else {
+  //     _setLines(update.sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+  //   }
+  // };
   const [timeRemains, setTimeRemains] = useState<{ id: string, text: string }[]>([])
   const [sendingBetRequest, setSendingBetRequest] = useState(false)
   const [userBets, setUserBets] = useState<BetType[]>([])
@@ -98,14 +98,11 @@ export default function HomePage() {
         }
         setUserBets(v => ([bet, ...v]))
         setToken(token)
-        setLines(l => ([
-          ...l.filter(lf => lf._id !== _id),
-          {
-            ...selectedLine,
-            amount: "",
-            side: null,
-          }
-        ]))
+        setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === _id ? {
+          ...selectedLine,
+          amount: "",
+          side: null,
+        } : prevLineItem))
       })
       .catch((e: AxiosError) => {
         showToast(e.response?.statusText || "Unknown Error", "error")
@@ -119,35 +116,26 @@ export default function HomePage() {
           <div key={line._id} className="border border-gray-200 p-6">
             <h2 className="text-lg mb-4 text-center">{line.question}</h2>
             <div className="mb-4 grid grid-cols-3 gap-2">
-              <button onClick={() => setLines(prevLines => ([
-                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                {
-                  ...line,
-                  side: "yes"
-                }
-              ]))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "yes" && "bg-black/70 text-white"}`}>
+              <button onClick={() => setLines(prevLines => prevLines.map((prevLineItem => prevLineItem._id === line._id ? {
+                ...line,
+                side: "yes"
+              } : prevLineItem)))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "yes" && "bg-black/70 text-white"}`}>
                 YES {line.oddsFormat === "decimal" ? `(${line.yes})` : `(${convertDecimal2AmericanOdds(line.yes || 0)})`}
               </button>
-              <button onClick={() => setLines(prevLines => ([
-                ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                {
-                  ...line,
-                  side: "no"
-                }
-              ]))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "no" && "bg-black/70 text-white"}`}>
+              <button onClick={() => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                ...line,
+                side: "no"
+              } : prevLineItem))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "no" && "bg-black/70 text-white"}`}>
                 NO {line.oddsFormat === "decimal" ? `(${line.no})` : `(${convertDecimal2AmericanOdds(line.no || 0)})`}
               </button>
               <div className="flex flex-col justify-end items-end">
                 <span className="text-sm">Odds format:</span>
                 <select
                   value={line.oddsFormat}
-                  onChange={(e) => setLines(prevLines => ([
-                    ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                    {
-                      ...line,
-                      oddsFormat: e.target.value as "american" | "decimal"
-                    }
-                  ]))}
+                  onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                    ...line,
+                    oddsFormat: e.target.value as "american" | "decimal"
+                  } : prevLineItem))}
                   className="text-sm p-1 border border-gray-300"
                 >
                   <option value="decimal">Decimal</option>
@@ -169,13 +157,10 @@ export default function HomePage() {
                     id="wager"
                     type="number"
                     value={line.amount}
-                    onChange={(e) => setLines(prevLines => ([
-                      ...prevLines.filter(filteringLine => filteringLine._id !== line._id),
-                      {
-                        ...line,
-                        amount: e.target.value
-                      }
-                    ]))}
+                    onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                      ...line,
+                      amount: e.target.value
+                    } : prevLineItem))}
                     className="w-full border-0 focus:outline-none"
                     min="1"
                     max={balance}

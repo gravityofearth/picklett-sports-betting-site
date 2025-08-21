@@ -66,7 +66,8 @@ const Home = () => {
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md p-6 border border-gray-200">
-        <h1 className="mb-6 text-xl font-normal text-center">Enter Username & Password to Register</h1>
+        <div className="w-full flex justify-center"><img src="/favicon.ico" /></div>
+        <h1 className="mb-6 text-xl font-normal text-center">Picklett</h1>
         <div>
           <div className="mb-4">
             <label htmlFor="username" className="block mb-2 text-sm font-normal mt-1">

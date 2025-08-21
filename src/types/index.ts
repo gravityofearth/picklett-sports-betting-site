@@ -73,3 +73,9 @@ export type AffiliateRewardType = {
         referee: string
     }[],
 }
+export type RedemptionType = {
+    code: string,
+    amount: number,
+    status: "pending" | "redeemed",
+    username?: string
+}

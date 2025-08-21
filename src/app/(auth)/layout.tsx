@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useUser } from "@/store";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export default function UserLayout({
     children,
@@ -18,7 +18,11 @@ export default function UserLayout({
         setToken("LOGOUT")
     }
     useEffect(() => {
-        axios.get(`/api/login`, { headers: { token: localStorage.getItem("jwt") } }).then(({ data: { token } }) => { setToken(token) })
+        axios.get(`/api/login`, { headers: { token: localStorage.getItem("jwt") } })
+            .then(({ data: { token } }) => { setToken(token) })
+            .catch((e: AxiosError) => {
+                if (e.response?.statusText.includes("jwt")) logout()
+            })
     }, [pathname])
     return (
         <div className="w-full flex flex-col gap-6 max-w-4xl mx-auto p-4">

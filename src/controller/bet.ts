@@ -87,7 +87,7 @@ export async function findPendingLines(role: string) {
     await connectMongoDB()
     try {
         const filter = role === "admin" ? { result: "pending" } : { result: "pending", endsAt: { $gt: new Date().getTime() } }
-        const lines = await lineModel.find(filter)
+        const lines = await lineModel.find(filter).sort({ createdAt: -1 })
         return lines;
     } catch (error) {
         console.error('Error finding line:', error);
@@ -486,6 +486,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             await userModel.bulkWrite(userUpdates, { session });
         }
         await session.commitTransaction();
+        return result
     } catch (error) {
         console.error('Error resolving bet:', error);
         await session.abortTransaction();

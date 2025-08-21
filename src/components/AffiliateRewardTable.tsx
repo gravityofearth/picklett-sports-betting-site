@@ -2,6 +2,7 @@
 
 import { AffiliateRewardType } from "@/types"
 import { useState } from "react"
+import Pagination from "./Pagination"
 
 const AffiliateRewardTable = ({ rewards, adminPage }: { rewards: AffiliateRewardType[], adminPage?: boolean }) => {
     // Pagination state
@@ -55,42 +56,15 @@ const AffiliateRewardTable = ({ rewards, adminPage }: { rewards: AffiliateReward
                 </table>
             </div>
 
-            {/* Pagination Controls */}
-            {rewards.length > itemsPerPage && (
-                <div className="flex justify-between items-center mt-4">
-                    <div className="text-sm text-gray-600">
-                        Showing {startIndex + 1} to {Math.min(endIndex, rewards.length)} of {rewards.length} bets
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => goToPage(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                        >
-                            Previous
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <button
-                                key={page}
-                                onClick={() => goToPage(page)}
-                                className={`px-3 py-1 border ${currentPage === page
-                                    ? "bg-black text-white border-black"
-                                    : "border-gray-300 hover:bg-gray-50"
-                                    }`}
-                            >
-                                {page}
-                            </button>
-                        ))}
-                        <button
-                            onClick={() => goToPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-            )}
+            <Pagination params={{
+                items: rewards,
+                itemsPerPage,
+                startIndex,
+                endIndex,
+                currentPage,
+                totalPages,
+                goToPage
+            }} />
         </div>
     )
 }
