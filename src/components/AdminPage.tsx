@@ -190,7 +190,7 @@ export default function AdminPage() {
                 <>
                     <div className="w-full grid grid-cols-1 gap-4 pb-6">
                         {lines.filter(v => role === "admin" || v._id === "new" || v.openedBy === username).map((line) =>
-                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-200"}`}>
+                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-400 border-2"}`}>
                                 <div className="grid grid-cols-3 max-md:grid-cols-1 gap-x-4 gap-y-4">
                                     <div className="col-span-3 max-md:col-span-1">
                                         <label htmlFor="question" className="block mb-2 text-lg">
@@ -372,14 +372,9 @@ export default function AdminPage() {
                                                 </select>
                                             </div>
 
-                                            <button onClick={() => handleResolve(line._id)} className="w-full h-full p-2 h-[37px] text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingRequest || line._id === "new"}>
+                                            <button onClick={() => handleResolve(line._id)} className="w-full h-full p-2 text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingRequest || line._id === "new"}>
                                                 Resolve Line
                                             </button>
-                                        </div>
-                                        <div className="">
-                                            {/* <h2 className="text-lg mb-4">Resolve Line</h2> */}
-
-
                                         </div>
                                     </>
                                 }
