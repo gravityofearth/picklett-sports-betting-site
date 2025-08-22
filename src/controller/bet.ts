@@ -87,7 +87,7 @@ export async function findPendingLines(role: string) {
     await connectMongoDB()
     try {
         const filter = role === "admin" ? { result: "pending" } : { result: "pending", endsAt: { $gt: new Date().getTime() } }
-        const lines = await lineModel.find(filter).sort({ createdAt: -1 })
+        const lines = await lineModel.find(filter).sort({ endsAt: 1, createdAt: -1 })
         return lines;
     } catch (error) {
         console.error('Error finding line:', error);

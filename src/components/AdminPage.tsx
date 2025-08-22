@@ -188,196 +188,198 @@ export default function AdminPage() {
         <div className="w-full max-w-4xl mx-auto p-4">
             {loading ? "Loading..." :
                 <>
-                    <div className="w-full grid grid-cols-2 max-sm:grid-cols-1 gap-4 pb-6">
+                    <div className="w-full grid grid-cols-1 gap-4 pb-6">
                         {lines.filter(v => role === "admin" || v._id === "new" || v.openedBy === username).map((line) =>
                             <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-200"}`}>
-                                <div className="">
-                                    <div>
-                                        <div className="mb-4">
-                                            <label htmlFor="question" className="block mb-2 text-lg">
-                                                Question
-                                            </label>
-                                            <input
-                                                id="question"
-                                                type="text"
-                                                value={line.question}
-                                                onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                    ...line,
-                                                    question: e.target.value,
-                                                    changed: 1,
-                                                } : prevLineItem))}
-                                                className="w-full p-2 border border-gray-300"
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4 mb-4 items-end">
-                                            <div className="col-span-1">
-                                                <label htmlFor="yesOdds" className="block mb-2 text-sm">
-                                                    Yes Odds
-                                                </label>
-                                                {line.oddsFormat === "decimal" ?
-                                                    <input
-                                                        id="yesOdds"
-                                                        type="text"
-                                                        value={line.yes_decimal}
-                                                        onChange={(e) => {
-                                                            if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                                ...line,
-                                                                yes_decimal: e.target.value,
-                                                                changed: 1,
-                                                                yes: Number(e.target.value),
-                                                            } : prevLineItem))
-                                                        }}
-                                                        className="w-full px-2 border border-gray-300"
-                                                        placeholder="1.8"
-                                                    /> :
-                                                    <input
-                                                        id="yesOdds"
-                                                        type="text"
-                                                        value={line.yes_american}
-                                                        onChange={(e) => {
-                                                            if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                                ...line,
-                                                                yes_american: e.target.value,
-                                                                changed: 1,
-                                                                yes: convertAmerican2DecimalOdds(Number(e.target.value))
-                                                            } : prevLineItem))
-                                                        }}
-                                                        className="w-full px-2 border border-gray-300"
-                                                        placeholder="-110"
-                                                    />
-                                                }
-                                            </div>
-
-                                            <div className="col-span-1">
-                                                <label htmlFor="noOdds" className="block mb-2 text-sm">
-                                                    No Odds
-                                                </label>
-                                                {line.oddsFormat === "decimal" ?
-                                                    <input
-                                                        id="noOdds"
-                                                        type="text"
-                                                        value={line.no_decimal}
-                                                        onChange={(e) => {
-                                                            if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                                ...line,
-                                                                no_decimal: e.target.value,
-                                                                changed: 1,
-                                                                no: Number(e.target.value),
-                                                            } : prevLineItem))
-                                                        }}
-                                                        className="w-full px-2 border border-gray-300"
-                                                        placeholder="1.2"
-                                                    /> :
-                                                    <input
-                                                        id="noOdds"
-                                                        type="text"
-                                                        value={line.no_american}
-                                                        onChange={(e) => {
-                                                            if (!validateCurrency(e.target.value)) return
-                                                            setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                                ...line,
-                                                                no_american: e.target.value,
-                                                                changed: 1,
-                                                                no: convertAmerican2DecimalOdds(Number(e.target.value)),
-                                                            } : prevLineItem))
-                                                        }}
-                                                        className="w-full px-2 border border-gray-300"
-                                                        placeholder="-180"
-                                                    />
-                                                }
-                                            </div>
-                                            <div className="flex flex-col col-span-1 items-end gap-2">
-                                                <span className="text-sm">Odds format:</span>
-                                                <select
-                                                    id="odd-selector"
-                                                    value={line.oddsFormat}
-                                                    onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                        ...line,
-                                                        oddsFormat: e.target.value as "american" | "decimal",
-                                                        yes: e.target.value === "american" ? Number(line.yes_decimal || 2) : convertAmerican2DecimalOdds(Number(line.yes_american || 100)),
-                                                        no: e.target.value === "american" ? Number(line.no_decimal || 2) : convertAmerican2DecimalOdds(Number(line.no_american || 100)),
-                                                        yes_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.yes_american))}` : line.yes_decimal,
-                                                        no_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.no_american))}` : line.no_decimal,
-                                                        yes_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.yes_decimal || 2))}` : line.yes_american,
-                                                        no_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.no_decimal || 2))}` : line.no_american,
-                                                    } : prevLineItem))}
-                                                    className="text-sm px-1 border border-gray-300 w-full h-[26px]"
-                                                >
-                                                    <option value="decimal">Decimal</option>
-                                                    <option value="american">American</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <label htmlFor="cutoffTime" className="block mb-2 text-sm">
-                                                Cutoff Time ({Intl.DateTimeFormat().resolvedOptions().timeZone} {new Date().toLocaleTimeString('en-US', { timeZoneName: 'longOffset' }).split(' ').pop()})
-                                            </label>
-                                            <input
-                                                id="cutoffTime"
-                                                type="datetime-local"
-                                                value={line.endsAtStr}
-                                                onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                    ...line,
-                                                    endsAtStr: e.target.value,
-                                                    changed: 1,
-                                                    endsAt: (new Date(e.target.value)).getTime(),
-                                                } : prevLineItem))}
-                                                className="w-full p-2 border border-gray-300"
-                                            />
-                                        </div>
-
-                                        <button onClick={() => handleLine(line._id)} className={`w-full p-2 text-white cursor-pointer disabled:cursor-not-allowed ${line._id === "new" ? "bg-blue-600 disabled:bg-blue-400 hover:bg-blue-700" : "bg-black disabled:bg-black/50 hover:bg-black/80"}`} disabled={sendingRequest || line.changed < 1}>
-                                            {line._id === "new" ? "+ Create" : "Update"} Line
-                                        </button>
+                                <div className="grid grid-cols-3 max-md:grid-cols-1 gap-x-4 gap-y-4">
+                                    <div className="col-span-3 max-md:col-span-1">
+                                        <label htmlFor="question" className="block mb-2 text-lg">
+                                            Question
+                                        </label>
+                                        <input
+                                            id="question"
+                                            type="text"
+                                            value={line.question}
+                                            onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                ...line,
+                                                question: e.target.value,
+                                                changed: 1,
+                                            } : prevLineItem))}
+                                            className="w-full p-2 border border-gray-300"
+                                        />
                                     </div>
+
+                                    <div className="flex flex-col gap-x-4 gap-y-1 items-end">
+                                        <div className="w-full flex items-center justify-between">
+                                            <label htmlFor="yesOdds" className="w-full block text-sm">
+                                                Yes Odds
+                                            </label>
+                                            {line.oddsFormat === "decimal" ?
+                                                <input
+                                                    id="yesOdds"
+                                                    type="text"
+                                                    value={line.yes_decimal}
+                                                    onChange={(e) => {
+                                                        if (!validateCurrency(e.target.value)) return
+                                                        setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                            ...line,
+                                                            yes_decimal: e.target.value,
+                                                            changed: 1,
+                                                            yes: Number(e.target.value),
+                                                        } : prevLineItem))
+                                                    }}
+                                                    className="w-full px-2 border border-gray-300"
+                                                    placeholder="1.8"
+                                                /> :
+                                                <input
+                                                    id="yesOdds"
+                                                    type="text"
+                                                    value={line.yes_american}
+                                                    onChange={(e) => {
+                                                        if (!validateCurrency(e.target.value)) return
+                                                        setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                            ...line,
+                                                            yes_american: e.target.value,
+                                                            changed: 1,
+                                                            yes: convertAmerican2DecimalOdds(Number(e.target.value))
+                                                        } : prevLineItem))
+                                                    }}
+                                                    className="w-full px-2 border border-gray-300"
+                                                    placeholder="-110"
+                                                />
+                                            }
+                                        </div>
+
+                                        <div className="w-full flex items-center justify-between">
+                                            <label htmlFor="noOdds" className="w-full block text-sm">
+                                                No Odds
+                                            </label>
+                                            {line.oddsFormat === "decimal" ?
+                                                <input
+                                                    id="noOdds"
+                                                    type="text"
+                                                    value={line.no_decimal}
+                                                    onChange={(e) => {
+                                                        if (!validateCurrency(e.target.value)) return
+                                                        setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                            ...line,
+                                                            no_decimal: e.target.value,
+                                                            changed: 1,
+                                                            no: Number(e.target.value),
+                                                        } : prevLineItem))
+                                                    }}
+                                                    className="w-full px-2 border border-gray-300"
+                                                    placeholder="1.2"
+                                                /> :
+                                                <input
+                                                    id="noOdds"
+                                                    type="text"
+                                                    value={line.no_american}
+                                                    onChange={(e) => {
+                                                        if (!validateCurrency(e.target.value)) return
+                                                        setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                            ...line,
+                                                            no_american: e.target.value,
+                                                            changed: 1,
+                                                            no: convertAmerican2DecimalOdds(Number(e.target.value)),
+                                                        } : prevLineItem))
+                                                    }}
+                                                    className="w-full px-2 border border-gray-300"
+                                                    placeholder="-180"
+                                                />
+                                            }
+                                        </div>
+                                        <div className="w-full flex items-center justify-between">
+                                            <span className="w-full block text-sm">Odds format:</span>
+                                            <select
+                                                id="odd-selector"
+                                                value={line.oddsFormat}
+                                                onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                    ...line,
+                                                    oddsFormat: e.target.value as "american" | "decimal",
+                                                    yes: e.target.value === "american" ? Number(line.yes_decimal || 2) : convertAmerican2DecimalOdds(Number(line.yes_american || 100)),
+                                                    no: e.target.value === "american" ? Number(line.no_decimal || 2) : convertAmerican2DecimalOdds(Number(line.no_american || 100)),
+                                                    yes_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.yes_american))}` : line.yes_decimal,
+                                                    no_decimal: e.target.value === "decimal" ? `${convertAmerican2DecimalOdds(Number(line.no_american))}` : line.no_decimal,
+                                                    yes_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.yes_decimal || 2))}` : line.yes_american,
+                                                    no_american: e.target.value === "american" ? `${convertDecimal2AmericanOdds(Number(line.no_decimal || 2))}` : line.no_american,
+                                                } : prevLineItem))}
+                                                className="text-sm px-2 border border-gray-300 w-full h-[26px]"
+                                            >
+                                                <option value="decimal">Decimal</option>
+                                                <option value="american">American</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col justify-between">
+                                        <label htmlFor="cutoffTime" className="block text-sm">
+                                            Cutoff Time ({Intl.DateTimeFormat().resolvedOptions().timeZone} {new Date().toLocaleTimeString('en-US', { timeZoneName: 'longOffset' }).split(' ').pop()})
+                                        </label>
+                                        <input
+                                            id="cutoffTime"
+                                            type="datetime-local"
+                                            value={line.endsAtStr}
+                                            onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                ...line,
+                                                endsAtStr: e.target.value,
+                                                changed: 1,
+                                                endsAt: (new Date(e.target.value)).getTime(),
+                                            } : prevLineItem))}
+                                            className="w-full px-2 py-1 border border-gray-300"
+                                        />
+
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span>Time remaining:</span>
+                                            <span className="text-xl">{timeRemains.filter(v => v.id === line._id)[0]?.text}</span>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => handleLine(line._id)} className={`w-full p-2 text-white cursor-pointer disabled:cursor-not-allowed ${line._id === "new" ? "bg-blue-600 disabled:bg-blue-400 hover:bg-blue-700" : "bg-black disabled:bg-black/50 hover:bg-black/80"}`} disabled={sendingRequest || line.changed < 1}>
+                                        {line._id === "new" ? "+ Create" : "Update"} Line
+                                    </button>
                                 </div>
-                                <div className="text-center my-2">Time remaining: {timeRemains.filter(v => v.id === line._id)[0]?.text}</div>
                                 {line._id !== "new" && role === "admin" &&
                                     <>
                                         <div className="pt-4 text-sm"> <span className="italic">* Opened by:</span> {line.openedBy} </div>
-                                        <hr className="w-full my-6 border-gray-400" />
-                                        <div className="">
-                                            {/* <div className="text-lg mb-4">Total Bets Placed</div> */}
-                                            <div className="h-4 bg-gray-200 w-full">
-                                                <div className="h-full bg-gray-600" style={{ width: `${lineBetRate.filter(v => v.id === line._id)[0]?.rate}%` }}></div>
+                                        <hr className="w-full my-2 border-gray-400" />
+                                        <div className="grid grid-cols-3 max-md:grid-cols-1 gap-4">
+                                            <div className="flex flex-col justify-start">
+                                                <div className="flex justify-between text-sm">
+                                                    <span>{lineBetRate.filter(v => v.id === line._id)[0]?.yes || 0} YES </span>
+                                                    <span>{lineBetRate.filter(v => v.id === line._id)[0]?.no || 0} NO </span>
+                                                </div>
+                                                <div className="w-full h-full flex items-center">
+                                                    <div className="h-4 bg-gray-200 w-full">
+                                                        <div className="h-full bg-gray-600" style={{ width: `${lineBetRate.filter(v => v.id === line._id)[0]?.rate}%` }}></div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between text-xs mt-1">
-                                                <span>{lineBetRate.filter(v => v.id === line._id)[0]?.yes || 0} YES </span>
-                                                <span>{lineBetRate.filter(v => v.id === line._id)[0]?.no || 0} NO </span>
+                                            <div className="w-full">
+                                                <label htmlFor="winningSide" className="block text-sm">
+                                                    Winning Side (YES/NO)
+                                                </label>
+                                                <select
+                                                    value={line.winning_side}
+                                                    onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                        ...line,
+                                                        winning_side: e.target.value,
+                                                    } : prevLineItem))}
+                                                    className="w-full px-2 py-1 border border-gray-300"
+                                                >
+                                                    <option value="">Select</option>
+                                                    <option value="yes">YES</option>
+                                                    <option value="no">NO</option>
+                                                </select>
                                             </div>
+
+                                            <button onClick={() => handleResolve(line._id)} className="w-full h-full p-2 h-[37px] text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingRequest || line._id === "new"}>
+                                                Resolve Line
+                                            </button>
                                         </div>
-                                        <hr className="w-full my-6 border-gray-400" />
                                         <div className="">
                                             {/* <h2 className="text-lg mb-4">Resolve Line</h2> */}
 
-                                            <div className="flex items-end gap-4">
-                                                <div className="w-full">
-                                                    <label htmlFor="winningSide" className="block mb-2 text-sm">
-                                                        Winning Side (YES/NO)
-                                                    </label>
-                                                    <select
-                                                        value={line.winning_side}
-                                                        onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                                                            ...line,
-                                                            winning_side: e.target.value,
-                                                        } : prevLineItem))}
-                                                        className="w-full p-2 border border-gray-300"
-                                                    >
-                                                        <option value="">Select</option>
-                                                        <option value="yes">YES</option>
-                                                        <option value="no">NO</option>
-                                                    </select>
-                                                </div>
 
-                                                <button onClick={() => handleResolve(line._id)} className="w-full p-2 h-[37px] text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingRequest || line._id === "new"}>
-                                                    Resolve Line
-                                                </button>
-                                            </div>
                                         </div>
                                     </>
                                 }

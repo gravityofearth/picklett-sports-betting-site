@@ -111,47 +111,16 @@ export default function HomePage() {
   return (
     <>
       <div className="text-center text-lg p-4 border-4 border-gray-300 border-double">Welcome to Picklett!<br />Your sports betting bookie that does not want you to go broke overnight.<br />Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
-      <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-4 w-full">
+      <div className="grid grid-cols-1 gap-4 w-full">
         {lines.map(line =>
-          <div key={line._id} className="border border-gray-200 p-6">
-            <h2 className="text-lg mb-4 text-center">{line.question}</h2>
-            <div className="mb-4 grid grid-cols-3 gap-2">
-              <button onClick={() => setLines(prevLines => prevLines.map((prevLineItem => prevLineItem._id === line._id ? {
-                ...line,
-                side: "yes"
-              } : prevLineItem)))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "yes" && "bg-black/70 text-white"}`}>
-                YES {line.oddsFormat === "decimal" ? `(${line.yes})` : `(${convertDecimal2AmericanOdds(line.yes || 0)})`}
-              </button>
-              <button onClick={() => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                ...line,
-                side: "no"
-              } : prevLineItem))} className={`h-7 self-end border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "no" && "bg-black/70 text-white"}`}>
-                NO {line.oddsFormat === "decimal" ? `(${line.no})` : `(${convertDecimal2AmericanOdds(line.no || 0)})`}
-              </button>
-              <div className="flex flex-col justify-end items-end">
-                <span className="text-sm">Odds format:</span>
-                <select
-                  value={line.oddsFormat}
-                  onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
-                    ...line,
-                    oddsFormat: e.target.value as "american" | "decimal"
-                  } : prevLineItem))}
-                  className="text-sm p-1 border border-gray-300"
-                >
-                  <option value="decimal">Decimal</option>
-                  <option value="american">American</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
+          <div key={line._id} className="border border-gray-200 p-6 grid grid-cols-3 max-md:grid-cols-1 gap-x-8 gap-y-2">
+            <h2 className="col-span-3 max-md:col-span-1 text-lg mb-4 text-center">{line.question}</h2>
+            <div className="flex flex-col justify-between gap-1">
               <div className="flex justify-between">
-                <label htmlFor="wager" className="block mb-2 text-sm">
-                  Enter Amount (<span className="text-red-700">Amount range: $5~$50</span>)
+                <label htmlFor="wager" className="w-full block text-sm">
+                  Enter Amount: <div className="text-red-700">(Range: $5~$50)</div>
                 </label>
-                <div className="mb-2 text-sm text-right">Est. Payout</div>
-              </div>
-              <div className="flex justify-between">
-                <div className="flex items-center border border-gray-300 p-2">
+                <div className="flex items-center border border-gray-300 p-1 h-full">
                   <span className="px-1">$</span>
                   <input
                     id="wager"
@@ -167,23 +136,57 @@ export default function HomePage() {
                     step="0.01"
                   />
                 </div>
-                {line.amount && line.side &&
-                  <span className="flex items-center text-4xl">
-                    ${(line.side === "yes" ?
-                      (parseFloat(line.amount) * (line.yes || 0)) :
-                      parseFloat(line.amount) * (line.no || 0)
-                    ).toFixed(2)}
-                  </span>
-                }
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="mb-2 text-sm text-right">Estimated Payout:</div>
+                <span className="flex items-center text-2xl">
+                  ${(
+                    line.side === "yes" ?
+                      ((parseFloat(line.amount) || 0) * (line.yes || 0)) :
+                      line.side === "no" ?
+                        (parseFloat(line.amount) || 0) * (line.no || 0) : 0
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span>Time remaining:</span>
+                <span className="text-xl">{timeRemains.filter(v => v.id === line._id)[0]?.text}</span>
+              </div>
+            </div>
+            <div className="flex flex-col justify-between items-center gap-2">
+              <button onClick={() => setLines(prevLines => prevLines.map((prevLineItem => prevLineItem._id === line._id ? {
+                ...line,
+                side: "yes"
+              } : prevLineItem)))} className={`h-7 w-full border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "yes" && "bg-black/70 text-white"}`}>
+                YES {line.oddsFormat === "decimal" ? `(${line.yes})` : `(${convertDecimal2AmericanOdds(line.yes || 0)})`}
+              </button>
+              <button onClick={() => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                ...line,
+                side: "no"
+              } : prevLineItem))} className={`h-7 w-full border border-gray-300 cursor-pointer hover:border-black/50 ${line.side === "no" && "bg-black/70 text-white"}`}>
+                NO {line.oddsFormat === "decimal" ? `(${line.no})` : `(${convertDecimal2AmericanOdds(line.no || 0)})`}
+              </button>
+              <div className="flex justify-end items-center">
+                <span className="text-sm">Odds format:</span>
+                <select
+                  value={line.oddsFormat}
+                  onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                    ...line,
+                    oddsFormat: e.target.value as "american" | "decimal"
+                  } : prevLineItem))}
+                  className="text-sm p-1 border border-gray-300"
+                >
+                  <option value="decimal">Decimal</option>
+                  <option value="american">American</option>
+                </select>
               </div>
             </div>
 
             <button onClick={() => handleBet(line._id)}
-              className="w-full mt-4 p-2 text-white bg-black mb-4 hover:bg-black/80 cursor-pointer disabled:cursor-not-allowed" disabled={sendingBetRequest}>
+              className="w-full p-2 text-white bg-black hover:bg-black/80 cursor-pointer disabled:cursor-not-allowed" disabled={sendingBetRequest}>
               Place Bet
             </button>
 
-            <div className="text-center mb-2">Time remaining: {timeRemains.filter(v => v.id === line._id)[0]?.text}</div>
 
 
           </div>
