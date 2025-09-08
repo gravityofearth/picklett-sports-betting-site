@@ -1,9 +1,10 @@
 "use client"
+
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast, validateCurrency } from "@/utils"
 import axios, { AxiosError } from "axios"
 import type React from "react"
 import { useEffect, useMemo, useState } from "react"
-import { BetType, LineCardAdminType, LineType } from "@/types"
+import { BetType, LineCardAdminType, LineType, SportsType } from "@/types"
 import BetTable from "@/components/BetTable"
 import { useUser } from "@/store"
 import { usePathname } from "next/navigation"
@@ -14,6 +15,9 @@ export default function AdminPage() {
         _id: "new",
         changed: 0,
         question: "",
+        event: "",
+        league: "",
+        sports: "Basketball",
         endsAt: new Date().getTime() + 10 * 60 * 1000,
         endsAtStr: `${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleDateString("sv-SE")}T${new Date(new Date().getTime() + 10 * 60 * 1000).toLocaleTimeString("sv-SE")}`,
         yes: 2,
@@ -70,6 +74,9 @@ export default function AdminPage() {
         setSendingRequest(true);
         (_id === "new" ? axios.post : axios.put)("/api/line", {
             question: selectedLine.question,
+            event: selectedLine.event,
+            league: selectedLine.league,
+            sports: selectedLine.sports,
             yes: selectedLine.yes,
             no: selectedLine.no,
             endsAt: selectedLine.endsAt,
@@ -101,7 +108,6 @@ export default function AdminPage() {
                 showToast(e.response?.statusText || "Unknown Error", "error")
             }).finally(() => setSendingRequest(false))
     }
-
     const handleResolve = (_id: string) => {
         if (_id === "new") return
         if (role !== "admin") return
@@ -190,9 +196,9 @@ export default function AdminPage() {
                 <>
                     <div className="w-full grid grid-cols-1 gap-4 pb-6">
                         {lines.filter(v => role === "admin" || v._id === "new" || v.openedBy === username).map((line) =>
-                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-blue-50/80 border-2" : "border-gray-400 border-2"}`}>
-                                <div className="grid grid-cols-3 max-md:grid-cols-1 gap-x-4 gap-y-4">
-                                    <div className="col-span-3 max-md:col-span-1">
+                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-[#004] border-2" : "border-gray-400 border-2"}`}>
+                                <div className="grid grid-cols-12 max-md:grid-cols-1 gap-x-4 gap-y-4">
+                                    <div className="col-span-12 max-md:col-span-1">
                                         <label htmlFor="question" className="block mb-2 text-lg">
                                             Question
                                         </label>
@@ -208,8 +214,57 @@ export default function AdminPage() {
                                             className="w-full p-2 border border-gray-300"
                                         />
                                     </div>
-
-                                    <div className="flex flex-col gap-x-4 gap-y-1 items-end">
+                                    <div className="col-span-6 max-md:col-span-1">
+                                        <label htmlFor="event" className="block mb-2 text-lg">
+                                            Event
+                                        </label>
+                                        <input
+                                            id="event"
+                                            type="text"
+                                            value={line.event}
+                                            onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                ...line,
+                                                event: e.target.value,
+                                                changed: 1,
+                                            } : prevLineItem))}
+                                            className="w-full p-2 border border-gray-300"
+                                        />
+                                    </div>
+                                    <div className="col-span-3 max-md:col-span-1">
+                                        <label htmlFor="event" className="block mb-2 text-lg">
+                                            League
+                                        </label>
+                                        <input
+                                            id="league"
+                                            type="text"
+                                            value={line.league}
+                                            onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                ...line,
+                                                league: e.target.value,
+                                                changed: 1,
+                                            } : prevLineItem))}
+                                            className="w-full p-2 border border-gray-300"
+                                        />
+                                    </div>
+                                    <div className="col-span-3 max-md:col-span-1">
+                                        <label htmlFor="sports" className="block mb-2 text-lg">Sports</label>
+                                        <select
+                                            value={line.sports}
+                                            onChange={(e) => setLines(prevLines => prevLines.map(prevLineItem => prevLineItem._id === line._id ? {
+                                                ...line,
+                                                sports: e.target.value as SportsType,
+                                                changed: 1,
+                                            } : prevLineItem))}
+                                            id="sports" className="p-2 border-gray-300 border w-full">
+                                            <option value="Basketball">Basketball</option>
+                                            <option value="Soccer">Soccer</option>
+                                            <option value="Tennis">Tennis</option>
+                                            <option value="Baseball">Baseball</option>
+                                            <option value="Esports">Esports</option>
+                                            <option value="Others">Others</option>
+                                        </select>
+                                    </div>
+                                    <div className="col-span-4 max-md:col-span-1 flex flex-col gap-x-4 gap-y-1 items-end">
                                         <div className="w-full flex items-center justify-between">
                                             <label htmlFor="yesOdds" className="w-full block text-sm">
                                                 Yes Odds
@@ -249,7 +304,6 @@ export default function AdminPage() {
                                                 />
                                             }
                                         </div>
-
                                         <div className="w-full flex items-center justify-between">
                                             <label htmlFor="noOdds" className="w-full block text-sm">
                                                 No Odds
@@ -311,8 +365,7 @@ export default function AdminPage() {
                                             </select>
                                         </div>
                                     </div>
-
-                                    <div className="flex flex-col justify-between">
+                                    <div className="col-span-4 max-md:col-span-1 flex flex-col justify-between">
                                         <label htmlFor="cutoffTime" className="block text-sm">
                                             Cutoff Time ({Intl.DateTimeFormat().resolvedOptions().timeZone} {new Date().toLocaleTimeString('en-US', { timeZoneName: 'longOffset' }).split(' ').pop()})
                                         </label>
@@ -334,7 +387,7 @@ export default function AdminPage() {
                                             <span className="text-xl">{timeRemains.filter(v => v.id === line._id)[0]?.text}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => handleLine(line._id)} className={`w-full p-2 text-white cursor-pointer disabled:cursor-not-allowed ${line._id === "new" ? "bg-blue-600 disabled:bg-blue-400 hover:bg-blue-700" : "bg-black disabled:bg-black/50 hover:bg-black/80"}`} disabled={sendingRequest || line.changed < 1}>
+                                    <button onClick={() => handleLine(line._id)} className={`col-span-4 max-md:col-span-1 w-full p-2 text-white cursor-pointer disabled:cursor-not-allowed ${line._id === "new" ? "bg-blue-600 disabled:bg-blue-400 hover:bg-blue-700" : "bg-black disabled:bg-black/50 hover:bg-black/80"}`} disabled={sendingRequest || line.changed < 1}>
                                         {line._id === "new" ? "+ Create" : "Update"} Line
                                     </button>
                                 </div>
@@ -371,7 +424,6 @@ export default function AdminPage() {
                                                     <option value="no">NO</option>
                                                 </select>
                                             </div>
-
                                             <button onClick={() => handleResolve(line._id)} className="w-full h-full p-2 text-white bg-black cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-black/50" disabled={sendingRequest || line._id === "new"}>
                                                 Resolve Line
                                             </button>
@@ -380,10 +432,8 @@ export default function AdminPage() {
                                 }
                             </div>
                         )}
-
                     </div>
                 </>}
-
             {role === "admin" && <BetTable userBets={userBets} username="admin" adminPage={role === "admin"} />}
         </div>
     )

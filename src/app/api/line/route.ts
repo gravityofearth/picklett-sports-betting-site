@@ -7,12 +7,12 @@ import { JWT_SECRET } from "@/utils";
 // This endpoint should be called by a cron job service
 export async function POST(request: NextRequest) {
   try {
-    const { question, yes, no, endsAt } = await request.json()
+    const { question, event, league, sports, yes, no, endsAt } = await request.json()
     const result = "pending"
     const token = request.headers.get('token') || '';
     const { username, role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
-    const line = await createLine({ question, yes, no, endsAt, result, openedBy: username })
+    const line = await createLine({ question, event, league, sports, yes, no, endsAt, result, openedBy: username })
     const lines = await findPendingLines(role)
     return NextResponse.json({ lines }, { status: 201 });
 
@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
 }
 export async function PUT(request: NextRequest) {
   try {
-    const { question, yes, no, endsAt, _id } = await request.json()
+    const { question, event, league, sports, yes, no, endsAt, _id } = await request.json()
     const result = "pending"
     const token = request.headers.get('token') || '';
     const { role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin" && role !== "manager") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" });
-    const line = await updateLine({ question, yes, no, endsAt, result, _id })
+    const line = await updateLine({ question, event, league, sports, yes, no, endsAt, result, _id })
     const lines = await findPendingLines(role)
     return NextResponse.json({ lines }, { status: 202 });
 

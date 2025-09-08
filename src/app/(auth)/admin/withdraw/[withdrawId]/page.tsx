@@ -1,11 +1,12 @@
 "use client"
+
 import { WithdrawType } from "@/types"
 import { showToast, validateEthTx } from "@/utils"
 import axios, { AxiosError } from "axios"
-import Link from "next/link"
 import { useParams } from "next/navigation"
 import type React from "react"
 import { useEffect, useState } from "react"
+
 export default function WithdrawPage() {
   const [withdraw, setWithdraw] = useState<WithdrawType | null>(null)
   const [sendingRequest, setSendingRequest] = useState(false)

@@ -21,18 +21,20 @@ export default function DepositPage() {
     }
   }, [deposit])
   return (
-    <div className="max-w-2xl w-full mx-auto p-4">
-      <div className="border border-gray-200 p-6">
+    <div className="flex justify-center">
+      <div className="w-full max-w-md flex flex-col items-center gap-6 border border-[#6e7b99] p-6 rounded-[10px]">
         {deposit &&
           <>
-            <h1 className={`text-lg mb-6 ${deposit.result === "success" ? "text-green-600" : ""}`}>Deposit Funds {deposit?.result === "success" ? "Succeeded" : "Failed"} </h1>
-            {deposit.result === "failed" && deposit.reason && <div className="text-sm w-full p-4 border border-red-700 text-red-700 mb-6">Reason: {deposit.reason}</div>}
+            <h1 className={`text-xl font-semibold  ${deposit.result === "success" ? "text-[#05DF72]" : ""}`}>Deposit Funds {deposit?.result === "success" ? "Succeeded" : "Failed"} </h1>
+            {deposit.result === "failed" && deposit.reason &&
+              <div className="w-full flex gap-4 p-4 text-sm border border-[#FF6467] bg-linear-to-r from-[#ff64672d] to-[#ff64674d] rounded-lg text-[#FF6467]">Reason: {deposit.reason}</div>
+            }
             <div className="flex flex-col gap-2 text-sm">
-              <span className="text-lg">Username: {deposit.username}</span>
-              {Number(deposit.depositAmount) > 0 && <span className="text-lg">Deposit Amount: ${deposit.depositAmount}</span>}
-              <span className="text-lg">Sender: <br /> <code className="text-sm break-all">{deposit.sender}</code></span>
-              <span className="text-lg">Dedicated address:  <br /><code className="text-sm break-all">{deposit.dedicatedWallet}</code></span>
-              <span className="text-lg">Transaction:  <br /><code className="text-sm break-all">{deposit.tx}</code></span>
+              <span>Username: {deposit.username}</span>
+              {deposit.depositAmount > 0 && <span>Deposit Amount: ${deposit.depositAmount}</span>}
+              <span>Sender: <br /> <code className="text-sm text-[#99A1AF] break-all">{deposit.sender}</code></span>
+              <span>Dedicated address:  <br /><code className="text-sm text-[#99A1AF] break-all">{deposit.dedicatedWallet}</code></span>
+              <span>Transaction:  <br /><code className="text-sm text-[#99A1AF] break-all">{deposit.tx}</code></span>
             </div>
           </>
         }

@@ -1,4 +1,5 @@
 "use client"
+
 import type React from "react"
 import WithdrawTable from "@/components/WithdrawTable"
 import { useEffect, useState } from "react"
@@ -16,7 +17,7 @@ export default function AdminWithdrawPage() {
       })
   }, [])
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full max-w-7xl mx-auto p-4">
       {username && <WithdrawTable withdraws={withdraws} username={username} adminPage />}
     </div>
   )

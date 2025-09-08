@@ -2,7 +2,6 @@
 import betModel from "@/model/bet";
 import lineModel from "@/model/line";
 import userModel from "@/model/user";
-import { convertAmerican2DecimalOdds } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
 import { increaseBalance } from "./user";
@@ -10,10 +9,10 @@ import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
 import axios from "axios";
 const discord_webhook_url = process.env.DISCORD_WEBHOOK
-export async function createLine({ question, yes, no, endsAt, result, openedBy }: { question: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
+export async function createLine({ question, event, league, sports, yes, no, endsAt, result, openedBy }: { question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
     await connectMongoDB()
     try {
-        const newLine = new lineModel({ question, yes, no, endsAt, result, openedBy });
+        const newLine = new lineModel({ question, event, league, sports, yes, no, endsAt, result, openedBy });
         const savedLine = await newLine.save();
         sendDiscordWebhook(newLine)
         return savedLine;
@@ -22,13 +21,13 @@ export async function createLine({ question, yes, no, endsAt, result, openedBy }
         throw error
     }
 }
-export async function updateLine({ question, yes, no, endsAt, result, _id }: { question: string, yes: number, no: number, endsAt: number, result: string, _id: string }) {
+export async function updateLine({ question, event, league, sports, yes, no, endsAt, result, _id }: { question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, _id: string }) {
     await connectMongoDB()
     try {
         const updatedLine = await lineModel.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(_id) },
             {
-                question, yes, no, endsAt, result
+                question, event, league, sports, yes, no, endsAt, result
             },
             { new: true }
         )

@@ -1,6 +1,10 @@
+export type SportsType = "Basketball" | "Soccer" | "Tennis" | "Baseball" | "Esports" | "Others"
 export type LineType = {
     _id: string,
     question: string,
+    sports: SportsType,
+    league: string,
+    event: string,
     yes: number,
     no: number,
     endsAt: number,
@@ -21,7 +25,6 @@ export type LineCardAdminType = {
 export type LineCardUserType = {
     amount: string;
     side: "yes" | "no" | null,
-    oddsFormat: "american" | "decimal",
 }
 export type BetType = {
     username: string,
@@ -41,7 +44,7 @@ export type DepositType = {
     _id: string,
     username: string,
     sender: string,
-    depositAmount: string,
+    depositAmount: number,
     dedicatedWallet: string,
     tx: string,
     createdAt: string,
@@ -59,7 +62,12 @@ export type WithdrawType = {
     result: "requested" | "failed" | "success",
     reason?: string,
 }
-export type LeaderType = { username: string; winstreak: number }
+export type LeaderType = {
+    username: string;
+    winstreak: number;
+    totalWins: number;
+    avatar?: string;
+}
 export type AffiliateRewardType = {
     startsAt: number,
     endsAt: number,

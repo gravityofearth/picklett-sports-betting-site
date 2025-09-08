@@ -9,15 +9,23 @@ type StoreType = {
     balance: number,
     token: string,
     setToken: Dispatch<SetStateAction<string>>,
+    winstreak: number,
+    fullname: string,
+    oddstype: "decimal" | "american",
+    avatar: string,
 }
-const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { } })
+const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "" })
 const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [username, setUsername] = useState<string | null>(null)
+    const [fullname, setFullname] = useState<string>("")
+    const [avatar, setAvatar] = useState<string>("")
     const [role, setRole] = useState<string | null>(null)
     const [ref, setRef] = useState<string | null>(null)
+    const [winstreak, setWinstreak] = useState<number>(0)
     const [balance, setBalance] = useState<number>(0)
     const [token, setToken] = useState<string>("")
+    const [oddstype, setOddstype] = useState<"decimal" | "american">("decimal")
     const pathname = usePathname()
     const router = useRouter()
     useEffect(() => {
@@ -35,9 +43,14 @@ const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
         setUsername(decodedToken?.username)
         setRole(decodedToken?.role)
         setRef(decodedToken?.ref)
+        setWinstreak(decodedToken?.winstreak)
+        setFullname(decodedToken?.fullname)
+        setOddstype(decodedToken?.oddstype)
+        setAvatar(decodedToken?.avatar)
+
     }, [token, pathname])
     return (
-        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken }}>
+        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar }}>
             {children}
         </GlobalContext.Provider>
     )
@@ -50,4 +63,8 @@ export const useUser = () => ({
     balance: useContext(GlobalContext).balance,
     token: useContext(GlobalContext).token,
     setToken: useContext(GlobalContext).setToken,
+    winstreak: useContext(GlobalContext).winstreak,
+    fullname: useContext(GlobalContext).fullname,
+    oddstype: useContext(GlobalContext).oddstype,
+    avatar: useContext(GlobalContext).avatar,
 })

@@ -4,6 +4,18 @@ const lineSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    event: {
+        type: String,
+        required: true,
+    },
+    league: {
+        type: String,
+        required: true,
+    },
+    sports: {
+        type: String,
+        required: true,
+    },
     yes: {
         type: Number,
         required: true,

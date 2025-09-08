@@ -24,6 +24,20 @@ const userSchema = new mongoose.Schema({
         maxlength: [30, 'Username cannot exceed 30 characters'],
         match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores']
     },
+    fullname: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'Name cannot exceed 50 characters']
+    },
+    avatar: {
+        type: String,
+        trim: true,
+    },
+    oddstype: {
+        type: String,
+        required: true,
+        enum: ['decimal', "american"]
+    },
     // email: {
     //     type: String,
     //     required: [true, 'Email is required'],

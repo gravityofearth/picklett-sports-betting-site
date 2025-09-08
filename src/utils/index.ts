@@ -84,3 +84,4 @@ export function generateReferralCode(): string {
 export const validateCurrency = (val: string) => /^$|^-$|^-?(0|[1-9][0-9]*)(\.[0-9]{0,2})?$/.test(val)
 export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(val)
 export const validateEthTx = (val: string) => /^0x[0-9a-fA-F]{64}$/.test(val)
+export const validateUsername = (val: string) => /^[a-z][_0-9a-z]*$/.test(val)

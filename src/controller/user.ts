@@ -1,4 +1,5 @@
 import userModel from "@/model/user";
+import bcrypt from "bcryptjs";
 import { generateReferralCode } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
@@ -8,6 +9,8 @@ export async function createUser({ username, password, refby }: { username: stri
     try {
         const newUser = new userModel({
             username,
+            fullname: "",
+            oddstype: "decimal",
             password,
             balance: 0,
             winstreak: 0,
@@ -67,6 +70,72 @@ export async function findUserByRef(ref: string) {
         console.error('Error finding user:', error);
     }
 }
+export async function updateUsername({ currentUsername, newUsername }: { currentUsername: string, newUsername: string }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { username: currentUsername },
+            { $set: { username: newUsername } },
+            { new: true })
+        return user;
+    } catch (error) {
+        console.error('Error finding user:', error);
+    }
+}
+export async function updateFullname({ username, fullname }: { username: string, fullname: string }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            { $set: { fullname } },
+            { new: true })
+        return user;
+    } catch (error) {
+        console.error('Error finding user:', error);
+    }
+}
+export async function updateAvatar({ username, avatar }: { username: string, avatar: string }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            { $set: { avatar } },
+            { new: true })
+        return user;
+    } catch (error) {
+        console.error('Error finding user:', error);
+    }
+}
+export async function updateOddstype({ username, oddstype }: { username: string, oddstype: string }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            { $set: { oddstype } },
+            { new: true })
+        return user;
+    } catch (error) {
+        console.error('Error finding user:', error);
+    }
+}
+export async function updatePassword({ username, currentPassword, newPassword }: { username: string, currentPassword: string, newPassword: string }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOne({ username }).select('+password');
+        const isPasswordCorrect = await user.correctPassword(currentPassword, user.password);
+        if (!isPasswordCorrect) {
+            throw new Error('Your credential is not correct');
+        }
+        const updated_user = await userModel.findOneAndUpdate(
+            { username },
+            { $set: { password: await bcrypt.hash(newPassword, 12) } },
+            { new: true })
+        return updated_user;
+    } catch (error) {
+        throw error
+    }
+}
+
 export async function authenticateUser(username: string, password: string) {
     await connectMongoDB()
     try {
@@ -122,11 +191,59 @@ export async function increaseBalance(username: string, amount: number, session:
 }
 export async function genLeaders() {
     await connectMongoDB()
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
-        const leaders = await userModel.find({ winstreak: { $gte: 2 } }).sort({ winstreak: -1 })
-        return leaders;
+        const leaders = await userModel.aggregate([
+            { $match: { winstreak: { $gte: 2 } } },
+            {
+                $lookup: {
+                    from: "bets",
+                    let: {
+                        localUsername: "$username"
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$username", "$$localUsername"] },
+                                        { $eq: ["$status", "win"] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "betData"
+                }
+            },
+            {
+                $addFields: {
+                    totalWins: { $size: "$betData" }
+                }
+            },
+            {
+                $sort: {
+                    winstreak: -1
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalWins: 1,
+                    username: 1,
+                    winstreak: 1,
+                    avatar: 1,
+                }
+            }
+        ]).session(session);
+        await session.commitTransaction();
+        return leaders
     } catch (error) {
-        console.error('Error generating leaders:', error);
+        console.error('Error creating line:', error);
+        await session.abortTransaction();
         throw error
+    } finally {
+        session.endSession();
     }
 }

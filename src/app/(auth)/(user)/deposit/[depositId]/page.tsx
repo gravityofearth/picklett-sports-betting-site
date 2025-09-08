@@ -91,42 +91,37 @@ export default function DepositPage() {
     })
   }
   return (
-    <div className="max-w-2xl w-full mx-auto p-4">
-
-      <div className="border border-gray-200 p-6">
-        <h1 className="text-lg mb-6">Deposit Funds</h1>
+    <div className="flex justify-center">
+      <div className="w-full max-w-md flex flex-col items-center gap-6 border border-[#6e7b99] p-6 rounded-[10px]">
+        <h1 className="text-xl font-semibold">Deposit Funds</h1>
         {deposit &&
           <>
             {deposit.tx !== "undefined" && deposit.reason !== "" &&
-              <div className="my-6 p-6 border border-yellow-500 text-sm text-yellow-700 bg-yellow-100">
+              <div className="w-full flex gap-4 p-4 text-sm border border-[#FE9A0033] bg-linear-to-r from-[#FE9A001A] to-[#FF69001A] rounded-lg text-[#FFB900]">
                 Transaction will be confirmed after 6 confirmations on blockchain. <br /> Please wait... {deposit.reason}
               </div>
             }
-            <div className="my-6">
-              <p className="mb-2">
-                {deposit.tx === "undefined" ? <span> Send ETH or USDT </span> : <span> Sent </span>}
-
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4 items-center">
                 {deposit.tx === "undefined" ?
-                  <>
-                    <span> to following address within </span>
-                    <span className="text-xl">{remainingTime}</span>
-                  </> :
-                  <span>. Verifying transaction...</span>
+                  <div className="flex flex-col items-center">
+                    <span> Send ETH or USDT to following address within </span>
+                    <span className="text-[#FF7076] font-semibold">{remainingTime}</span>
+                  </div> :
+                  <div> Sent. Verifying transaction... </div>
                 }
-              </p>
-              <div className="w-full flex justify-center"><QRCodeImg className="w-32 h-32" value={deposit.dedicatedWallet} /></div>
-              <div className="flex items-center">
-                <code onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="flex-1 p-2 bg-gray-100 font-mono text-sm overflow-x-auto break-all">
-                  {deposit.dedicatedWallet}
-                </code>
-                <button onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="p-2 ml-2 border border-gray-300 cursor-pointer rounded-md">
-                  {copyContent}
-                </button>
+                <div className="w-full flex justify-center"><QRCodeImg className="w-32 h-32" value={deposit.dedicatedWallet} /></div>
+                <div className="flex items-center w-full bg-[#1E293999] border border-[#E5E5E566] rounded-lg">
+                  <code onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="flex-1 p-2 cursor-pointer font-mono text-sm overflow-x-auto break-all">
+                    {deposit.dedicatedWallet}
+                  </code>
+                  <button onClick={() => copyToClipboard(deposit.dedicatedWallet)} className="p-2 cursor-pointer rounded-lg">
+                    {copyContent}
+                  </button>
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="my-4">
-                <label htmlFor="txid" className="block mb-2 text-sm">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="txid" className="block text-sm font-semibold">
                   Transaction ID (TXID)
                 </label>
                 <input
@@ -135,23 +130,22 @@ export default function DepositPage() {
                   value={deposit.tx === "undefined" ? tx : deposit.tx}
                   disabled={deposit.tx !== "undefined"}
                   onChange={(e) => setTx(e.target.value)}
-                  className="w-full p-2 border border-gray-300 disabled:text-gray-500 text-sm"
+                  className="w-full p-2 border border-[#E5E5E566] rounded-lg disabled:text-[#E5E5E566] text-sm"
                   placeholder="0x..."
                 />
               </div>
-
-              <div className="flex gap-2">
-                <button onClick={handleVerify} className="flex-1 p-2 text-white bg-black cursor-pointer hover:bg-black/80 disabled:bg-black/50 disabled:cursor-not-allowed" disabled={disableButton}>
+              <div className="flex flex-col gap-4">
+                <button onClick={handleVerify} className="w-full py-2 bg-[#01A3DB] hover:bg-[#45bce4] cursor-pointer disabled:cursor-not-allowed border border-[#364153] rounded-[10px] text-sm font-semibold" disabled={disableButton}>
                   Verify Deposit
                 </button>
-              </div>
-              <div className="py-6 text-sm text-yellow-700 italic">
-                * When you send ETH, your deposit amount may differ slightly due to changes in ETH's price.
+                <div className="text-xs text-[#FCC800]">
+                  * When you send ETH, your deposit amount may differ slightly due to changes in ETH's price.
+                </div>
               </div>
             </div>
           </>
         }
       </div>
-    </div >
+    </div>
   )
 }
