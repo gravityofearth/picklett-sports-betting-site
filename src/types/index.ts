@@ -37,6 +37,9 @@ export type BetType = {
     lineData: {
         yes: number,
         no: number,
+        event: string,
+        league: string,
+        sports: string,
     },
     createdAt: string,
 }

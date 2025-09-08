@@ -39,7 +39,7 @@ const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], user
                         {currentBets.map((bet, i) => (
                             <tr key={startIndex + i} className="">
                                 {adminPage && <td className="pl-6 py-6 pr-2 whitespace-nowrap">{bet.username}</td>}
-                                <td className={`${adminPage ? "px-2" : "pl-6 pr-2"} py-6 text-sm`}>{bet.question}</td>
+                                <td className={`${adminPage ? "px-2" : "pl-6 pr-2"} py-6 text-sm`}>[{bet.question}] {bet.lineData.event} ({bet.lineData.league} - {bet.lineData.sports})</td>
                                 <td className="py-6 px-2">${bet.amount.toFixed(2)}</td>
                                 <td className="py-6 px-2">{bet.side}</td>
                                 <td className="py-6 px-2">
