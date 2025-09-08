@@ -92,7 +92,7 @@ export default function UserLayout({
                             <div className="relative">
                                 <div onClick={() => { setShowUserDropdown(prev => !prev); setShowBalanceDropdown(false) }} className="relative w-8 h-8 rounded-full flex items-center justify-center bg-[#242C3C] cursor-pointer select-none overflow-hidden z-20 bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
                                     {avatar && !isError ?
-                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="hidden" width={32} height={32} alt="avatar" /> :
+                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="w-0" width={32} height={32} alt="avatar" /> :
                                         <svg className="w-[11px] h-[14px]"><use href="#svg-user" /></svg>
                                     }
                                 </div>

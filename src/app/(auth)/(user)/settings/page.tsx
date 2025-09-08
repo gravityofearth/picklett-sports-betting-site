@@ -136,7 +136,7 @@ export default function Settings() {
                             <div className="flex md:flex-col gap-4 items-center">
                                 <div className="w-24 h-24 relative rounded-full overflow-hidden flex justify-center items-center bg-[#FFFFFF33] bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
                                     {avatar && !isError ?
-                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="hidden" width={96} height={96} alt="avatar" /> :
+                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="w-0" width={96} height={96} alt="avatar" /> :
                                         <svg className="w-8 h-8"><use href="#svg-user" /></svg>
                                     }
                                     {uploadProgress > 0 && <div className="absolute w-full h-2 rounded-full bg-[#1E2939]">
