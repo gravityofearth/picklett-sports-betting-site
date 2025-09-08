@@ -123,9 +123,9 @@ export default function Settings() {
                         <div className="flex flex-col col-span-2 max-md:col-span-1 gap-4">
                             <p className="text-sm text-[#D1D5DC]">Profile Picture</p>
                             <div className="flex md:flex-col gap-4 items-center">
-                                <div className="w-24 h-24 rounded-full overflow-hidden flex justify-center items-center bg-[#FFFFFF33] bg-cover bg-center" style={{ backgroundImage: `url(/avatars/${avatar})` }} >
+                                <div className="w-24 h-24 rounded-full overflow-hidden flex justify-center items-center bg-[#FFFFFF33] bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
                                     {avatar && !isError ?
-                                        <Image onError={() => setError(true)} src={`/avatars/${avatar}`} className="hidden" width={96} height={96} alt="avatar" /> :
+                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="hidden" width={96} height={96} alt="avatar" /> :
                                         <svg className="w-8 h-8"><use href="#svg-user" /></svg>
                                     }
                                 </div>

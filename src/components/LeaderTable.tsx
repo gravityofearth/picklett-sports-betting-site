@@ -42,9 +42,9 @@ const LeaderTable = ({ leaders, adminPage }: { leaders: LeaderType[], adminPage?
                                     <td className="py-3 px-2">
                                         <div className="flex gap-3 items-center">
                                             <div className="relative bg-[#364153] w-11 h-11 rounded-full flex justify-center items-center">
-                                                <div className="flex justify-center items-center w-11 h-11 rounded-full overflow-hidden shrink-0 bg-cover bg-center" style={{ backgroundImage: `url(/avatars/${leader.avatar})` }}>
+                                                <div className="flex justify-center items-center w-11 h-11 rounded-full overflow-hidden shrink-0 bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${leader.avatar})` }}>
                                                     {leader.avatar && !isError ?
-                                                        <Image onError={() => setError(true)} src={`/avatars/${leader.avatar}`} className="hidden" width={44} height={44} alt="avatar" /> :
+                                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${leader.avatar}`} className="hidden" width={44} height={44} alt="avatar" /> :
                                                         <svg className="w-5 h-5"><use href="#svg-user" /></svg>
                                                     }
                                                 </div>

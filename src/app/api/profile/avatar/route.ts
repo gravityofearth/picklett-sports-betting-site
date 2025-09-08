@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       const buffer = Buffer.from(arrayBuffer);
       const filename = `avatar-${Date.now()}.${extension}`
       // Save to /public/uploads (make sure this directory exists)
-      const filePath = path.join(process.cwd(), "public", "avatars", filename);
+      const filePath = path.join(process.cwd(), "avatars", filename);
       await fs.writeFile(filePath, buffer);
 
 
