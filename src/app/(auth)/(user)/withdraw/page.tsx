@@ -36,13 +36,13 @@ export default function WithdrawPage() {
           <SumCard icon="failed" amount={withdraws.filter(v => v.result === "failed").length.toString()} heading="Fail" description="Unsuccessful attempts" color="#FF6467" />
         </div>
         {username && <WithdrawTable withdraws={withdraws} username={username} />}
-        <div className="w-full flex max-md:flex-col gap-2 justify-between bg-linear-to-r from-[#1018284D] to-[#1E293933] p-6 rounded-[10px] border border-[#3641534D]">
+        {/* <div className="w-full flex max-md:flex-col gap-2 justify-between bg-linear-to-r from-[#1018284D] to-[#1E293933] p-6 rounded-[10px] border border-[#3641534D]">
           <div className="flex flex-col justify-between">
             <p>Need Help?</p>
             <p className="text-sm text-[#99A1AF]">If you have any questions about your withdrawals, please contact our support team.</p>
           </div>
           <button className="py-4 px-6 border border-[#01A3DB] rounded-xl">Contact Support</button>
-        </div>
+        </div> */}
       </div>
     </div>
   )
