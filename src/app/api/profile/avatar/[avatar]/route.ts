@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 export async function GET(request: NextRequest, { params }: { params: any }) {
-    const { avatar } = params;
+    const { avatar } = await params;
     const filePath = path.resolve("avatars", avatar);
 
     if (!fs.existsSync(filePath)) {

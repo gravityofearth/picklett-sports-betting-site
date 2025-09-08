@@ -152,7 +152,6 @@ export default function HomePage() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-[6px] py-[6px] px-3 bg-[#00BFFF33] rounded-full">
                     <svg className="w-[14px] h-[14px] fill-[#01A3DB] stroke-[#01A3DB]"><use href={`#svg-${line.sports?.toLowerCase()}`} /></svg>
-                    {/* TODO: */}
                     <p className="text-[#00BFFF] text-xs">{line.sports}</p>
                   </div>
                   <div className="flex gap-[6px] items-center">

@@ -74,6 +74,7 @@ export default function Settings() {
             }).finally(() => setSendingRequest(false))
     }
     const file_ref = useRef<HTMLInputElement>(null)
+    const [uploadProgress, setUploadProgress] = useState(0)
     const handleAvatarClick = () => {
         setError(false)
         file_ref.current?.click()
@@ -93,12 +94,22 @@ export default function Settings() {
             headers: {
                 "Content-Type": "multipart/form-data",
                 token: localStorage.getItem("jwt")
+            },
+            onUploadProgress: progressEvent => {
+                const { loaded, total } = progressEvent;
+                if (!total) return
+                const percentCompleted = Math.round((loaded * 100) / total);
+                setUploadProgress(percentCompleted)
+                console.log(`Upload progress: ${percentCompleted}% (${loaded} bytes of ${total} bytes)`);
             }
         }).then(({ data: { token } }) => {
             setToken(token)
         }).catch((e: AxiosError) => {
             showToast(e.response?.statusText || "Unknown Error", "error")
-        }).finally(() => setSendingRequest(false))
+        }).finally(() => {
+            setSendingRequest(false)
+            setUploadProgress(0)
+        })
     }
     return (
         <div className="w-full flex justify-center">
@@ -123,11 +134,14 @@ export default function Settings() {
                         <div className="flex flex-col col-span-2 max-md:col-span-1 gap-4">
                             <p className="text-sm text-[#D1D5DC]">Profile Picture</p>
                             <div className="flex md:flex-col gap-4 items-center">
-                                <div className="w-24 h-24 rounded-full overflow-hidden flex justify-center items-center bg-[#FFFFFF33] bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
+                                <div className="w-24 h-24 relative rounded-full overflow-hidden flex justify-center items-center bg-[#FFFFFF33] bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
                                     {avatar && !isError ?
                                         <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="hidden" width={96} height={96} alt="avatar" /> :
                                         <svg className="w-8 h-8"><use href="#svg-user" /></svg>
                                     }
+                                    {uploadProgress > 0 && <div className="absolute w-full h-2 rounded-full bg-[#1E2939]">
+                                        <div className="h-2 rounded-full bg-[#F08105]" style={{ width: `${uploadProgress}%` }}></div>
+                                    </div>}
                                 </div>
                                 <div className="hidden">
                                     <input onChange={handleAvatarChange} type="file" name="file" ref={file_ref} />
