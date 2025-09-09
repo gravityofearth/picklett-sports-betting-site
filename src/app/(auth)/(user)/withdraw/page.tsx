@@ -97,7 +97,7 @@ const WithdrawModal = ({ setShowModal, setWithdraws }: { setShowModal: Dispatch<
           </svg>
         </button>
         <h1 className="text-xl font-semibold">Withdraw</h1>
-        <div className="flex flex-col gap-4">
+        <div className="w-full flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="senderAddress" className="block text-sm font-semibold">
               ETH address (<span className="text-[#FF7076]">In ETH network</span>)
@@ -110,6 +110,10 @@ const WithdrawModal = ({ setShowModal, setWithdraws }: { setShowModal: Dispatch<
               className="w-full p-2 border border-[#E5E5E566] rounded-lg disabled:text-[#E5E5E566] text-sm"
               placeholder="0x..."
             />
+            <div className="flex gap-2 items-center">
+              <svg className="w-4 h-4"><use href="#svg-i" /></svg>
+              <p className="text-sm text-[#99A1AF]">Network: Ethereum Mainnet</p>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="depositAmount" className="block text-sm font-semibold">
