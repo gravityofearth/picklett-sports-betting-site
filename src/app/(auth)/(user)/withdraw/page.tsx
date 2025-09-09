@@ -31,8 +31,8 @@ export default function WithdrawPage() {
           <button onClick={() => setShowModal(true)} className="text-sm px-4 py-2 rounded-lg bg-[#01A3DB] cursor-pointer hover:bg-[#3290af]">Withdraw</button>
         </div>
         <div className="w-full grid grid-cols-3 max-md:grid-cols-1 gap-6">
-          <SumCard icon="redeem" amount={withdraws.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed deposits" color="#00D492" />
-          <SumCard icon="pending" amount={withdraws.filter(v => v.result === "requested").length.toString()} heading="Pending" description="Processing deposits" color="#FFBA00" />
+          <SumCard icon="redeem" amount={withdraws.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed withdrawals" color="#00D492" />
+          <SumCard icon="pending" amount={withdraws.filter(v => v.result === "requested").length.toString()} heading="Pending" description="Processing withdrawals" color="#FFBA00" />
           <SumCard icon="failed" amount={withdraws.filter(v => v.result === "failed").length.toString()} heading="Fail" description="Unsuccessful attempts" color="#FF6467" />
         </div>
         {username && <WithdrawTable withdraws={withdraws} username={username} />}

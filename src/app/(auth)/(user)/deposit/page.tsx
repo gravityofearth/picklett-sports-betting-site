@@ -130,8 +130,8 @@ function DepositPage() {
           </div>
         </div>
         <div className="w-full grid grid-cols-3 max-md:grid-cols-1 gap-6">
-          <SumCard icon="redeem" amount={deposits.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed withdrawals" color="#00D492" />
-          <SumCard icon="pending" amount={deposits.filter(v => v.result === "initiated").length.toString()} heading="Pending" description="Processing withdrawals" color="#FFBA00" />
+          <SumCard icon="redeem" amount={deposits.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed deposits" color="#00D492" />
+          <SumCard icon="pending" amount={deposits.filter(v => v.result === "initiated").length.toString()} heading="Pending" description="Processing deposits" color="#FFBA00" />
           <SumCard icon="failed" amount={deposits.filter(v => v.result === "failed").length.toString()} heading="Fail" description="Unsuccessful attempts" color="#FF6467" />
         </div>
         {username && <DepositTable userDeposits={deposits} username={username} />}
