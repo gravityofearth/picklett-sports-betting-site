@@ -75,7 +75,7 @@ export async function approveWithdraw({ id, tx }: { id: string, tx: string }) {
     try {
         const result = await getWithdrawById(id)
         if (result.amount > result.userbalance) {
-            throw new Error("Insufficient balance for withdrawl")
+            throw new Error("Insufficient balance for withdrawal")
         }
         const withdraw = await withdrawModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { result: "success", tx } }, { new: true }).session(session)
         const user = await userModel.findOne({ username: withdraw.username }).session(session);
@@ -88,7 +88,7 @@ export async function approveWithdraw({ id, tx }: { id: string, tx: string }) {
             balanceAfter: updatedUser.balance,
             withdrawId: new mongoose.Types.ObjectId(id),
             timestamp: new Date(),
-            description: `Withdrawl: $${withdraw.amount} through ${tx}`
+            description: `withdrawal: $${withdraw.amount} through ${tx}`
         })
 
         const savedBalance = await newBalance.save({ session });

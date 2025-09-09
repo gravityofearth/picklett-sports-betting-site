@@ -29,14 +29,14 @@ export default function WithdrawPage() {
       return
     }
     if (!withdraw.userbalance || withdraw.amount > withdraw.userbalance) {
-      showToast("Insufficient user balance for withdrawl", "error")
+      showToast("Insufficient user balance for withdrawal", "error")
       return
     }
     setSendingRequest(true)
     axios.post("/api/withdraw/approve", { id: withdraw._id, tx: tx.trim(), }, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { withdraw } }) => {
         setWithdraw(withdraw)
-        showToast("You approved this withdrawl request", "success")
+        showToast("You approved this withdrawal request", "success")
       }).catch((e: AxiosError) => {
         showToast(e.response?.statusText || "Unknown Error", "error")
       })
@@ -54,7 +54,7 @@ export default function WithdrawPage() {
     axios.post("/api/withdraw/reject", { id: withdraw._id, reason: reason.trim() }, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { withdraw } }) => {
         setWithdraw(withdraw)
-        showToast("You rejected this withdrawl request", "info")
+        showToast("You rejected this withdrawal request", "info")
       })
       .finally(() => {
         setSendingRequest(false)
@@ -106,7 +106,7 @@ export default function WithdrawPage() {
               <div className="pt-4">
                 <div className="mb-4">
                   <label className="block mb-2 text-sm">
-                    Enter why you rejected this withdrawl request
+                    Enter why you rejected this withdrawal request
                   </label>
                   <input
                     type="text"

@@ -8,11 +8,11 @@ import { findUserByUsername } from "@/controller/user";
 export async function POST(request: NextRequest) {
   try {
     const { wallet, amount } = await request.json()
-    if (Number(amount) < 20) return NextResponse.json({ error: "Minimum withdrawl amount $20" }, { status: 500, statusText: "Minimum withdrawl amount $20" });
+    if (Number(amount) < 20) return NextResponse.json({ error: "Minimum withdrawal amount $20" }, { status: 500, statusText: "Minimum withdrawal amount $20" });
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
     const user = await findUserByUsername(username)
-    if (user.balance < amount) return NextResponse.json({ error: "Insufficient balance for withdrawl" }, { status: 500, statusText: "Insufficient balance for withdrawl" });
+    if (user.balance < amount) return NextResponse.json({ error: "Insufficient balance for withdrawal" }, { status: 500, statusText: "Insufficient balance for withdrawal" });
     const withdraw = await createWithdraw({ username, wallet, amount })
     return NextResponse.json({ withdraw }, { status: 201 });
 

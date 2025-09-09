@@ -26,13 +26,13 @@ export default function WithdrawPage() {
         <div className="flex justify-between items-start">
           <div className="flex flex-col gap-2">
             <h1 className="font-semibold text-[26px] text-[#D9D9D9]">Withdraw Funds</h1>
-            <p className="text-[#99A1AF]">Please have your money through withdrawl</p>
+            <p className="text-[#99A1AF]">Please have your money through withdrawal</p>
           </div>
           <button onClick={() => setShowModal(true)} className="text-sm px-4 py-2 rounded-lg bg-[#01A3DB] cursor-pointer hover:bg-[#3290af]">Withdraw</button>
         </div>
         <div className="w-full grid grid-cols-3 max-md:grid-cols-1 gap-6">
-          <SumCard icon="redeem" amount={withdraws.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed withdrawals" color="#00D492" />
-          <SumCard icon="pending" amount={withdraws.filter(v => v.result === "requested").length.toString()} heading="Pending" description="Processing withdrawals" color="#FFBA00" />
+          <SumCard icon="redeem" amount={withdraws.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed deposits" color="#00D492" />
+          <SumCard icon="pending" amount={withdraws.filter(v => v.result === "requested").length.toString()} heading="Pending" description="Processing deposits" color="#FFBA00" />
           <SumCard icon="failed" amount={withdraws.filter(v => v.result === "failed").length.toString()} heading="Fail" description="Unsuccessful attempts" color="#FF6467" />
         </div>
         {username && <WithdrawTable withdraws={withdraws} username={username} />}
@@ -64,11 +64,11 @@ const WithdrawModal = ({ setShowModal, setWithdraws }: { setShowModal: Dispatch<
       return
     }
     if (withdrawAmount < 20) {
-      showToast("Minimum withdrawl amount $20", "warn")
+      showToast("Minimum withdrawal amount $20", "warn")
       return
     }
     if (withdrawAmount > balance) {
-      showToast("Insufficient balance for withdrawl", "warn")
+      showToast("Insufficient balance for withdrawal", "warn")
       return
     }
     setSendingRequest(true)
@@ -100,7 +100,7 @@ const WithdrawModal = ({ setShowModal, setWithdraws }: { setShowModal: Dispatch<
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="senderAddress" className="block text-sm font-semibold">
-              Your Wallet Address (<span className="text-[#FF7076]">Only Ethereum address is allowed!</span>)
+              ETH address (<span className="text-[#FF7076]">In ETH network</span>)
             </label>
             <input
               id="senderAddress"
