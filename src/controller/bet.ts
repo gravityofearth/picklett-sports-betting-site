@@ -53,7 +53,7 @@ function sendDiscordWebhook(line: any, isUpdated?: boolean) {
                     },
                     "title": `Click here to predict`,
                     "url": "https://www.picklett.com/user",
-                    "description": `# ${line.question}`,
+                    "description": `## ${line.question} \n  **${line.event} (${line.league}) ** \n -${line.sports}-`,
                     "color": 15258703,
                     "fields": [
                         {
