@@ -157,17 +157,17 @@ export default function Settings() {
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="username" className="block text-sm text-[#D1D5DC]">Username</label>
                                 <div className="flex justify-between items-center gap-3 text-sm">
-                                    <input
-                                        id="username"
-                                        type="text"
-                                        value={newUsername || currentUsername || ""}
-                                        onChange={(e) => {
-                                            if (!validateUsername(e.target.value.trim())) return
-                                            setNewUsername(e.target.value.trim())
-                                        }}
+                                    <div
+                                        // id="username"
+                                        // type="text"
+                                        // value={newUsername || currentUsername || ""}
+                                        // onChange={(e) => {
+                                        //     if (!validateUsername(e.target.value.trim())) return
+                                        //     setNewUsername(e.target.value.trim())
+                                        // }}
                                         className="bg-[#1E293999] w-full border border-[#E5E5E566] rounded-md px-2 py-3"
-                                    />
-                                    <button onClick={handleUsername} disabled={sendingRequest || !newUsername || !currentUsername || newUsername.trim() === currentUsername.trim()} className="w-25 bg-[#01A3DB] cursor-pointer hover:bg-[#0b6886] py-3 border border-[#01A3DB] rounded-md disabled:cursor-not-allowed disabled:bg-[#0b6886]">Save</button>
+                                    >{currentUsername}</div>
+                                    {/* <button onClick={handleUsername} disabled={sendingRequest || !newUsername || !currentUsername || newUsername.trim() === currentUsername.trim()} className="w-25 bg-[#01A3DB] cursor-pointer hover:bg-[#0b6886] py-3 border border-[#01A3DB] rounded-md disabled:cursor-not-allowed disabled:bg-[#0b6886]">Save</button> */}
                                 </div>
                             </div>
                             <div className="flex flex-col gap-2">

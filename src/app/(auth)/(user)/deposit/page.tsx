@@ -69,7 +69,7 @@ function DepositPage() {
       <div className="w-full max-w-7xl flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="font-semibold text-[26px] text-[#D9D9D9]">Deposit Funds</h1>
-          <p className="text-[#99A1AF]">Earn rewards by inviting friends to join our platform</p>
+          <p className="text-[#99A1AF]">If you would like to deposit other game currency like old school runescape GP, please open a ticket on discord</p>
         </div>
         <div className="grid grid-cols-2 max-md:grid-cols-1 gap-6">
           <div className="p-8 bg-linear-to-r from-[#0F172B80] to-[#1D293D4D] border border-[#31415880] rounded-[10px] flex flex-col gap-8">
