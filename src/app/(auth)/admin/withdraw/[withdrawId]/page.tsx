@@ -20,11 +20,11 @@ export default function WithdrawPage() {
   }, [])
   const submitApprove = () => {
     if (!withdraw) return
-    if (!tx || tx.trim() === "") {
+    if (withdraw.wallet && (!tx || tx.trim() === "")) {
       showToast("Enter transaction ID correctly", "warn")
       return
     }
-    if (!validateEthTx(tx.trim())) {
+    if (withdraw.wallet && (!validateEthTx(tx.trim()))) {
       showToast("Invalid transaction ID", "warn")
       return
     }
@@ -65,38 +65,41 @@ export default function WithdrawPage() {
       <div className="border border-gray-200 p-6">
         {withdraw &&
           <>
-            <div className="flex flex-col gap-2 text-sm">
+            <div className="flex flex-col gap-2 text-sm mb-4">
               <span className="text-lg">Username: {withdraw.username}</span>
               {withdraw.result === "requested" && withdraw.userbalance && withdraw.userbalance > 0 ? <span className="text-lg">User account balance: ${withdraw.userbalance.toFixed(2)}</span> : <></>}
               <span className="text-lg">Withdraw Amount: ${withdraw.amount}</span>
-              <span className="text-lg">Wallet Address: <code className="text-sm break-all">{withdraw.wallet}</code></span>
+              <span className="text-lg">{withdraw.wallet ? "Wallet Address: " : "Requested through gamecurrency"}<code className="text-sm break-all">{withdraw.wallet}</code></span>
               <span className="text-lg">Status: {withdraw.result}</span>
             </div>
             {
               withdraw.result === "requested" &&
               <div className="flex gap-4">
-                <button onClick={() => setApproveReject("approve")} className={`p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 cursor-pointer ${approveReject === "approve" ? "bg-gray-200" : ""}`}>
+                <button onClick={() => setApproveReject("approve")} className={`p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 hover:text-[black] cursor-pointer ${approveReject === "approve" ? "bg-gray-200 text-[black]" : ""}`}>
                   Approve
                 </button>
-                <button onClick={() => setApproveReject("reject")} className={`p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 cursor-pointer ${approveReject === "reject" ? "bg-gray-200" : ""}`}>
+                <button onClick={() => setApproveReject("reject")} className={`p-4 border border-gray-300 w-full flex justify-center hover:bg-gray-200 hover:text-[black] cursor-pointer ${approveReject === "reject" ? "bg-gray-200 text-[black]" : ""}`}>
                   Reject
                 </button>
               </div>
             }
             {approveReject === "approve" && withdraw.result === "requested" &&
               <div className="pt-4">
-                <div className="mb-4">
-                  <label className="block mb-2 text-sm">
-                    Enter withdraw transaction ID here
-                  </label>
-                  <input
-                    type="text"
-                    value={tx}
-                    onChange={(e) => setTx(e.target.value.trim())}
-                    className="w-full p-2 border border-gray-300"
-                    placeholder="0x..."
-                  />
-                </div>
+                {withdraw.wallet ?
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm">
+                      Enter withdraw transaction ID here
+                    </label>
+                    <input
+                      type="text"
+                      value={tx}
+                      onChange={(e) => setTx(e.target.value.trim())}
+                      className="w-full p-2 border border-gray-300"
+                      placeholder="0x..."
+                    />
+                  </div> :
+                  <p className="mb-4">Please confirm username</p>
+                }
                 <button onClick={submitApprove} className="p-4 bg-black text-white border border-gray-300 w-full flex justify-center hover:bg-black/80 cursor-pointer disabled:cursor-not-allowed" disabled={sendingRequest}>
                   Submit
                 </button>

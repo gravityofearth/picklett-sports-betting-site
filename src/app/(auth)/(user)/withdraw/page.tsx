@@ -52,10 +52,11 @@ const WithdrawModal = ({ setShowModal, setWithdraws }: { setShowModal: Dispatch<
   const { balance } = useUser()
   const [wallet, setWallet] = useState("")
   const [amount, setAmount] = useState("")
+  const [gamecurrencyWithdraw, setGamecurrencyWithdraw] = useState(false)
   const [sendingRequest, setSendingRequest] = useState(false)
   const handleWithdraw = () => {
     const withdrawAmount = Number.parseFloat(amount)
-    if (!validateEthAddress(wallet)) {
+    if (!gamecurrencyWithdraw && !validateEthAddress(wallet)) {
       showToast("Enter address correctly!", "warn")
       return
     }
@@ -98,22 +99,35 @@ const WithdrawModal = ({ setShowModal, setWithdraws }: { setShowModal: Dispatch<
         </button>
         <h1 className="text-xl font-semibold">Withdraw</h1>
         <div className="w-full flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="senderAddress" className="block text-sm font-semibold">
-              ETH address (<span className="text-[#FF7076]">In ETH network</span>)
-            </label>
-            <input
-              id="senderAddress"
-              type="text"
-              value={wallet}
-              onChange={(e) => setWallet(e.target.value.trim())}
-              className="w-full p-2 border border-[#E5E5E566] rounded-lg disabled:text-[#E5E5E566] text-sm"
-              placeholder="0x..."
-            />
-            <div className="flex gap-2 items-center">
-              <svg className="w-4 h-4"><use href="#svg-i" /></svg>
-              <p className="text-sm text-[#99A1AF]">Network: Ethereum Mainnet</p>
+          {!gamecurrencyWithdraw &&
+            <div className="flex flex-col gap-2">
+              <label htmlFor="senderAddress" className="block text-sm font-semibold">
+                ETH address (<span className="text-[#FF7076]">In ETH network</span>)
+              </label>
+              <input
+                id="senderAddress"
+                type="text"
+                value={wallet}
+                onChange={(e) => setWallet(e.target.value.trim())}
+                className="w-full p-2 border border-[#E5E5E566] rounded-lg disabled:text-[#E5E5E566] text-sm"
+                placeholder="0x..."
+              />
+              <div className="flex gap-2 items-center">
+                <svg className="w-4 h-4"><use href="#svg-i" /></svg>
+                <p className="text-sm text-[#99A1AF]">Network: Ethereum Mainnet</p>
+              </div>
             </div>
+          }
+          <div className="flex gap-2">
+            <input 
+              type="checkbox" 
+              onClick={() => {
+                setGamecurrencyWithdraw(prev => !prev)
+                setWallet("")
+              }}
+              className="w-5 h-5 accent-[#01A3DB] checked:text-[white]"
+            />
+            <p className="text-sm">Request through gamecurrency</p>
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="depositAmount" className="block text-sm font-semibold">

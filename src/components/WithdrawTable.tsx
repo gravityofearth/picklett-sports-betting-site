@@ -65,8 +65,10 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                                 </td>
                                 <td className="py-6 px-2">
                                     {
-                                        withdraw.tx !== "undefined" ?
+                                        (withdraw.tx !== "undefined" && withdraw.tx) ?
                                             <a target="_blank" href={`https://etherscan.com/tx/${withdraw.tx}`} className="text-[#01A3DB] flex gap-2 items-center">Link<svg className="w-4 h-4"><use href="#svg-export" /></svg></a> :
+                                        !withdraw.tx ?
+                                            <p className="text-xs">Gamecurrency</p> :
                                             <span className="text-sm">{withdraw.reason}</span>
                                     }
                                 </td>

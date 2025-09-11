@@ -88,7 +88,7 @@ export async function approveWithdraw({ id, tx }: { id: string, tx: string }) {
             balanceAfter: updatedUser.balance,
             withdrawId: new mongoose.Types.ObjectId(id),
             timestamp: new Date(),
-            description: `withdrawal: $${withdraw.amount} through ${tx}`
+            description: tx ? `withdrawal: $${withdraw.amount} through ${tx}` : `Withdrawed through gamecurrency`
         })
 
         const savedBalance = await newBalance.save({ session });

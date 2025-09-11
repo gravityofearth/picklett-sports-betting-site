@@ -6,8 +6,6 @@ const withdrawSchema = new mongoose.Schema({
     },
     wallet: {
         type: String,
-        required: true,
-        match: [/^0x[0-9a-fA-F]{40}$/, 'Invalid Ethereum Address']
     },
     amount: {
         type: Number,
