@@ -8,6 +8,12 @@ const lineSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    eventId: {
+        type: String,
+    },
+    oddsId: {
+        type: String,
+    },
     league: {
         type: String,
         required: true,
