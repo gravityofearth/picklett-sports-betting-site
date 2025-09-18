@@ -127,13 +127,13 @@ export default function HomePage() {
         </div>
         <div className="w-full flex flex-col gap-5">
           <div className="w-full overflow-x-auto flex gap-2 flex-wrap">
-            <SportsTab selected={sportsFilter === ""} onClick={() => setSportsFilter("")} icon="all-sports" category="All Sports" count={lines.length} />
-            <SportsTab selected={sportsFilter === "Basketball"} onClick={() => setSportsFilter("Basketball")} icon="basketball" category="Basketball" count={lines.filter(v => v.sports === "Basketball").length} />
-            <SportsTab selected={sportsFilter === "Soccer"} onClick={() => setSportsFilter("Soccer")} icon="soccer" category="Soccer" count={lines.filter(v => v.sports === "Soccer").length} />
-            <SportsTab selected={sportsFilter === "Tennis"} onClick={() => setSportsFilter("Tennis")} icon="tennis" category="Tennis" count={lines.filter(v => v.sports === "Tennis").length} />
-            <SportsTab selected={sportsFilter === "Baseball"} onClick={() => setSportsFilter("Baseball")} icon="baseball" category="Baseball" count={lines.filter(v => v.sports === "Baseball").length} />
-            <SportsTab selected={sportsFilter === "Esports"} onClick={() => setSportsFilter("Esports")} icon="esports" category="Esports" count={lines.filter(v => v.sports === "Esports").length} />
-            <SportsTab selected={sportsFilter === "Others"} onClick={() => setSportsFilter("Others")} icon="others" category="Others" count={lines.filter(v => v.sports === "Others").length} />
+            <SportsTab selected={sportsFilter === ""} onClick={() => { setSportsFilter(""), goToPage(1) }} icon="all-sports" category="All Sports" count={lines.length} />
+            <SportsTab selected={sportsFilter === "Basketball"} onClick={() => { setSportsFilter("Basketball"), goToPage(1) }} icon="basketball" category="Basketball" count={lines.filter(v => v.sports === "Basketball").length} />
+            <SportsTab selected={sportsFilter === "Soccer"} onClick={() => { setSportsFilter("Soccer"), goToPage(1) }} icon="soccer" category="Soccer" count={lines.filter(v => v.sports === "Soccer").length} />
+            <SportsTab selected={sportsFilter === "Tennis"} onClick={() => { setSportsFilter("Tennis"), goToPage(1) }} icon="tennis" category="Tennis" count={lines.filter(v => v.sports === "Tennis").length} />
+            <SportsTab selected={sportsFilter === "Baseball"} onClick={() => { setSportsFilter("Baseball"), goToPage(1) }} icon="baseball" category="Baseball" count={lines.filter(v => v.sports === "Baseball").length} />
+            <SportsTab selected={sportsFilter === "Esports"} onClick={() => { setSportsFilter("Esports"), goToPage(1) }} icon="esports" category="Esports" count={lines.filter(v => v.sports === "Esports").length} />
+            <SportsTab selected={sportsFilter === "Others"} onClick={() => { setSportsFilter("Others"), goToPage(1) }} icon="others" category="Others" count={lines.filter(v => v.sports === "Others").length} />
           </div>
           {winstreak > 1 && <div className="flex items-center gap-3 bg-[#FCC8002B] rounded-[14px] p-4">
             <svg className="w-[20px] h-[19px]"><use href="#svg-star" /></svg>
@@ -219,7 +219,7 @@ export default function HomePage() {
           {lines.length === 0 && <div className="mb-4 text-center col-span-2">Theres no lines at the moment, please go to the discord to suggest a line you would like!</div>}
         </div>
         <Pagination params={{
-          items: lines,
+          items: filteredLines,
           itemsPerPage,
           startIndex,
           endIndex,
@@ -397,7 +397,7 @@ const PromoCard = ({ sport, event, icon }: { sport: string, event: string, icon:
 }
 const SportsTab = ({ selected, icon, category, count, onClick }: { selected?: boolean, icon: string, category: string, count?: number, onClick?: () => void }) => {
   return (
-    <button onClick={onClick} className={`flex gap-5 items-center ${selected ? "bg-[#004b64]" : "bg-[#1E2939B2]"} border border-[#1E2939B2] px-3 py-[10px] rounded-[10px] whitespace-nowrap select-none cursor-pointer hover:border hover:border-[#01A3DB] disabled:hover:border-[#1E2939B2] disabled:cursor-not-allowed`} disabled={!count || count === 0}>
+    <button onClick={onClick} className={`flex gap-3 items-center ${selected ? "bg-[#004b64]" : "bg-[#1E2939B2]"} border border-[#1E2939B2] px-3 py-[10px] rounded-[10px] whitespace-nowrap select-none cursor-pointer hover:border hover:border-[#01A3DB] disabled:hover:border-[#1E2939B2] disabled:cursor-not-allowed`} disabled={!count || count === 0}>
       <div className="flex items-center gap-[7px]">
         <svg className="w-[14px] h-[14px] fill-white stroke-white"><use href={`#svg-${icon}`} /></svg>
         <div className="text-sm font-semibold">{category}</div>
