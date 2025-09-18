@@ -65,15 +65,19 @@ type PossibleLineType = {
 }
 const sportDict: { [K: string]: string } = {
   "SOCCER": "Soccer",
-  "FOOTBALL": "Soccer",
+  "FOOTBALL": "Others",
   "BASKETBALL": "Basketball",
-  "BASEBALL": "Baseball"
+  "BASEBALL": "Baseball",
+  "HOCKEY": "Others",
+  "HANDBALL": "Others",
+  "MMA": "Others"
 }
 const sports: { [key: string]: string[] } = {
-  soccer: ["EPL", "FR_LIGUE_1", "UEFA_CHAMPIONS_LEAGUE", "BUNDESLIGA", "INTERNATIONAL_SOCCER", "IT_SERIE_A", "LA_LIGA", "MLS", "NCAAF", "NFL"],
+  soccer: ["EPL", "FR_LIGUE_1", "UEFA_CHAMPIONS_LEAGUE", "BUNDESLIGA", "INTERNATIONAL_SOCCER", "IT_SERIE_A", "LA_LIGA", "MLS"],
   basketball: ["NBA", "NCAAB", "WNBA"],
   baseball: ["MLB"],
   // tennis: [],
+  others: ["NCAAF", "NFL", "NHL", "EHF_EURO", "UFC"],
 }
 const leagueNameDict: { [K: string]: string } = {
   "EPL": "EPL",
@@ -90,7 +94,9 @@ const leagueNameDict: { [K: string]: string } = {
   "NCAAB": "NCAAB",
   "WNBA": "WNBA",
   "MLB": "MLB",
-
+  "NHL": "NHL",
+  "EHF_EURO": "EHF European League",
+  "UFC": "UFC",
 }
 const oddsKeyDict: { [K: string]: string } = {
   "points-home-game-ml-home": "points-away-game-ml-away",
@@ -222,14 +228,15 @@ const openLines = async () => {
           possibleLines.push(line)
       }
     }
-    if (possibleLines.length === 0) return
-    const index1 = Math.floor(Math.random() * possibleLines.length)
-    let index2 = Math.floor(Math.random() * possibleLines.length)
-    while (index1 === index2 && possibleLines.length >= 2) {
-      index2 = Math.floor(Math.random() * possibleLines.length)
+    if (possibleLines.length === 0) {
+      const index1 = Math.floor(Math.random() * possibleLines.length)
+      let index2 = Math.floor(Math.random() * possibleLines.length)
+      while (index1 === index2 && possibleLines.length >= 2) {
+        index2 = Math.floor(Math.random() * possibleLines.length)
+      }
+      await createLine(possibleLines[index1])
+      if (possibleLines.length >= 2) await createLine(possibleLines[index2])
     }
-    await createLine(possibleLines[index1])
-    if (possibleLines.length >= 2) await createLine(possibleLines[index2])
     console.log("Autoline e-sports creation finished!")
   } catch (error) {
     console.error("Error in creating e-sports lines", error)
