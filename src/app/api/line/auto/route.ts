@@ -129,7 +129,7 @@ const openLines = async () => {
                 sports: sportDict[marketData.sport_name] as SportsType,
                 yes: oddsData.yes(hdp_points),
                 no: oddsData.no(hdp_points),
-                endsAt: new Date(event.starts).getTime(),
+                endsAt: new Date(`${event.starts}Z`).getTime(),
                 result: "pending", openedBy: "bot"
               }
               if (
