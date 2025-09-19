@@ -101,7 +101,7 @@ const openLines = async () => {
               no: () => period.money_line?.away ?? 1,
             },
             spreads: {
-              question: (hdp?: string) => `${event.home} Handicap ${hdp} ${period.description}`,
+              question: (hdp?: string) => `${event.home} Handicap ${Number(hdp) > 0 ? "+" : ""}${hdp} ${period.description}`,
               yes: (hdp?: string) => period.spreads?.[hdp!].home ?? 1,
               no: (hdp?: string) => period.spreads?.[hdp!].away ?? 1,
             },
