@@ -4,6 +4,7 @@ import { SportsType } from "@/types";
 import { AFFILIATE_REWARD_SECRET } from "@/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
+const NUMBER_OF_LINES_TO_OPEN = 2
 type OddsType = "money_line" | "spreads" | "totals" | "team_total"
 type MarketType = {
   sport_name: string;
@@ -15,7 +16,7 @@ type MarketType = {
     away: string;
     periods: {
       [K: string]: {
-        line_id: number;
+        number: number;
         description: string;
         money_line: {
           home: number;
@@ -60,23 +61,60 @@ type PossibleLineType = {
   result: string;
   openedBy: string;
 }
-const sportDict: { [K: string]: string } = {
+const sportsTypeDict: { [K: string]: string } = {
   "Soccer": "Soccer",
   "Tennis": "Tennis",
   "Basketball": "Basketball",
   "Baseball": "Baseball",
   "E Sports": "Esports",
-  "Hockey": "Others",
-  "Volleyball": "Others",
-  "Handball": "Others",
-  "American Football": "Others",
-  "Mixed Martial Arts": "Others",
-  "Cricket": "Others",
+  // "Hockey": "Others",
+  // "Volleyball": "Others",
+  // "Handball": "Others",
+  // "American Football": "Others",
+  // "Mixed Martial Arts": "Others",
+  // "Cricket": "Others",
+}
+const sportsDataDict: {
+  [K: string]: {
+    sportsId: number,
+    leaguePriorList: RegExp[]
+  }
+} = {
+  "Soccer": {
+    sportsId: 1,
+    leaguePriorList: []
+  },
+  "Tennis": {
+    sportsId: 2,
+    leaguePriorList: [/^ATP(?! Challenger| Challanger)/, /^WTA/]
+  },
+  "Basketball": {
+    sportsId: 3,
+    leaguePriorList: [/WNBA/, /NBA/]
+  },
+  "Baseball": {
+    sportsId: 9,
+    leaguePriorList: []
+  },
+  "Esports": {
+    sportsId: 10,
+    leaguePriorList: []
+  },
+  "American Football": {
+    sportsId: 7,
+    leaguePriorList: []
+  },
+  "Mixed Martial Arts": {
+    sportsId: 8,
+    leaguePriorList: []
+  },
 }
 const openLines = async () => {
   const pendingLines = await findPendingLines("user")
-  for (let sportsId of [1, 2, 3, 9, 10, 7, 8]) {
-    const possibleLines: PossibleLineType[] = []
+  for (let sportsName in sportsDataDict) {
+    const sportsData = sportsDataDict[sportsName]
+    const sportsId = sportsData.sportsId
+    const possibleLinesList: PossibleLineType[][] = Array.from({ length: sportsData.leaguePriorList.length + 1 }, () => [])
     try {
       // const timestamp = Math.floor(new Date().getTime() / 1000)
       const { data: marketData }: { data: MarketType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/markets?event_type=prematch&sport_id=${sportsId}&is_have_odds=true`, {
@@ -120,23 +158,31 @@ const openLines = async () => {
             const typedOddsKey = oddsKey as OddsType
             const oddsData = oddsDataDict[typedOddsKey]
             for (let hdp_points in typedOddsKey === "money_line" ? { 0: period.money_line } : period[typedOddsKey]) {
+              const oddsId = JSON.stringify({
+                number: period.number,
+                oddsKey,
+                hdp_points,
+              })
               const line = {
                 eventId: event.event_id.toString(),
-                oddsId: `${period.line_id}-${typedOddsKey}-${hdp_points}`,
+                oddsId,
                 question: oddsData.question(hdp_points),
                 event: `${event.home} vs ${event.away}`,
                 league: event.league_name,
-                sports: sportDict[marketData.sport_name] as SportsType,
+                sports: (sportsTypeDict[marketData.sport_name] ?? "Others") as SportsType,
                 yes: oddsData.yes(hdp_points),
                 no: oddsData.no(hdp_points),
                 endsAt: new Date(`${event.starts}Z`).getTime(),
                 result: "pending", openedBy: "bot"
               }
               if (
-                line.yes >= 1.8 && line.no >= 1.8 && line.endsAt > new Date().getTime() && line.endsAt < (new Date().getTime() + 24 * 60 * 60 * 1000) &&
-                pendingLines.filter(v => (v.eventId === line.eventId && v.oddsId === line.oddsId)).length === 0
+                line.yes >= 1.8 && line.no >= 1.8 &&
+                line.endsAt > new Date().getTime() && line.endsAt < (new Date().getTime() + 24 * 60 * 60 * 1000) &&
+                pendingLines.filter(v => (v.eventId === line.eventId /* && v.oddsId === line.oddsId */)).length === 0
               ) {
-                possibleLines.push(line)
+                let priorityIndex = 0
+                while (priorityIndex < sportsData.leaguePriorList.length && !sportsData.leaguePriorList[priorityIndex].test(line.league)) priorityIndex++
+                possibleLinesList[priorityIndex].push(line)
               }
             }
           }
@@ -145,14 +191,22 @@ const openLines = async () => {
     } catch (error) {
       console.error("Error in auto line creation:", error)
     }
-    if (possibleLines.length === 0) continue
-    const index1 = Math.floor(Math.random() * possibleLines.length)
-    let index2 = Math.floor(Math.random() * possibleLines.length)
-    while (index1 === index2 && possibleLines.length >= 2) {
-      index2 = Math.floor(Math.random() * possibleLines.length)
+    console.log("--- Possible lines built! ---", sportsName, possibleLinesList.map(v => v.length))
+    let linesCount = 0
+    for (let possibleLines of possibleLinesList) {
+      const indexList: number[] = []
+      for (let i = 0; i < Math.min(NUMBER_OF_LINES_TO_OPEN - linesCount, possibleLines.length); i++) {
+        let randomIndex = 0
+        do {
+          randomIndex = Math.floor(Math.random() * possibleLines.length)
+        } while (indexList.includes(randomIndex));
+        indexList.push(randomIndex)
+      }
+      for (let index of indexList) {
+        await createLine(possibleLines[index])
+        linesCount++
+      }
     }
-    await createLine(possibleLines[index1])
-    if (possibleLines.length >= 2) await createLine(possibleLines[index2])
     await new Promise((res) => setTimeout(res, 3000))
   }
   console.log("Autoline creation finished!")
