@@ -1,4 +1,5 @@
 export type SportsType = "Basketball" | "Soccer" | "Tennis" | "Baseball" | "Esports" | "Others"
+export type OddsType = "money_line" | "spreads" | "totals" | "team_total"
 export type LineType = {
     _id: string,
     question: string,

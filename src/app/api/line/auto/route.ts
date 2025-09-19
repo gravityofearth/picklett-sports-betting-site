@@ -1,11 +1,10 @@
 
 import { createLine, findPendingLines } from "@/controller/bet";
-import { SportsType } from "@/types";
-import { AFFILIATE_REWARD_SECRET } from "@/utils";
+import { OddsType, SportsType } from "@/types";
+import { AFFILIATE_REWARD_SECRET, RAPID_API_HEADERS } from "@/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 const NUMBER_OF_LINES_TO_OPEN = 2
-type OddsType = "money_line" | "spreads" | "totals" | "team_total"
 type MarketType = {
   sport_name: string;
   events: {
@@ -118,10 +117,7 @@ const openLines = async () => {
     try {
       // const timestamp = Math.floor(new Date().getTime() / 1000)
       const { data: marketData }: { data: MarketType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/markets?event_type=prematch&sport_id=${sportsId}&is_have_odds=true`, {
-        headers: {
-          "x-rapidapi-host": "pinnacle-odds.p.rapidapi.com",
-          "x-rapidapi-key": "a07dd4812amsh52727a34c5d33bdp1d45d1jsna6b9deb98244"
-        }
+        headers: RAPID_API_HEADERS
       })
       for (let event of marketData.events) {
         for (let periodKey in event.periods) {
@@ -162,6 +158,7 @@ const openLines = async () => {
                 number: period.number,
                 oddsKey,
                 hdp_points,
+                points: period.team_total?.[hdp_points as "home" | "away"]?.points ?? 0
               })
               const line = {
                 eventId: event.event_id.toString(),

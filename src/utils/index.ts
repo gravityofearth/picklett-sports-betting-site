@@ -27,6 +27,10 @@ export const showToast = (msg: ToastContent<unknown>, type: "info" | "error" | "
 };
 export const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secure-jwt-secret-key-change-this';
 export const AFFILIATE_REWARD_SECRET = 'O5I5g9w5ho7DKybR4BVWUSsnu61cSF0vQy';
+export const RAPID_API_HEADERS = {
+    "x-rapidapi-host": "pinnacle-odds.p.rapidapi.com",
+    "x-rapidapi-key": "a07dd4812amsh52727a34c5d33bdp1d45d1jsna6b9deb98244"
+}
 export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
     let totalSeconds = Math.floor(timestampDiff / 1000);
     if (totalSeconds <= 0) return "Ended"

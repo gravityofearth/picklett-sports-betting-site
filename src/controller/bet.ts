@@ -93,6 +93,16 @@ export async function findPendingLines(role: string) {
         throw error
     }
 }
+export async function findEndedLinesOpenedByBot() {
+    await connectMongoDB()
+    try {
+        const lines = await lineModel.find({ result: "pending", openedBy: "bot", endsAt: { $lt: new Date().getTime() } }).sort({ endsAt: 1, createdAt: -1 })
+        return lines;
+    } catch (error) {
+        console.error('Error finding line:', error);
+        throw error
+    }
+}
 export async function findLineById(id: string) {
     await connectMongoDB()
     try {
