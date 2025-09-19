@@ -133,7 +133,7 @@ const openLines = async () => {
                 result: "pending", openedBy: "bot"
               }
               if (
-                line.yes >= 1.8 && line.no >= 1.8 && line.endsAt > new Date().getTime() &&
+                line.yes >= 1.8 && line.no >= 1.8 && line.endsAt > new Date().getTime() && line.endsAt < (new Date().getTime() + 24 * 60 * 60 * 1000) &&
                 pendingLines.filter(v => (v.eventId === line.eventId && v.oddsId === line.oddsId)).length === 0
               ) {
                 possibleLines.push(line)
