@@ -122,7 +122,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="text-2xl font-bold">Welcome to Picklett!</div>
-            <div className="font-normal leading-6 text-[#D1D5DC]">Your sports betting bookie that does not want you to go broke overnight.<br />Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
+            <div className="font-normal leading-6 text-[#D1D5DC]">Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
           </div>
         </div>
         <div className="w-full flex flex-col gap-5">

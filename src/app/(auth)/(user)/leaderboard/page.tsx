@@ -15,7 +15,7 @@ export default function HomePage() {
     <div className="flex justify-center">
       <div className="w-full max-w-7xl flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="font-semibold text-[26px] text-[#D9D9D9]">Leaderboard</h1>
+          <h1 className="font-semibold text-[26px] text-[#D9D9D9]">Winstreak</h1>
           <p className="text-[#99A1AF]">You can see yours and others rewards here</p>
         </div>
         <div className="grid grid-cols-2 max-md:grid-cols-1 gap-6">

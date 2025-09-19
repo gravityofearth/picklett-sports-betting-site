@@ -48,7 +48,7 @@ export default function UserLayout({
                             {role !== "user" && <Link href={`/${role}`} className={`${(pathname === `/${role}`) ? "text-[#00BFFF]" : ""}`}>Admin</Link>}
                             <Link href="/user" className={`${pathname === "/user" ? "text-[#00BFFF]" : ""}`}>Home</Link>
                             <Link href="/affiliate" className={`${pathname === "/affiliate" ? "text-[#00BFFF]" : ""}`}>Affiliate</Link>
-                            <Link href="/leaderboard" className={`${pathname === "/leaderboard" ? "text-[#00BFFF]" : ""}`}>Leaderboard</Link>
+                            <Link href="/leaderboard" className={`${pathname === "/leaderboard" ? "text-[#00BFFF]" : ""}`}>Winstreak</Link>
                             <Link href="/bet-history" className={`${pathname === "/bet-history" ? "text-[#00BFFF]" : ""}`}>Bet History</Link>
                             <Link href="https://discord.gg/3ra2aXNWV8">
                                 <Image alt="discord" width={24} height={18} src={"/discord.png"} />

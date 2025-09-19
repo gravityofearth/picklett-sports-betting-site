@@ -20,7 +20,7 @@ const LeaderTable = ({ leaders, adminPage }: { leaders: LeaderType[], adminPage?
     return (
         <div className="flex flex-col gap-6 pt-6 bg-linear-0 from-[#1018284D] to-[#1E293933] border border-[#36415380] rounded-2xl">
             <div className="px-6 flex flex-col gap-2">
-                <h2 className="text-2xl">Leader Board</h2>
+                <h2 className="text-2xl">Winstreak Leaderboard</h2>
                 <p className="text-[#99A1AF]">*Only more than 2 winstreak will show up in the leaderboard.</p>
             </div>
             <div className="overflow-x-auto">
