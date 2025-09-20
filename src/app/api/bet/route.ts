@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { lineId, side, amount } = await request.json()
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
-    if (Number(amount) < 5 || Number(amount) > 50) return NextResponse.json({ error: "Out of range" }, { status: 400, statusText: "Out of range" });
+    if (Number(amount) < 5 || Number(amount) > 50) return NextResponse.json({ error: "Out of range" }, { status: 400, statusText: "Minimum $5, Maximum $50" });
     const { endsAt } = await findLineById(lineId)
     if (endsAt < new Date().getTime())
       return NextResponse.json({ error: "Bet already ended" }, { status: 400, statusText: "Bet already ended" });
