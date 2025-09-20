@@ -73,7 +73,7 @@ export default function HomePage() {
       return
     }
     if ((parseFloat(selectedLine.amount) < 5 || parseFloat(selectedLine.amount) > 50)) {
-      showToast("Out of range", "warn")
+      showToast("Minimum $5, Maximum $50", "warn")
       return
     }
     if (parseFloat(selectedLine.amount) > balance) {
