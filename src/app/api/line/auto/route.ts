@@ -153,12 +153,13 @@ const openLines = async () => {
           for (let oddsKey in oddsDataDict) {
             const typedOddsKey = oddsKey as OddsType
             const oddsData = oddsDataDict[typedOddsKey]
-            for (let hdp_points in typedOddsKey === "money_line" ? { 0: period.money_line } : period[typedOddsKey]) {
+            for (let hdp_points in typedOddsKey === "money_line" ? { "0.5": period.money_line } : period[typedOddsKey]) {
+              const points = period.team_total?.[hdp_points as "home" | "away"]?.points ?? 0
               const oddsId = JSON.stringify({
                 number: period.number,
                 oddsKey,
                 hdp_points,
-                points: period.team_total?.[hdp_points as "home" | "away"]?.points ?? 0
+                points
               })
               const line = {
                 eventId: event.event_id.toString(),
@@ -174,6 +175,7 @@ const openLines = async () => {
               }
               if (
                 line.yes >= 1.8 && line.no >= 1.8 &&
+                !Number.isInteger(typedOddsKey === "team_total" ? points : Number(hdp_points)) &&
                 line.endsAt > new Date().getTime() && line.endsAt < (new Date().getTime() + 24 * 60 * 60 * 1000) &&
                 pendingLines.filter(v => (v.eventId === line.eventId /* && v.oddsId === line.oddsId */)).length === 0
               ) {
