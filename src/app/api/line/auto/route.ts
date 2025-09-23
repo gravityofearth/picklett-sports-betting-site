@@ -95,10 +95,10 @@ const sportsDataDict: {
     sportsId: 9,
     leaguePriorList: []
   },
-  "Esports": {
-    sportsId: 10,
-    leaguePriorList: []
-  },
+  // "Esports": {
+  //   sportsId: 10,
+  //   leaguePriorList: []
+  // },
   "American Football": {
     sportsId: 7,
     leaguePriorList: []
@@ -107,6 +107,34 @@ const sportsDataDict: {
     sportsId: 8,
     leaguePriorList: []
   },
+}
+type EsportsType = {
+  SportAbbr: string,
+  LG: {
+    LGName: string,
+    LGId: number,
+    ParentMatch: {
+      PMatchNo: number,
+      PHTName: string,
+      PHTAbbr: string,
+      PATName: string,
+      PATAbbr: string,
+      MatchGroup: string,
+      Match: {
+        MatchNo: number,
+        GTCode: string,
+        GTName: string,
+        GameOrder: number,
+        MCDate: string,
+        Odds: {
+          SEL: {
+            SCode: number,
+            Odds: number
+          }[]
+        }[]
+      }[]
+    }[]
+  }[]
 }
 const openLines = async () => {
   const pendingLines = await findPendingLines("user")
@@ -177,7 +205,7 @@ const openLines = async () => {
                 line.yes >= 1.8 && line.no >= 1.8 &&
                 !Number.isInteger(typedOddsKey === "team_total" ? points : Number(hdp_points)) &&
                 line.endsAt > new Date().getTime() && line.endsAt < (new Date().getTime() + 24 * 60 * 60 * 1000) &&
-                pendingLines.filter(v => (v.eventId === line.eventId /* && v.oddsId === line.oddsId */)).length === 0
+                pendingLines.filter(v => (Number(v.eventId) === Number(line.eventId) /* && v.oddsId === line.oddsId */)).length === 0
               ) {
                 let priorityIndex = 0
                 while (priorityIndex < sportsData.leaguePriorList.length && !sportsData.leaguePriorList[priorityIndex].test(line.league)) priorityIndex++
@@ -208,7 +236,112 @@ const openLines = async () => {
     }
     await new Promise((res) => setTimeout(res, 3000))
   }
-  console.log("Autoline creation finished!")
+  console.log("Autoline sports creation finished!")
+  const timezone = `${(24 - new Date().getUTCHours()).toString().padStart(2, '0')}:00:00`
+  try {
+    const { data: { Sport: esports } }: { data: { Sport: EsportsType[] } } = await axios.post(`https://w2e-api.esportsmatrix.io/api/esbull/api/GetIndexMatchV2`, {
+      "GameCat": 1,
+      "SportBLFilter": [
+        {
+          "SportId": 45,
+          "BaseLGIDs": [
+            -99
+          ]
+        },
+        {
+          "SportId": 46,
+          "BaseLGIDs": [
+            -99
+          ]
+        },
+        {
+          "SportId": 47,
+          "BaseLGIDs": [
+            -99
+          ]
+        },
+        // {
+        //   "SportId": 57, // Rainbow
+        //   "BaseLGIDs": [
+        //     -99
+        //   ]
+        // }
+      ],
+      "MatchCnt": 150,
+      "SortType": 1,
+      "HasLive": false,
+      "Token": null,
+      "Language": "eng",
+      "BettingChannel": 1,
+      "MatchFilter": 1, // Today
+      "Timezone": timezone,
+      "Event": "",
+      "TriggeredBy": 1,
+      "TimeStamp": Math.floor(new Date().getTime() / 1000)
+    })
+    const possibleLines: PossibleLineType[] = []
+    for (let esport of esports) {
+      for (let leagueData of esport.LG) {
+        for (let parentMatch of leagueData.ParentMatch) {
+          if (parentMatch.MatchGroup !== "Upcoming") continue
+          if (parentMatch.Match.length === 0) continue
+          const { data: { Sport: esports } }: { data: { Sport: EsportsType[] } } = await axios.post(`https://w2e-api.esportsmatrix.io/api/esbull/api/GetMatchDetailsByParentV2`, {
+            "GameCat": 1,
+            "PMatchNo": parentMatch.PMatchNo,
+            "Token": null,
+            "Language": "eng",
+            "BettingChannel": 1,
+            "Grp": -2,
+            "GTGrpCnt": 20,
+            "Timezone": timezone,
+            "TimeStamp": Math.floor(new Date().getTime() / 1000)
+          })
+          console.log("Getting match detail info...", parentMatch.PMatchNo)
+          await new Promise((res) => setTimeout(res, 3000))
+          for (let match of esports[0].LG[0].ParentMatch[0].Match) {
+            const eventId = parentMatch.PMatchNo.toString()
+            const oddsId = JSON.stringify({
+              GameOrder: match.GameOrder,
+              GTCode: match.GTCode,
+              home: parentMatch.PHTAbbr,
+              away: parentMatch.PATAbbr,
+              StartTime: match.MCDate.slice(0, 10),
+            })
+            const home = parentMatch.PHTName
+            const away = parentMatch.PATName
+            const question = match.GTName.replace("{TeamA}", home).replace("{TeamB}", away)
+            const event = `${home} vs ${away}`
+            const league = leagueData.LGName
+            const sports = "Esports" as SportsType
+            const yes = match.Odds[0].SEL.filter(v => v.SCode === 1)[0].Odds
+            const no = match.Odds[0].SEL.filter(v => v.SCode === 2)[0].Odds
+            const endsAt = new Date(match.MCDate).getTime()
+            if (match.GameOrder > 2) continue // Filter from Map 3
+            if (!(yes >= 1.8 && no >= 1.8 && yes <= 2.5 && no <= 2.5)) continue
+            const line = {
+              eventId, oddsId, question, event, league, sports, yes, no, endsAt,
+              result: "pending", openedBy: "bot"
+            }
+            if (pendingLines.filter(v => (Number(v.eventId) === Number(line.eventId) /* && Number(v.oddsId) === Number(line.oddsId) */)).length === 0)
+              possibleLines.push(line)
+          }
+        }
+      }
+    }
+    console.log("--- Possible lines built! ---", possibleLines.length)
+    if (possibleLines.length > 0) {
+      const index1 = Math.floor(Math.random() * possibleLines.length)
+      let index2 = Math.floor(Math.random() * possibleLines.length)
+      while (index1 === index2 && possibleLines.length >= 2) {
+        index2 = Math.floor(Math.random() * possibleLines.length)
+      }
+      await createLine(possibleLines[index1])
+      if (possibleLines.length >= 2) await createLine(possibleLines[index2])
+    }
+    console.log("Autoline e-sports creation finished!")
+  } catch (error) {
+    console.error("Error in creating e-sports lines", error)
+  }
 }
 export async function POST(request: NextRequest) {
   try {
