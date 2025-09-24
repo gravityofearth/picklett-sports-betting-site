@@ -23,10 +23,10 @@ jobs:
           SERVER_USER: ${{ secrets.VPS_USER }}
           SERVER_IP: ${{ secrets.VPS_HOST }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_IP "
-          cd /var/www/picklett-sports-betting-site &&
-          git pull origin master &&
-          pnpm install &&
-          pnpm run build &&
-          pm2 restart Picklett
-          "
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_IP "bash -l -c '
+            cd /var/www/picklett-sports-betting-site &&
+            git pull origin master &&
+            pnpm install &&
+            pnpm run build &&
+            pm2 restart Picklett
+          '"
