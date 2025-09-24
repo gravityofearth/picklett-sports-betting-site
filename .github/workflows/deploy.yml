@@ -15,8 +15,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd /var/www/picklett-sports-betting-site
-            git pull origin master
-            /root/.nvm/versions/node/v22.18.0/bin/pnpm install
-            /root/.nvm/versions/node/v22.18.0/bin/pnpm run build
-            /root/.nvm/versions/node/v22.18.0/bin/pm2 restart Picklett
+            bash -l -c '
+            cd /var/www/picklett-sports-betting-site &&
+            git pull origin master &&
+            pnpm install &&
+            pnpm run build &&
+            pm2 restart Picklett
+            '
