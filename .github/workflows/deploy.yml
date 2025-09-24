@@ -1,24 +1,32 @@
-name: Deploy Next.js to VPS
+name: Deploy Ubuntu Server Project
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master # Change to your master branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Add SSH private key to agent
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          script: |
-            bash -l -c '
-            cd /var/www/picklett-sports-betting-site &&
-            git pull origin master &&
-            pnpm install &&
-            pnpm run build &&
-            pm2 restart Picklett
-            '
+          ssh-private-key: ${{ secrets.VPS_KEY }} # Ensure this secret contains the new private key
+
+      - name: Deploy to Server
+        env:
+          SERVER_USER: ${{ secrets.VPS_USER }}
+          SERVER_IP: ${{ secrets.VPS_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_IP "
+          cd /var/www/picklett-sports-betting-site &&
+          git pull origin master &&
+          pnpm install &&
+          pnpm run build &&
+          pm2 restart Picklett
+          "
