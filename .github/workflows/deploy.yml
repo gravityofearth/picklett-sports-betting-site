@@ -26,6 +26,10 @@ jobs:
 
       - name: Build project
         run: pnpm run build
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
