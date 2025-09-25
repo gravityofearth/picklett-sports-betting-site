@@ -32,8 +32,8 @@ export const RAPID_API_HEADERS = {
     "x-rapidapi-key": "bb098fd68cmsh83e565bc253ae75p1faf32jsn1d85a040ff50"
 }
 export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
-    let totalSeconds = Math.floor(timestampDiff / 1000);
-    if (totalSeconds <= 0) return "Ended"
+    const rawTotalSeconds = Math.floor(timestampDiff / 1000);
+    let totalSeconds = Math.abs(rawTotalSeconds)
     // const YEAR = 365 * 24 * 60 * 60;
     // const MONTH = 30 * 24 * 60 * 60;
     const DAY = 24 * 60 * 60;
@@ -55,7 +55,7 @@ export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
     const minutes = Math.floor(totalSeconds / MINUTE);
     const seconds = totalSeconds % MINUTE;
 
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${rawTotalSeconds < 0 ? " ago" : ""}`
 }
 export const convertAmerican2DecimalOdds = (americanOdds: number): number => {
     // Convert American odds to decimal

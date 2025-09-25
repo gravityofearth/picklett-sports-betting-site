@@ -38,6 +38,22 @@ export async function updateLine({ question, event, league, sports, yes, no, end
         throw error
     }
 }
+export async function updateLineEndsAt({ endsAt, _id }: { endsAt: number, _id: string }) {
+    await connectMongoDB()
+    try {
+        const updatedLine = await lineModel.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(_id) },
+            {
+                endsAt
+            },
+            { new: true }
+        )
+        return updatedLine;
+    } catch (error) {
+        console.error('Error updating Line EndsAt:', error);
+        throw error
+    }
+}
 function sendDiscordWebhook(line: any, isUpdated?: boolean) {
     if (discord_webhook_url) {
         const webhook_payload = {

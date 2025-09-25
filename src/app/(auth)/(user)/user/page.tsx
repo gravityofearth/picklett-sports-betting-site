@@ -156,7 +156,16 @@ export default function HomePage() {
                   </div>
                   <div className="flex gap-[6px] items-center">
                     <svg className="w-[10px] h-[12px]"><use href="#svg-clock" /></svg>
-                    <p className="text-sm font-semibold">Time Remaining : <span>{timeRemains.filter(v => v.id === line._id)[0]?.text}</span></p>
+                    <p className="text-sm font-semibold">
+                      {
+                        (() => {
+                          const time = timeRemains.filter(v => v.id === line._id)[0]?.text
+                          return (
+                            <>{time?.includes("ago") ? "Ended: " : "Time Remaining: "}{time}</>
+                          )
+                        })()
+                      }
+                    </p>
                   </div>
                 </div>
               </div>

@@ -383,8 +383,14 @@ export default function AdminPage() {
                                         />
 
                                         <div className="flex items-center justify-center gap-2">
-                                            <span>Time remaining:</span>
-                                            <span className="text-xl">{timeRemains.filter(v => v.id === line._id)[0]?.text}</span>
+                                            {
+                                                (() => {
+                                                    const time = timeRemains.filter(v => v.id === line._id)[0]?.text
+                                                    return (
+                                                        <>{time?.includes("ago") ? "Ended: " : "Time Remaining: "}{time}</>
+                                                    )
+                                                })()
+                                            }
                                         </div>
                                     </div>
                                     <button onClick={() => handleLine(line._id)} className={`col-span-4 max-md:col-span-1 w-full p-2 text-white cursor-pointer disabled:cursor-not-allowed ${line._id === "new" ? "bg-blue-600 disabled:bg-blue-400 hover:bg-blue-700" : "bg-black disabled:bg-black/50 hover:bg-black/80"}`} disabled={sendingRequest || line.changed < 1}>
