@@ -150,6 +150,7 @@ const openLines = async () => {
       for (let event of marketData.events) {
         for (let periodKey in event.periods) {
           const period = event.periods[periodKey]
+          const description = `(${period.description.replace("Game", "Match")})`
           const oddsDataDict: {
             [K in OddsType]: {
               question: (hdp_points: string) => string;
@@ -158,22 +159,22 @@ const openLines = async () => {
             }
           } = {
             money_line: {
-              question: () => `${event.home} To Win ${period.description}`,
+              question: () => `${event.home} To Win ${description}`,
               yes: () => period.money_line?.home ?? 1,
               no: () => period.money_line?.away ?? 1,
             },
             spreads: {
-              question: (hdp?: string) => `${event.home} Handicap ${Number(hdp) > 0 ? "+" : ""}${hdp} ${period.description}`,
+              question: (hdp?: string) => `${event.home} Handicap ${Number(hdp) > 0 ? "+" : ""}${hdp} ${description}`,
               yes: (hdp?: string) => period.spreads?.[hdp!].home ?? 1,
               no: (hdp?: string) => period.spreads?.[hdp!].away ?? 1,
             },
             totals: {
-              question: (points?: string) => `Over ${points} ${period.description}`,
+              question: (points?: string) => `Total Over ${points} ${description}`,
               yes: (points?: string) => period.totals?.[points!].over ?? 1,
               no: (points?: string) => period.totals?.[points!].under ?? 1,
             },
             team_total: {
-              question: (home_away: string) => `${event[home_away as "home" | "away"]} Over ${period.team_total?.[home_away as "home" | "away"].points} ${period.description}`,
+              question: (home_away: string) => `${event[home_away as "home" | "away"]} Over ${period.team_total?.[home_away as "home" | "away"].points} ${description}`,
               yes: (home_away: string) => period.team_total?.[home_away as "home" | "away"].over ?? 1,
               no: (home_away: string) => period.team_total?.[home_away as "home" | "away"].under ?? 1,
             },
@@ -309,7 +310,7 @@ const openLines = async () => {
             })
             const home = parentMatch.PHTName
             const away = parentMatch.PATName
-            const question = match.GTName.replace("{TeamA}", home).replace("{TeamB}", away)
+            const question = `${home} ${match.GTName.replace("{TeamA}", home).replace("{TeamB}", away).replace("Game", "Map")} - ${esport.SportAbbr}`
             const event = `${home} vs ${away}`
             const league = leagueData.LGName
             const sports = "Esports" as SportsType
@@ -317,6 +318,7 @@ const openLines = async () => {
             const no = match.Odds[0].SEL.filter(v => v.SCode === 2)[0].Odds
             const endsAt = new Date(match.MCDate).getTime()
             if (match.GameOrder > 2) continue // Filter from Map 3
+            if (match.GTName.includes("+")) continue
             if (!(yes >= 1.8 && no >= 1.8 && yes <= 2.5 && no <= 2.5)) continue
             const line = {
               eventId, oddsId, question, event, league, sports, yes, no, endsAt,

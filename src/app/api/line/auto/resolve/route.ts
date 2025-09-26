@@ -1,11 +1,12 @@
 
-import { findEndedLinesOpenedByBot, resolveBet } from "@/controller/bet";
+import { findEndedLinesOpenedByBot, resolveBet, updateLineEndsAt } from "@/controller/bet";
 import { OddsType } from "@/types";
 import { AFFILIATE_REWARD_SECRET, RAPID_API_HEADERS } from "@/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 type EventsType = {
   events: {
+    starts?: string,
     period_results?: {
       "number": number,
       "team_1_score": number,
@@ -32,7 +33,7 @@ const resolveLines = async () => {
   const endedLines = await findEndedLinesOpenedByBot()
   const { data: { Data: leagueIdDataList } }: { data: { Data: { Id: number, Name: string }[] } } = await axios.get(`https://www.esportstatspro.com/en-US/matrix/Home/GetLeagues?timezone=0&date=`)
   for (let endedLine of endedLines) {
-    const { _id, eventId, oddsId, sports, league }: { _id: string, eventId: number, oddsId: string, sports: string, league: string } = endedLine
+    const { _id, eventId, oddsId, sports, league, endsAt }: { _id: string, eventId: number, oddsId: string, sports: string, league: string, endsAt: number } = endedLine
     if (sports !== "Esports") {
       const { number, oddsKey, hdp_points, points }: { number: number, oddsKey: OddsType, hdp_points: string, points: number } = JSON.parse(oddsId)
       try {
@@ -50,6 +51,8 @@ const resolveLines = async () => {
             await resolveBet(_id, result ? "yes" : "no")
             console.log("--- Sports line Resolved! ---", _id, result ? "yes" : "no")
           }
+        } else if (event?.starts && new Date(event.starts).getTime() !== endsAt) {
+          await updateLineEndsAt({ _id, endsAt: new Date(event.starts).getTime() })
         }
       } catch (error) {
         console.error("Error in sports resolution:", error)
