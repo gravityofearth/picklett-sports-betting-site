@@ -54,8 +54,8 @@ const resolveLines = async () => {
             await resolveBet(_id, result ? "yes" : "no")
             console.log("--- Sports line Resolved! ---", _id, result ? "yes" : "no")
           }
-        } else if (event?.starts && new Date(event.starts).getTime() !== endsAt) {
-          await updateLineEndsAt({ _id, endsAt: new Date(event.starts).getTime() })
+        } else if (event?.starts && new Date(`${event.starts}Z`).getTime() !== endsAt) {
+          await updateLineEndsAt({ _id, endsAt: new Date(`${event.starts}Z`).getTime() })
         }
       } catch (error) {
         console.error("Error in sports resolution:", error)
