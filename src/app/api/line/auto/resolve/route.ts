@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 type EventsType = {
   events: {
     starts?: string,
+    home_team_type?: string,
     period_results?: {
       "number": number,
       "team_1_score": number,
@@ -43,11 +44,13 @@ const resolveLines = async () => {
         if (event?.period_results) {
           const period_result = event.period_results.filter(v => v.number === number)[0]
           if (period_result) {
+            const team_1_score = event.home_team_type === "Team1" ? period_result.team_1_score : period_result.team_2_score
+            const team_2_score = event.home_team_type === "Team1" ? period_result.team_2_score : period_result.team_1_score
             const result =
-              oddsKey === "money_line" ? period_result.team_1_score > period_result.team_2_score :
-                oddsKey === "spreads" ? period_result.team_1_score + Number(hdp_points) > period_result.team_2_score :
-                  oddsKey === "totals" ? period_result.team_1_score + period_result.team_2_score > Number(hdp_points) :
-                    period_result[hdp_points === "home" ? "team_1_score" : "team_2_score"] > points
+              oddsKey === "money_line" ? team_1_score > team_2_score :
+                oddsKey === "spreads" ? team_1_score + Number(hdp_points) > team_2_score :
+                  oddsKey === "totals" ? team_1_score + team_2_score > Number(hdp_points) :
+                    hdp_points === "home" ? team_1_score : team_2_score > points
             await resolveBet(_id, result ? "yes" : "no")
             console.log("--- Sports line Resolved! ---", _id, result ? "yes" : "no")
           }
