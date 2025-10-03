@@ -29,7 +29,7 @@ export const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secure-jwt-secre
 export const AFFILIATE_REWARD_SECRET = 'O5I5g9w5ho7DKybR4BVWUSsnu61cSF0vQy';
 export const RAPID_API_HEADERS = {
     "x-rapidapi-host": "pinnacle-odds.p.rapidapi.com",
-    "x-rapidapi-key": "0d82c00977mshdc5d3303e9aa831p1a9bb3jsn02cc9dd79947"
+    "x-rapidapi-key": "c79a7c230bmsh878ea9e31a7a8acp1badcejsnf196224f1821"
 }
 export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
     const rawTotalSeconds = Math.floor(timestampDiff / 1000);
