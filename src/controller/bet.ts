@@ -259,16 +259,27 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         }
         const odd = Number(result[winningSide])
 
-        await betModel.updateMany({
-            lineId: new mongoose.Types.ObjectId(lineId),
-            status: "pending",
-            side: winningSide
-        }, { status: "win" }).session(session)
-        await betModel.updateMany({
-            lineId: new mongoose.Types.ObjectId(lineId),
-            status: "pending",
-            side: winningSide === "yes" ? "no" : "yes"
-        }, { status: "lose" }).session(session)
+        await betModel.updateMany(
+            {
+                lineId: new mongoose.Types.ObjectId(lineId),
+                status: "pending"
+            },
+            [
+                {
+                    $set: {
+                        status: {
+                            $cond: {
+                                if: { $eq: ["$side", winningSide] },
+                                then: "win",
+                                else: "lose"
+                            }
+                        }
+                    }
+                }
+            ],
+            { session }
+        );
+
         // const winners = await betModel.find({ lineId: new mongoose.Types.ObjectId(lineId), status: "win" })
         // const groupedWinners = await betModel.aggregate([
         //     {
