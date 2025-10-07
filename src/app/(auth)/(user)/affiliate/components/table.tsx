@@ -1,8 +1,8 @@
 "use client"
 
+import Pagination from "@/components/Pagination"
 import { AffiliateRewardType } from "@/types"
 import { useState } from "react"
-import Pagination from "./Pagination"
 
 const AffiliateRewardTable = ({ rewards, adminPage }: { rewards: AffiliateRewardType[], adminPage?: boolean }) => {
     // Pagination

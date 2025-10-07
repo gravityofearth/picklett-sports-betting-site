@@ -1,22 +1,18 @@
-"use client"
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@/store";
-export default function AuthLayout({
+import { cookies } from 'next/headers'
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "@/utils"
+import { redirect } from "next/navigation";
+export default async function AuthLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { role } = useUser()
-    const router = useRouter()
-    useEffect(() => {
-        if (!role) return
-        if (role !== "admin") {
-            router.push("/login")
-            return
-        }
-    }, [role])
+    const cookieStore = await cookies()
+    const token = cookieStore.get('jwt')?.value ?? ""
+    const { role }: any = jwt.verify(token, JWT_SECRET)
+    if (role !== "admin") {
+        redirect("/login")
+    }
     return (
         <>
             {children}

@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
-import { JWT_SECRET } from "@/utils";
+import { getCookieResponse, JWT_SECRET } from "@/utils";
 import { getDepositById } from "@/controller/deposit";
 import { signToken } from "@/controller/auth";
 import { findUserByUsername } from "@/controller/user";
@@ -16,7 +16,10 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
       const user = await findUserByUsername(username)
       new_token = signToken(user)
     }
-    return NextResponse.json({ deposit: { currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }, basets: new Date().getTime(), token: new_token }, { status: 200 });
+    return getCookieResponse({
+      response: NextResponse.json({ deposit: { currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }, basets: new Date().getTime(), token: new_token }, { status: 200 }),
+      token: new_token
+    })
 
   } catch (error: any) {
     console.error("Error processing commissions:", error);

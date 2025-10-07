@@ -2,7 +2,7 @@ import { signToken } from "@/controller/auth";
 import { findBet, findLineById, placeBet } from "@/controller/bet";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
-import { JWT_SECRET } from "@/utils";
+import { getCookieResponse, JWT_SECRET } from "@/utils";
 // This endpoint should be called by a cron job service
 export async function POST(request: NextRequest) {
   try {
@@ -16,8 +16,10 @@ export async function POST(request: NextRequest) {
     // calc amount in user profile
     const { bet, user } = await placeBet({ lineId, username, amount, side })
     const new_token = signToken(user)
-    return NextResponse.json({ bet, token: new_token }, { status: 201 });
-
+    return getCookieResponse({
+      response: NextResponse.json({ bet, token: new_token }, { status: 201 }),
+      token: new_token
+    })
   } catch (error: any) {
     console.error("Error processing commissions:", error);
     if (error.message.includes("Insufficient balance."))

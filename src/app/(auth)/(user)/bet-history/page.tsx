@@ -1,21 +1,18 @@
-"use client"
-
 import BetTable from "@/components/BetTable"
+import { cookies } from 'next/headers'
+import jwt from "jsonwebtoken"
 import SumCard from "@/components/SumCard"
-import { useUser } from "@/store"
 import { BetType } from "@/types"
-import axios from "axios"
-import { useEffect, useState } from "react"
+import { JWT_SECRET } from "@/utils"
 
-export default function BetHistory() {
-    const { username } = useUser()
-    const [userBets, setUserBets] = useState<BetType[]>([])
-    useEffect(() => {
-        axios.get("/api/bet", { headers: { token: localStorage.getItem("jwt") } })
-            .then(({ data: { bet } }) => {
-                setUserBets(bet)
-            })
-    }, [])
+export default async function BetHistory() {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('jwt')?.value ?? ""
+    const { username }: any = jwt.verify(token, JWT_SECRET)
+    const { bet: userBets }: { bet: BetType[] } = await (await fetch('http://localhost:3000/api/bet', {
+        headers: { token },
+        cache: "no-store"
+    })).json()
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-7xl flex flex-col gap-6">
@@ -28,7 +25,7 @@ export default function BetHistory() {
                     <SumCard amount={userBets.filter(v => v.status === "lose").length.toString()} heading="Losing" description="Lifetime losing from betting" color="#FF6467" icon="failed" />
                     <SumCard amount={userBets.filter(v => v.status === "pending").length.toString()} heading="Pending" description="Pending on the betting" color="#FFBA00" icon="pending" />
                 </div>
-                {username && <BetTable userBets={userBets} username={username} adminPage={username === "admin"} />}
+                <BetTable userBets={userBets} username={username} adminPage={username === "admin"} />
             </div>
         </div>
     )

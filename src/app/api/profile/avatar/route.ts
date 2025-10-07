@@ -4,7 +4,7 @@ import connectMongoDB from "@/utils/mongodb";
 import fs from "fs/promises";
 import path from "path";
 import jwt from "jsonwebtoken"
-import { JWT_SECRET } from "@/utils";
+import { getCookieResponse, JWT_SECRET } from "@/utils";
 import { updateAvatar } from "@/controller/user";
 import { signToken } from "@/controller/auth";
 
@@ -33,7 +33,10 @@ export async function POST(request: Request) {
 
       const updated_user = await updateAvatar({ username, avatar: filename })
       const new_token = signToken(updated_user)
-      return NextResponse.json({ token: new_token }, { status: 200 });
+      return getCookieResponse({
+        response: NextResponse.json({ token: new_token }, { status: 200 }),
+        token: new_token,
+      })
     }
 
     // return NextResponse.json({ message: "Files uploaded successfully" });

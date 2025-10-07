@@ -1,11 +1,11 @@
 "use client"
 
+import Pagination from "@/components/Pagination"
 import { useUser } from "@/store"
 import { RedemptionType } from "@/types"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { SetStateAction, useState } from "react"
-import Pagination from "./Pagination"
 
 const RedemptionTable = ({ redemptions, setRedemptions }: { redemptions: RedemptionType[], setRedemptions: (value: SetStateAction<RedemptionType[]>) => void }) => {
     const { setToken } = useUser()

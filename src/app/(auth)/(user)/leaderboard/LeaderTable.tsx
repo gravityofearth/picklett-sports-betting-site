@@ -1,9 +1,9 @@
 "use client"
 
 import { LeaderType } from "@/types"
-import { useState } from "react"
-import Pagination from "./Pagination"
+import { useState } from "react" 
 import Image from "next/image"
+import Pagination from "@/components/Pagination"
 
 const LeaderTable = ({ leaders, adminPage }: { leaders: LeaderType[], adminPage?: boolean }) => {
     const [isError, setError] = useState(false)

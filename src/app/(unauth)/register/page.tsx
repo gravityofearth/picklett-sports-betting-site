@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { showToast } from "@/utils"

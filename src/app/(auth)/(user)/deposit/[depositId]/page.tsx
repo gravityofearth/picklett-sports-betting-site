@@ -1,9 +1,7 @@
 "use client"
-
-import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { CurrencyDict, validateDecimal } from "@/utils"
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 import { svgCopy, svgCopyOk } from "@/components/SVG"
 import QRCodeImg from "@/components/QRCodeImg"
 import { CircularIndeterminate } from "@/components/Circular"

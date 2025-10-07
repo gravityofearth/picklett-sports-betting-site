@@ -1,5 +1,4 @@
-import type React from "react"
-import DepositHistoryPage from "@/components/DepositHistoryPage"
+import DepositHistoryPage from "./DepositHistoryPage"
 import Link from "next/link"
 
 export default function Transactions() {

@@ -2,14 +2,13 @@
 
 import { convertAmerican2DecimalOdds, convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast, validateCurrency } from "@/utils"
 import axios, { AxiosError } from "axios"
-import type React from "react"
 import { useEffect, useMemo, useState } from "react"
 import { BetType, LineCardAdminType, LineType, SportsType } from "@/types"
 import BetTable from "@/components/BetTable"
 import { useUser } from "@/store"
 import { usePathname } from "next/navigation"
 
-export default function AdminPage() {
+export default function AdminPage({ params: { username, role } }: { params: { username: string, role: string } }) {
     const pathname = usePathname()
     const rawLine: LineType & LineCardAdminType = useMemo(() => ({
         _id: "new",
@@ -48,8 +47,7 @@ export default function AdminPage() {
     //             ...update.filter(v => v._id !== "new").sort((b, a) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     //         ]);
     //     }
-    // };
-    const { username, role } = useUser()
+    // }; 
     const [timeRemains, setTimeRemains] = useState<{ id: string, text: string }[]>([])
     const [timeOffset, setTimeOffset] = useState(0)
     const [loading, setLoading] = useState(true)
@@ -440,7 +438,7 @@ export default function AdminPage() {
                         )}
                     </div>
                 </>}
-            {role === "admin" && <BetTable userBets={userBets} username="admin" adminPage={role === "admin"} />}
+            {/* {role === "admin" && <BetTable userBets={userBets} username="admin" adminPage={role === "admin"} />} */}
         </div>
     )
 }

@@ -1,8 +1,8 @@
-import type React from "react"
+import { ReactNode } from "react";
 export default function UserLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <div className="flex justify-center">

@@ -1,16 +1,9 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import axios from "axios"
-import LeaderTable from "@/components/LeaderTable"
+import LeaderTable from "./LeaderTable"
 import { LeaderType } from "@/types"
-export default function HomePage() {
-  const [leaders, setLeaders] = useState<LeaderType[]>([])
-  useEffect(() => {
-    axios.get('/api/leaders').then(({ data: { leaders } }) => {
-      setLeaders(leaders)
-    })
-  }, [])
+export default async function HomePage() {
+  const { leaders }: { leaders: LeaderType[] } = await (await fetch('http://localhost:3000/api/leaders', {
+    cache: "no-store"
+  })).json()
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-7xl flex flex-col gap-6">

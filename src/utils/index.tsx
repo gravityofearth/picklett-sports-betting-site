@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ReactNode } from "react";
 import {  /*Bounce, */ ToastOptions, toast, Flip, ToastContent, } from "react-toastify";
 import * as bitcoin from "bitcoinjs-lib"
+import { NextResponse } from "next/server";
 
 const config: ToastOptions = {
     position: "top-center",
@@ -127,4 +128,14 @@ export const validatedBtcAddress = (address: string) => {
     } catch (e) {
         return false;
     }
+}
+export function getCookieResponse({ response, token }: { response: NextResponse, token: string }) {
+    response.cookies.set('jwt', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24, // 1 day in seconds
+        path: '/',
+    })
+    return response
 }

@@ -1,5 +1,4 @@
-import type React from "react"
-import WithdrawHistoryPage from "@/components/WithdrawHistoryPage"
+import WithdrawHistoryPage from "./WithdrawHistoryPage"
 import Link from "next/link"
 
 export default function Transactions() {

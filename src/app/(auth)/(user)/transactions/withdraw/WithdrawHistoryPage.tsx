@@ -1,22 +1,17 @@
-"use client"
-
-import type React from "react"
-import { useState, useEffect } from "react"
 import axios from "axios"
+import { cookies } from 'next/headers'
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "@/utils"
 import WithdrawTable from "@/components/WithdrawTable"
 import { WithdrawType } from "@/types"
-import { useUser } from "@/store"
 import SumCard from "@/components/SumCard"
 
-export default function WithdrawHistoryPage() {
-  const { username } = useUser()
-  const [withdraws, setWithdraws] = useState<WithdrawType[]>([])
-  useEffect(() => {
-    axios.get("/api/withdraw", { headers: { token: localStorage.getItem("jwt") } })
-      .then(({ data: { withdraw } }) => {
-        setWithdraws(withdraw)
-      })
-  }, [])
+export default async function WithdrawHistoryPage() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('jwt')?.value ?? ""
+  const { username }: any = jwt.verify(token, JWT_SECRET)
+  const { data: { withdraw: withdraws } }: { data: { withdraw: WithdrawType[] } } = await axios.get("http://localhost:3000/api/withdraw", { headers: { token } })
+
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-7xl flex flex-col gap-6">

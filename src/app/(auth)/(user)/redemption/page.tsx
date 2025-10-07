@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { Suspense, useEffect, useState } from "react"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"

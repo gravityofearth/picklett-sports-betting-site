@@ -1,24 +1,20 @@
-"use client"
-
-import type React from "react"
-import { useEffect, useState } from "react"
-import axios from "axios"
+import { cookies } from 'next/headers'
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "@/utils"
 import { DepositType } from "@/types"
 import DepositTable from "@/components/DepositTable"
-import { useUser } from "@/store"
 
-export default function AdminDepositsPage() {
-  const { username } = useUser()
-  const [deposits, setDeposits] = useState<DepositType[]>([])
-  useEffect(() => {
-    axios.get("/api/deposit", { headers: { token: localStorage.getItem("jwt") } })
-      .then(({ data: { deposit } }) => {
-        setDeposits(deposit)
-      })
-  }, [])
+export default async function AdminDepositsPage() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('jwt')?.value ?? ""
+  const { username }: any = jwt.verify(token, JWT_SECRET)
+  const { deposit: deposits }: { deposit: DepositType[] } = await (await fetch('http://localhost:3000/api/deposit', {
+    headers: { token },
+    cache: "no-store"
+  })).json()
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
-      {username && <DepositTable userDeposits={deposits} username={username} adminPage />}
+      <DepositTable userDeposits={deposits} username={username} adminPage />
     </div>
   )
 }

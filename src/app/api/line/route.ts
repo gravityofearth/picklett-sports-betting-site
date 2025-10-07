@@ -3,7 +3,7 @@ import { createLine, findPendingLines, updateLine } from "@/controller/bet";
 import { findUserByUsername } from "@/controller/user";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
-import { JWT_SECRET } from "@/utils";
+import { getCookieResponse, JWT_SECRET } from "@/utils";
 // This endpoint should be called by a cron job service
 export async function POST(request: NextRequest) {
   try {
@@ -45,8 +45,10 @@ export async function GET(request: NextRequest) {
     const user = await findUserByUsername(username)
     const lines = await findPendingLines(role)
     const new_token = signToken(user)
-    return NextResponse.json({ lines, token: new_token, basets: new Date().getTime() }, { status: 200 });
-
+    return getCookieResponse({
+      response: NextResponse.json({ lines, token: new_token, basets: new Date().getTime() }, { status: 200 }),
+      token: new_token
+    })
   } catch (error: any) {
     console.error("Error processing commissions:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500, statusText: error.message });

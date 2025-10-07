@@ -1,23 +1,17 @@
-"use client"
-
-import type React from "react"
-import { useEffect, useState } from "react"
 import axios from "axios"
-import { useUser } from "@/store"
+import { cookies } from 'next/headers'
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "@/utils"
 import { DepositType } from "@/types"
 import DepositTable from "@/components/DepositTable"
 import SumCard from "@/components/SumCard"
 
-export default function DepositHistoryPage() {
-  const { username } = useUser()
-  const [deposits, setDeposits] = useState<DepositType[]>([])
-  useEffect(() => {
-    if (!localStorage.getItem("jwt")) return
-    axios.get("/api/deposit", { headers: { token: localStorage.getItem("jwt") } })
-      .then(({ data: { deposit } }) => {
-        setDeposits(deposit)
-      })
-  }, [])
+export default async function DepositHistoryPage() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get('jwt')?.value ?? ""
+  const { username }: any = jwt.verify(token, JWT_SECRET)
+  const { data: { deposit: deposits } }: { data: { deposit: DepositType[] } } = await axios.get("http://localhost:3000/api/deposit", { headers: { token } })
+
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-7xl flex flex-col gap-6">
@@ -26,7 +20,7 @@ export default function DepositHistoryPage() {
           <SumCard icon="pending" amount={deposits.filter(v => v.result === "confirming").length.toString()} heading="Pending" description="Pending deposits" color="#FFBA00" />
           <SumCard icon="failed" amount={deposits.filter(v => v.result === "expired").length.toString()} heading="Expired" description="Expired deposits" color="#FF6467" />
         </div>
-        {username && <DepositTable userDeposits={deposits} username={username} />}
+        <DepositTable userDeposits={deposits} username={username} />
       </div>
     </div>
   )
