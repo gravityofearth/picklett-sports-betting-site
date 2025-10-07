@@ -4,8 +4,20 @@ const withdrawSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    wallet: {
+    currency: {
         type: String,
+        required: true,
+    },
+    network: {
+        type: String,
+        required: true,
+    },
+    address: {
+        type: String,
+    },
+    lockedPrice: {
+        type: Number,
+        required: true,
     },
     amount: {
         type: Number,
@@ -14,13 +26,12 @@ const withdrawSchema = new mongoose.Schema({
     result: {
         type: String,
         required: true,
-        enum: ["requested", "failed", "success"],
+        enum: ["pending", "failed", "success"],
     },
     reason: String,
     tx: {
         type: String,
         required: true,
-        match: [/^(0x[0-9a-fA-F]{64}|undefined)$/, 'Invalid Ethereum Transaction']
     },
 }, {
     timestamps: true, // Adds createdAt and updatedAt

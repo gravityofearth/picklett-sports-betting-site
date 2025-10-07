@@ -9,7 +9,12 @@ export async function GET(request: NextRequest) {
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
     const deposit = await findDeposit_no_initiated(username)
-    return NextResponse.json({ deposit }, { status: 200 });
+    return NextResponse.json({
+      deposit: deposit.map(
+        ({ _id, username, currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }) =>
+          ({ _id, username, currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt })
+      )
+    }, { status: 200 });
 
   } catch (error: any) {
     console.error("Error processing commissions:", error);

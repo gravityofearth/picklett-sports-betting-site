@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import { getWithdrawById } from "@/controller/withdraw";
+import { getVaultBalance, getWithdrawById } from "@/controller/withdraw";
 import { NextRequest, NextResponse } from "next/server";
 import { JWT_SECRET } from "@/utils";
 export async function GET(request: NextRequest, { params }: { params: any }) {
@@ -9,7 +9,9 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
     const { role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unauthorized request" });
     const withdraw = await getWithdrawById(withdrawId)
-    return NextResponse.json({ withdraw }, { status: 200 });
+    const network = withdraw.network
+    const { lockedPrice, vaultBalance } = await getVaultBalance({ network })
+    return NextResponse.json({ withdraw, lockedPrice, vaultBalance }, { status: 200 });
 
   } catch (error: any) {
     console.error("Error processing commissions:", error);

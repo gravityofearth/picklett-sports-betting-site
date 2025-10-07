@@ -115,6 +115,18 @@ export default function UserLayout({
                                             </Link>
                                         </div>
                                         <div onClick={() => { setShowUserDropdown(false) }}>
+                                            <Link href="/redemption" className="flex items-center text-[13px] font-semibold p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                                <svg className="w-3 h-3 shrink-0"><use href="#svg-user-redemption" /></svg>
+                                                <span className="text-nowrap">Redemption</span>
+                                            </Link>
+                                        </div>
+                                        <div onClick={() => { setShowUserDropdown(false) }}>
+                                            <Link href="/transactions/deposit" className="flex items-center text-[13px] font-semibold p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                                <svg className="w-3 h-3 shrink-0"><use href="#svg-user-transactions" /></svg>
+                                                <span className="text-nowrap">Transactions</span>
+                                            </Link>
+                                        </div>
+                                        <div onClick={() => { setShowUserDropdown(false) }}>
                                             <button onClick={logout} className="w-full flex items-center text-[13px] font-semibold p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
                                                 <svg className="w-3 h-3 shrink-0"><use href="#svg-user-logout" /></svg>
                                                 <span>Logout</span>

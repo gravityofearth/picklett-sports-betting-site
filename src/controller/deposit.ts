@@ -6,25 +6,32 @@ import axios from "axios";
 import mongoose from "mongoose";
 import { increaseBalance } from "./user";
 import userModel from "@/model/user";
-// const dedicatedWallet = "0x1F0E8E61E2C2BeB9b9cdea7Dc2BD8C761124533e"
-const dedicatedWallet = "0x1a556f70bF5957A44F47DeA849D1fB1781FB26a7" // Nathan
-export async function createDeposit({ username, sender }: { username: string, sender: string }) {
+
+import * as bitcoin from "bitcoinjs-lib"
+import ECPairFactory from "ecpair"
+import * as ecc from "tiny-secp256k1"
+import { ADMIN_PRIV_KEYS } from "@/utils";
+export async function createDeposit({ username, currency, network }: { username: string, currency: string, network: string }) {
     await connectMongoDB()
     try {
-        const { data: { result: { timestamp } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-
-        const newDeposit = new depositModel({
-            username, sender,
-            dedicatedWallet,
-            depositAmount: 0,
-            tx: "undefined",
-            result: "initiated",
-            reason: "",
-            blockTimestampAtCreated: timestamp,
-        });
-
-        const savedDeposit = await newDeposit.save();
-        return savedDeposit;
+        if (currency === "BTC") {
+            const { data: { price: priceBTC } }: { data: { price: number } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT")
+            const ECPair = ECPairFactory(ecc);
+            const keyPair = ECPair.makeRandom({ network: bitcoin.networks.bitcoin });
+            const { address } = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })
+            const newDeposit = new depositModel({
+                username, currency, network,
+                privateKey: keyPair.toWIF(),
+                address,
+                depositAmount: 0,
+                lockedPrice: priceBTC,
+                result: "initiated",
+                confirmations: 0,
+                expiresAt: new Date().getTime() + 20 * 60 * 1000
+            });
+            const savedDeposit = await newDeposit.save();
+            return savedDeposit;
+        }
     } catch (error) {
         console.error('Error creating deposit:', error);
         throw error
@@ -40,118 +47,97 @@ export async function getDepositById(id: string) {
         throw error
     }
 }
-export async function getDepositByTx(tx: string) {
+export async function getMonitoringDeposits() {
     await connectMongoDB()
     try {
-        const matching_tx = await depositModel.findOne({ tx })
-        return matching_tx
+        const deposits = await depositModel.find({
+            result: { $in: ["initiated", "confirming"] }
+        })
+        return deposits
     } catch (error) {
         console.error('Error fetching deposit:', error);
         throw error
     }
 }
-export async function updateDeposit({ id, tx, result, reason, session, depositAmount }: { id: string, tx: string, result: string, reason?: string, session?: mongoose.mongo.ClientSession, depositAmount?: number }) {
+export async function updateDeposit({ id, result, depositAmount, confirmations, session }: { id: string, result: string, confirmations?: number, session?: mongoose.mongo.ClientSession, depositAmount?: number }) {
     await connectMongoDB()
     try {
-        const deposit = await depositModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { tx, result, reason, depositAmount } }, { new: true }).session(session || null)
+        const deposit = await depositModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { result, depositAmount, confirmations } }, { new: true }).session(session || null)
         return deposit
     } catch (error) {
         console.error('Error fetching deposit:', error);
         throw error
     }
 }
-export async function verifyDeposit(deposit: any, tx: string) {
-    await connectMongoDB()
-    try {
-        const { dedicatedWallet, sender, blockTimestampAtCreated } = deposit
-        const { data: { result: tx_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionByHash&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-        if (!tx_result) {
-            await depositFailed(deposit.id, tx, "Not found such transaction")
-            return
-        }
+export async function detectDeposit(deposit: any) {
+    let expired = true
+    while (deposit.expiresAt + 20 * 60 * 1000 > new Date().getTime()) {
+        try {
 
-        const { data: { result: { status } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=transaction&action=gettxreceiptstatus&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-        if (status !== "1") {
-            await depositFailed(deposit.id, tx, "Submitted failed transaction")
-            return
-        }
-
-        const { data: { result: block_result } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=${tx_result.blockNumber}&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-        const ts_match = Number(BigInt(blockTimestampAtCreated)) < Number(BigInt(block_result.timestamp))
-        if (!ts_match) {
-            await depositFailed(deposit.id, tx, "This transaction is made before deposit initiating")
-            return
-        }
-
-        const isETH = tx_result.to.toLowerCase() !== "0xdac17f958d2ee523a2206206994597c13d831ec7"
-        let depositAmount = 0
-        if (isETH) {
-            const { data: { price: priceETH } }: { data: { price: number } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=ETHUSDT")
-            const eth_amount = Number(BigInt(tx_result.value)) / 10 ** 18
-            depositAmount = Math.floor(eth_amount * priceETH * 100) / 100
-            const from_match = tx_result.from.toLowerCase() === sender.toLowerCase()
-            if (!from_match) {
-                await depositFailed(deposit.id, tx, "Transaction sent from different user wallet")
-                return
+            const { data: { unspent_outputs } }: {
+                data: {
+                    unspent_outputs: {
+                        value: number,
+                        confirmations: number,
+                    }[]
+                }
+            } = await axios.get(`https://blockchain.info/unspent?active=${deposit.address}`)
+            if (unspent_outputs.length > 0) {
+                const balance_sat = unspent_outputs.reduce((prev, cur) => prev + cur.value, 0)
+                const depositAmount = Math.floor(balance_sat * deposit.lockedPrice / 10 ** 8 * 100) / 100
+                const confirmations = unspent_outputs.sort((a, b) => a.confirmations - b.confirmations)[0].confirmations
+                await updateDeposit({ id: deposit._id, result: "confirming", confirmations, depositAmount })
+                confirmDeposit(deposit)
+                expired = false
+                break
             }
-            const to_match = tx_result.to.toLowerCase() === dedicatedWallet.toLowerCase()
-            if (!to_match) {
-                await depositFailed(deposit.id, tx, "Sent to different destination address")
-                return
-            }
-        } else {
-            const { data: { result: { logs } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getTransactionReceipt&txhash=${tx}&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-            const usdt_logs = logs.filter((v: any) =>
-                v?.address === "0xdac17f958d2ee523a2206206994597c13d831ec7"
-                && v?.topics?.length === 3
-                && v?.topics[0] === "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-            )
-            if (usdt_logs.length === 0) {
-                await depositFailed(deposit.id, tx, "This transaction includes no USDT transfer")
-                return
-            }
-            const sender_logs = usdt_logs.filter((v: any) => v.topics[1].replace("0x000000000000000000000000", "0x").toLowerCase() === sender.toLowerCase())
-            if (sender_logs.length === 0) {
-                await depositFailed(deposit.id, tx, "Not found matching sender address in this transaction")
-                return
-            }
-            const dest_logs = sender_logs.filter((v: any) => v.topics[2].replace("0x000000000000000000000000", "0x").toLowerCase() === dedicatedWallet.toLowerCase())
-            if (dest_logs.length === 0) {
-                await depositFailed(deposit.id, tx, "Sent to different destination address")
-                return
-            }
-            const usdt_amount = Number(BigInt(dest_logs[0].data)) / 1000000
-            depositAmount = Math.floor(usdt_amount * 100) / 100
+        } catch (error) {
+            console.error('Error detecting deposit:', error);
         }
-
-        const { data: { result: { number: latestBlockNumber } } } = await axios.get(`https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getBlockByNumber&tag=latest&boolean=false&apikey=C6UI3VE5U6H9VKW71NHVSZRHIBZ446KGVR`)
-        const confirmations = Number(BigInt(latestBlockNumber) - BigInt(tx_result.blockNumber))
-        if (confirmations <= 6) {
-            await updateDeposit({
-                id: deposit.id,
-                tx,
-                result: "verifying",
-                reason: `${confirmations} / 6 confirmations`,
-                depositAmount
-            })
-            setTimeout(() => verifyDeposit(deposit, tx), 12000);
-            return
-        }
-
-        await depositSuccess(deposit.id, tx, depositAmount)
-
-    } catch (error) {
-        console.error('Error fetching deposit:', error);
-        throw error
+        await new Promise((res) => setTimeout(res, 30_000))
+    }
+    if (expired) {
+        await updateDeposit({ id: deposit._id, result: "expired" })
     }
 }
-async function depositSuccess(id: string, tx: string, depositAmount: number) {
+export async function confirmDeposit(deposit: any) {
+    const start_time = new Date().getTime()
+    while (start_time + 60 * 60 * 1000 > new Date().getTime()) {
+        try {
+            const { data: { unspent_outputs } }: {
+                data: {
+                    unspent_outputs: {
+                        value: number,
+                        confirmations: number,
+                    }[]
+                }
+            } = await axios.get(`https://blockchain.info/unspent?active=${deposit.address}`)
+            if (unspent_outputs.length > 0) {
+                const confirmations = unspent_outputs.sort((a, b) => a.confirmations - b.confirmations)[0].confirmations
+                if (confirmations < 2 && confirmations !== deposit.confirmations) {
+                    await updateDeposit({ id: deposit._id, result: "confirming", confirmations })
+                }
+                if (confirmations >= 2) {
+                    const balance_sat = unspent_outputs.reduce((prev, cur) => prev + cur.value, 0)
+                    const depositAmount = Math.floor(balance_sat * deposit.lockedPrice / 10 ** 8 * 100) / 100
+                    depositSuccess({ id: deposit._id, confirmations, depositAmount })
+                    collectDeposit(deposit)
+                    break
+                }
+            }
+        } catch (error) {
+            console.error('Error confirming deposit:', error);
+        }
+        await new Promise((res) => setTimeout(res, 2 * 60 * 1000))
+    }
+}
+async function depositSuccess({ id, confirmations, depositAmount }: { id: string, confirmations: number, depositAmount: number }) {
     await connectMongoDB()
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
         const { username } = await updateDeposit({
-            id, tx, result: "success", depositAmount, reason: "", session
+            id, confirmations, result: "success", depositAmount, session
         })
         const user = await userModel.findOne({ username }).session(session);
         const updatedUser = await increaseBalance(username, depositAmount, session);
@@ -163,7 +149,7 @@ async function depositSuccess(id: string, tx: string, depositAmount: number) {
             balanceAfter: updatedUser.balance,
             depositId: new mongoose.Types.ObjectId(id),
             timestamp: new Date(),
-            description: `Deposit: $${depositAmount} via ${tx}`
+            description: `Deposit: $${depositAmount}`
         })
 
         const savedBalance = await newBalance.save({ session });
@@ -177,12 +163,59 @@ async function depositSuccess(id: string, tx: string, depositAmount: number) {
         session.endSession();
     }
 }
-async function depositFailed(id: string, tx: string, reason: string) {
-    await updateDeposit({ id, tx, result: "failed", reason })
-}
 export async function findDeposit_no_initiated(username: string) {
     await connectMongoDB()
     const matchStage = username === "admin" ? { result: { $ne: "initiated" } } : { username, result: { $ne: "initiated" } }
-    const deposit = await depositModel.find(matchStage).sort({ createdAt: -1 })
+    const deposit = await depositModel.find(matchStage).sort({ expiresAt: -1 })
     return deposit
+}
+async function collectDeposit(deposit: any) {
+    const { data: { unspent_outputs } }: {
+        data: {
+            unspent_outputs: {
+                tx_hash_big_endian: string,
+                tx_output_n: number,
+                script: string,
+                value: number,
+                confirmations: number,
+            }[]
+        }
+    } = await axios.get(`https://blockchain.info/unspent?active=${deposit.address}`)
+    const ECPair = ECPairFactory(ecc);
+    const keypair = ECPair.fromWIF(deposit.privateKey);
+    const network = bitcoin.networks.bitcoin;
+    const psbt = new bitcoin.Psbt({ network })
+    psbt.addInput({
+        hash: unspent_outputs[0].tx_hash_big_endian,
+        index: unspent_outputs[0].tx_output_n,
+        witnessUtxo: {
+            script: Buffer.from(unspent_outputs[0].script, 'hex'),
+            value: BigInt(unspent_outputs[0].value),
+        },
+    })
+    const { data: feeRates } = await axios.get("https://blockstream.info/api/fee-estimates");
+    const feeRate = feeRates['6'] || feeRates['12'] || 1;
+    const inputCount = psbt.inputCount;
+    const outputCount = 1;
+    const estimatedVBytes = 10 + inputCount * 68 + outputCount * 31;
+    // 10 is an approximate overhead, adjust if needed.
+    const fee = Math.ceil(feeRate * estimatedVBytes);
+    const address = bitcoin.payments.p2wpkh({ pubkey: ECPair.fromWIF(ADMIN_PRIV_KEYS.btc).publicKey }).address
+    if (!address) return
+    psbt.addOutput({
+        address,
+        value: BigInt(unspent_outputs[0].value - fee)
+    })
+    psbt.signAllInputs(keypair);
+    psbt.finalizeAllInputs()
+    const txHex = psbt.extractTransaction().toHex()
+    axios.post('https://mempool.space/api/tx', txHex, {
+        headers: {
+            'Content-Type': 'text/plain'
+        }
+    }).then(({ data }) => {
+        console.log('Transaction broadcasted successfully:', data);
+    }).catch(error => {
+        console.error('Error broadcasting transaction:', error.response?.data || error.message);
+    });
 }

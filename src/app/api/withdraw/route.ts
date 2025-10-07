@@ -2,18 +2,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils";
-import { createWithdraw, findWithdraw } from "@/controller/withdraw";
+import { compareDeopositVsBet, createWithdraw, findWithdraw } from "@/controller/withdraw";
 import { findUserByUsername } from "@/controller/user";
 
 export async function POST(request: NextRequest) {
   try {
-    const { wallet, amount } = await request.json()
+    const { currency, network, address, amount } = await request.json()
     if (Number(amount) < 20) return NextResponse.json({ error: "Minimum withdrawal amount $20" }, { status: 500, statusText: "Minimum withdrawal amount $20" });
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
     const user = await findUserByUsername(username)
     if (user.balance < amount) return NextResponse.json({ error: "Insufficient balance for withdrawal" }, { status: 500, statusText: "Insufficient balance for withdrawal" });
-    const withdraw = await createWithdraw({ username, wallet, amount })
+    const depositVsBet = await compareDeopositVsBet(username)
+    if (depositVsBet[0].bet < depositVsBet[0].deposit) return NextResponse.json({ error: "Your bet amount is less than deposit amount" }, { status: 500, statusText: "Your bet amount is less than deposit amount" });
+    const withdraw = await createWithdraw({ username, currency, network, address, amount })
     return NextResponse.json({ withdraw }, { status: 201 });
 
   } catch (error: any) {

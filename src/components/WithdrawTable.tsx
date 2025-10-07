@@ -30,7 +30,7 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                         <tr className="border-y border-[#36415380] bg-[#1E29394D]">
                             {adminPage && <th className="pl-6 py-6 pr-2 text-left text-sm text-[#D1D5DC]">Username</th>}
                             <th className={`${adminPage ? "px-2" : "pl-6 pr-2"} py-6 text-left text-sm text-[#D1D5DC]`}>Amount</th>
-                            <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Wallet Address</th>
+                            <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Recipient Address</th>
                             <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Status</th>
                             <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Result</th>
                             <th className="pl-2 py-6 pr-6 text-left text-sm text-[#D1D5DC]">Time</th>
@@ -53,8 +53,8 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                                 </td>
                                 <td className="py-6 px-2 text-sm">
                                     <div className="flex flex-col gap-1">
-                                        <code className="text-[#D1D5DC] text-sm">{withdraw.wallet.substring(0, 6)}...{withdraw.wallet.substring(38)}</code>
-                                        <code className="text-[#6A7282] text-xs">{withdraw.wallet.substring(0, 20)}...</code>
+                                        <code className="text-[#D1D5DC] text-sm">{withdraw.address.substring(0, 6)}...{withdraw.address.substring(38)}</code>
+                                        <code className="text-[#6A7282] text-xs">{withdraw.address.substring(0, 20)}...</code>
                                     </div>
                                 </td>
                                 <td className="py-6 px-2">
@@ -66,10 +66,10 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                                 <td className="py-6 px-2">
                                     {
                                         (withdraw.tx !== "undefined" && withdraw.tx) ?
-                                            <a target="_blank" href={`https://etherscan.com/tx/${withdraw.tx}`} className="text-[#01A3DB] flex gap-2 items-center">Link<svg className="w-4 h-4"><use href="#svg-export" /></svg></a> :
-                                        !withdraw.tx ?
-                                            <p className="text-xs">Gamecurrency</p> :
-                                            <span className="text-sm">{withdraw.reason}</span>
+                                            <a target="_blank" href={`https://mempool.space/tx/${withdraw.tx}`} className="text-[#01A3DB] flex gap-2 items-center">Link<svg className="w-4 h-4"><use href="#svg-export" /></svg></a> :
+                                            !withdraw.tx ?
+                                                <p className="text-xs">Gamecurrency</p> :
+                                                <span className="text-sm">{withdraw.reason}</span>
                                     }
                                 </td>
                                 <td className="pl-2 py-5 pr-6 flex flex-col justify-center items-start">

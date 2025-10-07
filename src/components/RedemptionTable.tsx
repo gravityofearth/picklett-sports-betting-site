@@ -45,7 +45,7 @@ const RedemptionTable = ({ redemptions, setRedemptions }: { redemptions: Redempt
                                 <td className="p-2">{redemption.code}</td>
                                 <td className="p-2">
                                     <button className="cursor-pointer underline" onClick={async () => {
-                                        await navigator.clipboard.writeText(`${location.protocol}//${location.host}/deposit?redeem=${redemption.code}`)
+                                        await navigator.clipboard.writeText(`${location.protocol}//${location.host}/redemption?redeem=${redemption.code}`)
                                         showToast("Copied Redemption Link", "info")
                                     }}>Copy link</button>
                                 </td>

@@ -1,7 +1,7 @@
 
 import { findEndedLinesOpenedByBot, resolveBet, updateLineEndsAt } from "@/controller/bet";
 import { OddsType } from "@/types";
-import { AFFILIATE_REWARD_SECRET, RAPID_API_HEADERS } from "@/utils";
+import { WEBHOOK_SECRET, RAPID_API_HEADERS } from "@/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 type EventsType = {
@@ -86,7 +86,7 @@ const resolveLines = async () => {
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('token') || ''
-    if (token !== AFFILIATE_REWARD_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
+    if (token !== WEBHOOK_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
     resolveLines()
     return NextResponse.json("OK", { status: 200 });
   } catch (error: any) {

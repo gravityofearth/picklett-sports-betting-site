@@ -9,8 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.3",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
+    "bitcoinjs-lib": "^7.0.0",
+    "ecpair": "^3.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.0",
@@ -18,7 +23,8 @@
     "qrcode.react": "^4.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "tiny-secp256k1": "^2.2.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

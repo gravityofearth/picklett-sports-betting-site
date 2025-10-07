@@ -1,10 +1,10 @@
 import { distributeAffiliateRewards, getDeservedReferrers } from "@/controller/affiliate";
-import { AFFILIATE_REWARD_SECRET } from "@/utils";
+import { WEBHOOK_SECRET } from "@/utils";
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
     try {
         const token = request.headers.get('token') || ''
-        if (token !== AFFILIATE_REWARD_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
+        if (token !== WEBHOOK_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
         const { startsAt, endsAt } = getTimestampPeriod()
         const data = await distributeAffiliateRewards({ startsAt, endsAt })
         return NextResponse.json(data, { status: 200 })

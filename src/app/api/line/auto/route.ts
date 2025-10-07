@@ -1,10 +1,10 @@
 
 import { createLine, findPendingLines } from "@/controller/bet";
 import { OddsType, SportsType } from "@/types";
-import { AFFILIATE_REWARD_SECRET, RAPID_API_HEADERS } from "@/utils";
+import { WEBHOOK_SECRET, RAPID_API_HEADERS } from "@/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-const NUMBER_OF_LINES_TO_OPEN = 2
+const NUMBER_OF_LINES_TO_OPEN = 6
 type MarketType = {
   sport_name: string;
   events: {
@@ -331,14 +331,16 @@ const openLines = async () => {
       }
     }
     console.log("--- Possible lines built! ---", possibleLines.length)
-    if (possibleLines.length > 0) {
-      const index1 = Math.floor(Math.random() * possibleLines.length)
-      let index2 = Math.floor(Math.random() * possibleLines.length)
-      while (index1 === index2 && possibleLines.length >= 2) {
-        index2 = Math.floor(Math.random() * possibleLines.length)
-      }
-      await createLine(possibleLines[index1])
-      if (possibleLines.length >= 2) await createLine(possibleLines[index2])
+    const indexList: number[] = []
+    for (let i = 0; i < Math.min(NUMBER_OF_LINES_TO_OPEN, possibleLines.length); i++) {
+      let randomIndex = 0
+      do {
+        randomIndex = Math.floor(Math.random() * possibleLines.length)
+      } while (indexList.includes(randomIndex));
+      indexList.push(randomIndex)
+    }
+    for (let index of indexList) {
+      await createLine(possibleLines[index])
     }
     console.log("Autoline e-sports creation finished!")
   } catch (error) {
@@ -348,7 +350,7 @@ const openLines = async () => {
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('token') || ''
-    if (token !== AFFILIATE_REWARD_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
+    if (token !== WEBHOOK_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
     openLines()
     return NextResponse.json("OK", { status: 200 });
 

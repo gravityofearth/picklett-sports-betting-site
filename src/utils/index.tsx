@@ -1,4 +1,7 @@
+import Image from "next/image";
+import { ReactNode } from "react";
 import {  /*Bounce, */ ToastOptions, toast, Flip, ToastContent, } from "react-toastify";
+import * as bitcoin from "bitcoinjs-lib"
 
 const config: ToastOptions = {
     position: "top-center",
@@ -26,10 +29,36 @@ export const showToast = (msg: ToastContent<unknown>, type: "info" | "error" | "
     }
 };
 export const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secure-jwt-secret-key-change-this';
-export const AFFILIATE_REWARD_SECRET = 'O5I5g9w5ho7DKybR4BVWUSsnu61cSF0vQy';
+export const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || ""
 export const RAPID_API_HEADERS = {
     "x-rapidapi-host": "pinnacle-odds.p.rapidapi.com",
-    "x-rapidapi-key": "c79a7c230bmsh878ea9e31a7a8acp1badcejsnf196224f1821"
+    "x-rapidapi-key": process.env.RAPID_API_KEY || ""
+}
+export const ADMIN_PRIV_KEYS = {
+    "btc": process.env.PRIV_KEY_BTC || "",
+}
+export const CurrencyDict: { [K: string]: { element: ReactNode, availableNetworks: string[] } } = {
+    "BTC": {
+        element: <div className="flex items-center gap-2">
+            <Image alt="bitcoin-image" src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" width={20} height={16} className="shrink-0" />
+            <span>BTC </span>
+        </div>,
+        availableNetworks: ["Bitcoin"],
+    },
+    // "USDT": {
+    //   element: <>
+    //     <Image alt="usdt-image" src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" width={20} height={16} />
+    //     <span>USDT</span>
+    //   </>,
+    //   availableNetworks: ["Ethereum"],
+    // },
+    // "ETH": {
+    //   element: <>
+    //     <svg className="w-3 h-3 shrink-0"><use href="#svg-deposit" /></svg>
+    //     <span>ETH</span>
+    //   </>,
+    //   availableNetworks: ["Ethereum"],
+    // },
 }
 export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
     const rawTotalSeconds = Math.floor(timestampDiff / 1000);
@@ -89,3 +118,13 @@ export const validateCurrency = (val: string) => /^$|^-$|^-?(0|[1-9][0-9]*)(\.[0
 export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(val)
 export const validateEthTx = (val: string) => /^0x[0-9a-fA-F]{64}$/.test(val)
 export const validateUsername = (val: string) => /^[a-z][_0-9a-z]*$/.test(val)
+export const validateDecimal = (val: string) => /^$|^-$|^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/.test(val)
+export const validatedBtcAddress = (address: string) => {
+    try {
+        // Throws error if invalid address
+        bitcoin.address.toOutputScript(address);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}

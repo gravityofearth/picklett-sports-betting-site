@@ -4,37 +4,43 @@ const depositSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    sender: {
+    currency: {
         type: String,
         required: true,
-        match: [/^0x[0-9a-fA-F]{40}$/, 'Invalid Ethereum Address']
+    },
+    network: {
+        type: String,
+        required: true,
+    },
+    privateKey: {
+        type: String,
+        required: true,
+    },
+    address: {
+        type: String,
+        required: true,
     },
     depositAmount: {
         type: Number,
         required: false,
     },
-    dedicatedWallet: {
-        type: String,
+    lockedPrice: {
+        type: Number,
         required: true,
-        match: [/^0x[0-9a-fA-F]{40}$/, 'Invalid Ethereum Address']
-    },
-    tx: {
-        type: String,
-        required: true,
-        match: [/^(0x[0-9a-fA-F]{64}|undefined)$/, 'Invalid Ethereum Transaction']
     },
     result: {
         type: String,
         required: true,
-        enum: ["initiated", "verifying", "failed", "success"],
+        enum: ["initiated", "expired", "confirming", "success"],
     },
-    reason: String,
-    blockTimestampAtCreated: {
-        type: String,
+    confirmations: {
+        type: Number,
         required: true,
     },
-}, {
-    timestamps: true, // Adds createdAt and updatedAt
+    expiresAt: {
+        type: Number,
+        required: true,
+    }
 });
 
 const depositModel = mongoose.models.Deposit || mongoose.model("Deposit", depositSchema);
