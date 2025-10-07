@@ -332,7 +332,7 @@ const openLines = async () => {
     }
     console.log("--- Possible lines built! ---", possibleLines.length)
     const indexList: number[] = []
-    for (let i = 0; i < Math.min(NUMBER_OF_LINES_TO_OPEN, possibleLines.length); i++) {
+    for (let i = 0; i < Math.min(2 /* NUMBER_OF_LINES_TO_OPEN */, possibleLines.length); i++) {
       let randomIndex = 0
       do {
         randomIndex = Math.floor(Math.random() * possibleLines.length)
