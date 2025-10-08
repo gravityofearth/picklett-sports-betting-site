@@ -56,7 +56,7 @@ const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
     )
 }
 export default GlobalContextProvider
-export const useUser = () => ({ //TODO: Remove this
+export const useUser = () => ({
     username: useContext(GlobalContext).username,
     role: useContext(GlobalContext).role,
     ref: useContext(GlobalContext).ref,

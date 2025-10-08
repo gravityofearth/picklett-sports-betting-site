@@ -7,6 +7,7 @@ import { BetType, LineCardAdminType, LineType, SportsType } from "@/types"
 import BetTable from "@/components/BetTable"
 import { useUser } from "@/store"
 import { usePathname } from "next/navigation"
+import Pagination from "@/components/Pagination"
 
 export default function AdminPage({ params: { username, role } }: { params: { username: string, role: string } }) {
     const pathname = usePathname()
@@ -55,6 +56,17 @@ export default function AdminPage({ params: { username, role } }: { params: { us
     const { setToken } = useUser()
     const [userBets, setUserBets] = useState<BetType[]>([])
     const [yesRate, setYesRate] = useState(50)
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage] = useState(10)
+    const totalPages = Math.ceil(lines.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const currentLines = lines.slice(startIndex, endIndex)
+    const goToPage = (page: number) => {
+        setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+    }
     const handleLine = (_id: string) => {
         const selectedLine = lines.filter(v => v._id === _id)[0];
         if (selectedLine.question.trim() === "") {
@@ -129,7 +141,7 @@ export default function AdminPage({ params: { username, role } }: { params: { us
     useEffect(() => {
         setLoading(true)
         fetchData()
-    }, [role])
+    }, [])
     useEffect(() => {
         const interval = setInterval(() => {
             const timesRemaining = lines.map(line => {
@@ -193,8 +205,8 @@ export default function AdminPage({ params: { username, role } }: { params: { us
             {loading ? "Loading..." :
                 <>
                     <div className="w-full grid grid-cols-1 gap-4 pb-6">
-                        {lines.filter(v => role === "admin" || v._id === "new" || v.openedBy === username).map((line) =>
-                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-[#004] border-2" : "border-gray-400 border-2"}`}>
+                        {currentLines.filter(v => role === "admin" || v._id === "new" || v.openedBy === username).map((line) =>
+                            <div key={line._id} className={`w-full border p-6 ${line._id === "new" ? "border-blue-400 bg-[#004] border-2" : timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-[#101828] border-gray-400 border-2"}`} >
                                 <div className="grid grid-cols-12 max-md:grid-cols-1 gap-x-4 gap-y-4">
                                     <div className="col-span-12 max-md:col-span-1">
                                         <label htmlFor="question" className="block mb-2 text-lg">
@@ -437,6 +449,15 @@ export default function AdminPage({ params: { username, role } }: { params: { us
                             </div>
                         )}
                     </div>
+                    <Pagination params={{
+                        items: lines,
+                        itemsPerPage,
+                        startIndex,
+                        endIndex,
+                        currentPage,
+                        totalPages,
+                        goToPage
+                    }} />
                 </>}
             {/* {role === "admin" && <BetTable userBets={userBets} username="admin" adminPage={role === "admin"} />} */}
         </div>

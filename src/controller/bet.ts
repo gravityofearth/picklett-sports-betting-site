@@ -8,11 +8,15 @@ import { increaseBalance } from "./user";
 import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
 import axios from "axios";
+import { decodeEntities } from "@/utils";
 const discord_webhook_url = process.env.DISCORD_WEBHOOK
 export async function createLine({ eventId, oddsId, question, event, league, sports, yes, no, endsAt, result, openedBy }: { eventId?: string, oddsId?: string, question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
     await connectMongoDB()
     try {
-        const newLine = new lineModel({ eventId, oddsId, question, event, league, sports, yes, no, endsAt, result, openedBy });
+        const newLine = new lineModel({
+            eventId, oddsId, league, sports, yes, no, endsAt, result, openedBy,
+            question: decodeEntities(question), event: decodeEntities(event),
+        });
         const savedLine = await newLine.save();
         sendDiscordWebhook(newLine)
         return savedLine;
@@ -27,7 +31,8 @@ export async function updateLine({ question, event, league, sports, yes, no, end
         const updatedLine = await lineModel.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(_id) },
             {
-                question, event, league, sports, yes, no, endsAt, result
+                question: decodeEntities(question), event: decodeEntities(event),
+                league, sports, yes, no, endsAt, result,
             },
             { new: true }
         )

@@ -139,3 +139,8 @@ export function getCookieResponse({ response, token }: { response: NextResponse,
     })
     return response
 }
+export function decodeEntities(encodedStr: string) {
+    return encodedStr.replace(/&#(\d+);/g, (match, dec) => {
+        return String.fromCharCode(dec);
+    });
+}

@@ -130,7 +130,7 @@ export default function UserPage({ params: { balance, winstreak, oddstype, baset
                         </div>
                     </div>}
                     {currentLines.map(line =>
-                        <div key={line._id} className="grid grid-cols-[auto_400px] max-md:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] bg-[#101828] p-5">
+                        <div key={line._id} className={`grid grid-cols-[auto_400px] max-md:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] p-5 ${timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago")?"bg-[#202828]":"bg-[#101828]"}`}>
                             <div className="flex flex-col justify-between gap-y-2 w-full">
                                 <div className="flex flex-col gap-1">
                                     <h2 className="text-lg font-semibold">{line.question}</h2>
