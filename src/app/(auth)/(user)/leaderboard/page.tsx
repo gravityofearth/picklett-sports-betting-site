@@ -1,6 +1,6 @@
 import LeaderTable from "./LeaderTable"
 import { LeaderType } from "@/types"
-export default async function HomePage() {
+export default async function WinstreakPage() {
   const { leaders }: { leaders: LeaderType[] } = await (await fetch('http://localhost:3000/api/leaders', {
     cache: "no-store"
   })).json()

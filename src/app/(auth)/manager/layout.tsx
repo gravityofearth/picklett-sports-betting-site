@@ -12,7 +12,7 @@ export default async function AuthLayout({
     const { role }: any = jwt.verify(token, JWT_SECRET)
 
     if (role !== "manager") {
-        redirect("/login")
+        redirect("/home")
     }
     return (
         <>

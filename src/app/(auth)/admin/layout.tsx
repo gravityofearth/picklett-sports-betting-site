@@ -11,7 +11,7 @@ export default async function AuthLayout({
     const token = cookieStore.get('jwt')?.value ?? ""
     const { role }: any = jwt.verify(token, JWT_SECRET)
     if (role !== "admin") {
-        redirect("/login")
+        redirect("/home")
     }
     return (
         <>

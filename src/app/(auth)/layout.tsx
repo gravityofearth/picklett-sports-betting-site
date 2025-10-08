@@ -16,7 +16,7 @@ export default async function Page({
             <AuthUserLayout>{children}</AuthUserLayout>
         )
     } catch (error) {
-        redirect("/login")
+        redirect("/home")
     }
 
 }

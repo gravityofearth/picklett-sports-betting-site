@@ -41,14 +41,19 @@ export async function PUT(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('token') || '';
-    const { username, role }: any = jwt.verify(token, JWT_SECRET)
-    const user = await findUserByUsername(username)
-    const lines = await findPendingLines(role)
-    const new_token = signToken(user)
-    return getCookieResponse({
-      response: NextResponse.json({ lines, token: new_token, basets: new Date().getTime() }, { status: 200 }),
-      token: new_token
-    })
+    if (token) {
+      const { username, role }: any = jwt.verify(token, JWT_SECRET)
+      const user = await findUserByUsername(username)
+      const lines = await findPendingLines(role)
+      const new_token = signToken(user)
+      return getCookieResponse({
+        response: NextResponse.json({ lines, token: new_token, basets: new Date().getTime() }, { status: 200 }),
+        token: new_token
+      })
+    } else {
+      const lines = await findPendingLines("user")
+      return NextResponse.json({ lines, token: "", basets: new Date().getTime() }, { status: 200 })
+    }
   } catch (error: any) {
     console.error("Error processing commissions:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500, statusText: error.message });

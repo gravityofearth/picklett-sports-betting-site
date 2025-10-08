@@ -16,8 +16,9 @@ export default function AuthUserLayout({
     const [isError, setError] = useState(false)
     const pathname = usePathname()
     const logout = () => {
+        axios.get(`/api/logout`)
         setToken("LOGOUT")
-        redirect('/login')
+        redirect('/home')
     }
     useEffect(() => {
         axios.get(`/api/login`, { headers: { token: localStorage.getItem("jwt") } })
@@ -152,7 +153,7 @@ export default function AuthUserLayout({
                             }
                             <Link href="/user" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/user" ? "text-[#00BFFF]" : ""}`}>Home</Link>
                             <Link href="/affiliate" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/affiliate" ? "text-[#00BFFF]" : ""}`}>Affiliate</Link>
-                            <Link href="/leaderboard" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/leaderboard" ? "text-[#00BFFF]" : ""}`}>Leaderboard</Link>
+                            <Link href="/leaderboard" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/leaderboard" ? "text-[#00BFFF]" : ""}`}>Winstreak</Link>
                             <Link href="/bet-history" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/bet-history" ? "text-[#00BFFF]" : ""}`}>Bet History</Link>
                             <Link href="https://discord.gg/3ra2aXNWV8" className="p-2 hover:bg-[#333] rounded-md">Discord Community</Link>
                         </div>

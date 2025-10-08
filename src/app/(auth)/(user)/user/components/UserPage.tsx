@@ -7,10 +7,13 @@ import { convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, show
 import { useUser } from "@/store"
 import Pagination from "@/components/Pagination"
 import { SideInfoCard, SportsTab } from "./cards"
+import { useRouter } from "next/navigation"
 
-export default function UserPage({ params: { balance, winstreak, oddstype, basets, lines: lines_origin } }: {
-    params: { balance: number, winstreak: number, oddstype: "decimal" | "american", basets: number, lines: (LineType & LineCardUserType)[] }
+export default function UserPage({ params: { balance, winstreak, oddstype, basets, lines: lines_origin }, loggedIn }: {
+    params: { balance: number, winstreak: number, oddstype: "decimal" | "american", basets: number, lines: (LineType & LineCardUserType)[] },
+    loggedIn?: boolean,
 }) {
+    const router = useRouter()
     const timeOffset = new Date().getTime() - basets
     const [lines, setLines] = useState<(LineType & LineCardUserType)[]>(lines_origin)
     const { setToken } = useUser()
@@ -44,6 +47,10 @@ export default function UserPage({ params: { balance, winstreak, oddstype, baset
     }, [lines])
 
     const handleBet = (_id: string) => {
+        if (!loggedIn) {
+            router.push('/login')
+            return
+        }
         const selectedLine = lines.filter(v => v._id === _id)[0];
         if (!selectedLine) return
         const timestampDiff = (selectedLine.endsAt || 0) - Math.floor(new Date().getTime())
@@ -130,7 +137,7 @@ export default function UserPage({ params: { balance, winstreak, oddstype, baset
                         </div>
                     </div>}
                     {currentLines.map(line =>
-                        <div key={line._id} className={`grid grid-cols-[auto_400px] max-md:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] p-5 ${timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago")?"bg-[#202828]":"bg-[#101828]"}`}>
+                        <div key={line._id} className={`grid grid-cols-[auto_400px] max-md:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] p-5 ${timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-[#101828]"}`}>
                             <div className="flex flex-col justify-between gap-y-2 w-full">
                                 <div className="flex flex-col gap-1">
                                     <h2 className="text-lg font-semibold">{line.question}</h2>

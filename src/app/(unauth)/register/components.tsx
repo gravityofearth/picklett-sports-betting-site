@@ -5,6 +5,7 @@ import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { useRouter } from "next/navigation"
 import { useUser } from "@/store"
+import Image from "next/image"
 
 export default function RegisterPage({ params: { ref } }: { params: { ref: string } }) {
   const [username, setUsername] = useState("")
@@ -56,9 +57,9 @@ export default function RegisterPage({ params: { ref } }: { params: { ref: strin
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full flex flex-col gap-8 items-center max-w-96 p-6 border border-[#1E2939] bg-linear-to-r from-[#0077ff3f] via-[#00bfff67] to-[#0077ff3f] rounded-2xl">
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 flex items-center justify-center bg-[#01A3DB] rounded-full">
-            <svg className="w-[18px] h-6"><use href="#svg-user-white" /></svg>
-          </div>
+          <Link href="/home" className="w-12 h-12 flex items-center justify-center bg-[#01A3DB] rounded-full">
+            <Image src="/favicon.ico" width={48} height={48} alt="logo" />
+          </Link>
           <h1 className="leading-8 pt-2 text-[22px] font-bold text-center">Create New Account</h1>
           <p className="text-[#D1D5DC]">You can create free account</p>
         </div>
