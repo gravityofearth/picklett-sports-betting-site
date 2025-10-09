@@ -35,8 +35,11 @@ export const RAPID_API_HEADERS = {
     "x-rapidapi-host": "pinnacle-odds.p.rapidapi.com",
     "x-rapidapi-key": process.env.RAPID_API_KEY || ""
 }
-export const ADMIN_PRIV_KEYS = {
-    "btc": process.env.PRIV_KEY_BTC || "",
+export const VAULT_PRIV_KEYS = {
+    "btc": process.env.VAULT_PRIV_KEY_BTC || "",
+}
+export const NATHAN_ADDRESS = {
+    "btc": process.env.NATHAN_BTC_ADDRESS || "bc1qydglufze7p6at6cnwv83p2ndvls5mtujuwhp45",
 }
 export const CurrencyDict: { [K: string]: { element: ReactNode, availableNetworks: string[] } } = {
     "BTC": {

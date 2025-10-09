@@ -10,7 +10,7 @@ import userModel from "@/model/user";
 import * as bitcoin from "bitcoinjs-lib"
 import ECPairFactory from "ecpair"
 import * as ecc from "tiny-secp256k1"
-import { ADMIN_PRIV_KEYS } from "@/utils";
+import { VAULT_PRIV_KEYS } from "@/utils";
 export async function createDeposit({ username, currency, network }: { username: string, currency: string, network: string }) {
     await connectMongoDB()
     try {
@@ -200,10 +200,10 @@ async function collectDeposit(deposit: any) {
     const estimatedVBytes = 10 + inputCount * 68 + outputCount * 31;
     // 10 is an approximate overhead, adjust if needed.
     const fee = Math.ceil(feeRate * estimatedVBytes);
-    const address = bitcoin.payments.p2wpkh({ pubkey: ECPair.fromWIF(ADMIN_PRIV_KEYS.btc).publicKey }).address
-    if (!address) return
+    const vault_address = bitcoin.payments.p2wpkh({ pubkey: ECPair.fromWIF(VAULT_PRIV_KEYS.btc).publicKey }).address
+    if (!vault_address) return
     psbt.addOutput({
-        address,
+        address: vault_address,
         value: BigInt(unspent_outputs[0].value - fee)
     })
     psbt.signAllInputs(keypair);

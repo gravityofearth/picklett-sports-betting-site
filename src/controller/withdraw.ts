@@ -8,7 +8,7 @@ import { increaseBalance } from "./user";
 import balanceTransactionModel from "@/model/balanceTransaction";
 import depositModel from "@/model/deposit";
 import axios from "axios";
-import { ADMIN_PRIV_KEYS } from "@/utils";
+import { NATHAN_ADDRESS, VAULT_PRIV_KEYS } from "@/utils";
 
 import * as bitcoin from "bitcoinjs-lib"
 import ECPairFactory from "ecpair"
@@ -22,11 +22,11 @@ type UtxoType = {
 }
 export async function getVaultBalance({ network }: { network: string }) {
     const ECPair = ECPairFactory(ecc);
-    const admin_address = bitcoin.payments.p2wpkh({ pubkey: ECPair.fromWIF(ADMIN_PRIV_KEYS.btc).publicKey }).address
-    if (!admin_address) throw new Error("Error in retrieving vault address")
+    const vault_address = bitcoin.payments.p2wpkh({ pubkey: ECPair.fromWIF(VAULT_PRIV_KEYS.btc).publicKey }).address
+    if (!vault_address) throw new Error("Error in retrieving vault address")
     const { data: { price: lockedPrice } }: { data: { price: number } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT")
     const { data: { unspent_outputs } }: { data: { unspent_outputs: UtxoType[] } } =
-        await axios.get(`https://blockchain.info/unspent?active=${admin_address}&confirmations=3&limit=1000`)
+        await axios.get(`https://blockchain.info/unspent?active=${vault_address}&confirmations=3&limit=1000`)
     const vaultBalance = unspent_outputs.reduce((prev, cur) => (prev + cur.value), 0)
     return { lockedPrice, vaultBalance }
 }
@@ -80,12 +80,12 @@ export async function createWithdraw({ username, currency, network, address, amo
 export async function transferBTC({ address, amount_satoshi }: { address: string, amount_satoshi: number }) {
     try {
         const ECPair = ECPairFactory(ecc);
-        const keypair = ECPair.fromWIF(ADMIN_PRIV_KEYS.btc);
-        const admin_address = bitcoin.payments.p2wpkh({ pubkey: keypair.publicKey }).address
-        if (!admin_address) throw new Error("Error in retrieving vault address")
+        const keypair = ECPair.fromWIF(VAULT_PRIV_KEYS.btc);
+        const vault_address = bitcoin.payments.p2wpkh({ pubkey: keypair.publicKey }).address
+        if (!vault_address) throw new Error("Error in retrieving vault address")
         const network = bitcoin.networks.bitcoin;
         const { data: { unspent_outputs } }: { data: { unspent_outputs: UtxoType[] } } =
-            await axios.get(`https://blockchain.info/unspent?active=${admin_address}&confirmations=3&limit=1000`)
+            await axios.get(`https://blockchain.info/unspent?active=${vault_address}&confirmations=3&limit=1000`)
         const psbt = new bitcoin.Psbt({ network })
 
         unspent_outputs.sort((a, b) => a.value - b.value)
@@ -118,7 +118,7 @@ export async function transferBTC({ address, amount_satoshi }: { address: string
         })
         if (changeAmount > 546) {
             psbt.addOutput({
-                address: admin_address,
+                address: vault_address,
                 value: BigInt(changeAmount)
             })
         }
@@ -213,6 +213,35 @@ export async function postprocessWithdraw({ id, tx }: { id: string, tx: string }
         throw error
     } finally {
         session.endSession();
+    }
+}
+export async function sweepBTC() {
+    await connectMongoDB()
+    const BALANCE_THRESHOLD = 150
+    const BALANCE_HOLD = 101
+    try {
+        const { lockedPrice, vaultBalance } = await getVaultBalance({ network: "Bitcoin" })
+        const balance = Math.floor(vaultBalance / 10 ** 8 * lockedPrice * 100) / 100
+        if (balance >= BALANCE_THRESHOLD) {
+            const transfer_balance = Math.floor(balance - BALANCE_HOLD)
+            const tx = await transferBTC({
+                address: NATHAN_ADDRESS.btc,
+                amount_satoshi: Math.ceil(transfer_balance * 10 ** 8 / lockedPrice)
+            })
+            const newBalance = new balanceTransactionModel({
+                username: "admin",
+                type: "sweep",
+                amount: transfer_balance,
+                balanceBefore: 0,
+                balanceAfter: 0,
+                timestamp: new Date(),
+                description: `sweep: $${transfer_balance} from BTC Vault: tx=${tx}`
+            })
+            await newBalance.save();
+        }
+    } catch (error) {
+        console.error('Error sweeping', error);
+        throw error
     }
 }
 export async function approveWithdraw({ id }: { id: string }) {

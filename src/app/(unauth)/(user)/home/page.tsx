@@ -7,7 +7,7 @@ export default async function Page() {
   return (
     <UserPage
       params={{
-        balance: 0, winstreak: 0, oddstype: "decimal", basets,
+        balance: 0, winstreak: 0, oddstype: "decimal", timeOffset: new Date().getTime() - basets,
         lines: lines.map(v => ({
           ...v,
           amount: "",

@@ -9,7 +9,7 @@ import { useUser } from "@/store"
 import { usePathname } from "next/navigation"
 import Pagination from "@/components/Pagination"
 
-export default function AdminPage({ params: { username, role } }: { params: { username: string, role: string } }) {
+export default function LineManagement({ params: { username, role } }: { params: { username: string, role: string } }) {
     const pathname = usePathname()
     const rawLine: LineType & LineCardAdminType = useMemo(() => ({
         _id: "new",

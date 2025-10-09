@@ -9,12 +9,11 @@ import Pagination from "@/components/Pagination"
 import { SideInfoCard, SportsTab } from "./cards"
 import { useRouter } from "next/navigation"
 
-export default function UserPage({ params: { balance, winstreak, oddstype, basets, lines: lines_origin }, loggedIn }: {
-    params: { balance: number, winstreak: number, oddstype: "decimal" | "american", basets: number, lines: (LineType & LineCardUserType)[] },
+export default function UserPage({ params: { balance, winstreak, oddstype, timeOffset, lines: lines_origin }, loggedIn }: {
+    params: { balance: number, winstreak: number, oddstype: "decimal" | "american", timeOffset: number, lines: (LineType & LineCardUserType)[] },
     loggedIn?: boolean,
 }) {
     const router = useRouter()
-    const timeOffset = new Date().getTime() - basets
     const [lines, setLines] = useState<(LineType & LineCardUserType)[]>(lines_origin)
     const { setToken } = useUser()
     const [sportsFilter, setSportsFilter] = useState<SportsType | "">("")

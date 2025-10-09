@@ -12,11 +12,10 @@ export default async function Page({
     const token = cookieStore.get('jwt')?.value ?? ""
     try {
         jwt.verify(token, JWT_SECRET)
-        return (
-            <AuthUserLayout>{children}</AuthUserLayout>
-        )
     } catch (error) {
         redirect("/home")
     }
-
+    return (
+        <AuthUserLayout>{children}</AuthUserLayout>
+    )
 }

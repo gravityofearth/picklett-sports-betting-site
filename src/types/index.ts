@@ -94,3 +94,14 @@ export type RedemptionType = {
     status: "pending" | "redeemed",
     username?: string
 }
+export type vaultBalanceType = {
+    network: string,
+    address: string,
+    currencies: {
+        currency: string,
+        amount: {
+            USD: number,
+            coin: number,
+        },
+    }[]
+}
