@@ -11,7 +11,7 @@ export default function VaultBalances() {
     const [balances, setBalances] = useState<vaultBalanceType[]>([])
     const timeOffset_ref = useRef(0)
     useEffect(() => {
-        axios.get('http://localhost:3000/api/vault/balance', { headers: { token: localStorage.getItem("jwt") }, })
+        axios.get('/api/vault/balance', { headers: { token: localStorage.getItem("jwt") }, })
             .then(({ data: { balances, basets } }: { data: { balances: vaultBalanceType[], basets: number } }) => {
                 setBalances(balances)
                 timeOffset_ref.current = new Date().getTime() - basets
