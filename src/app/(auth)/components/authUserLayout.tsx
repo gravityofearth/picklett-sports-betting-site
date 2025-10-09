@@ -92,12 +92,12 @@ export default function AuthUserLayout({
                             </div>
                             {showUserDropdown && <div onClick={() => setShowUserDropdown(false)} className="absolute top-0 bottom-0 left-0 right-0 z-10"></div>}
                             <div className="relative">
-                                <div onClick={() => { setShowUserDropdown(prev => !prev); setShowBalanceDropdown(false) }} className="relative w-8 h-8 rounded-full flex items-center justify-center bg-[#242C3C] cursor-pointer select-none overflow-hidden z-20 bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
-                                    {avatar && !isError ?
-                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="w-0" width={32} height={32} alt="avatar" /> :
-                                        <svg className="w-[11px] h-[14px]"><use href="#svg-user" /></svg>
-                                    }
-                                </div>
+                                {avatar && !isError ?
+                                    <div onClick={() => { setShowUserDropdown(prev => !prev); setShowBalanceDropdown(false) }} className="relative w-8 h-8 rounded-full flex items-center justify-center bg-[#242C3C] cursor-pointer select-none overflow-hidden z-20 bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
+                                        <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="w-0" width={32} height={32} alt="avatar" />
+                                    </div> :
+                                    <svg className="w-[11px] h-[14px]"><use href="#svg-user" /></svg>
+                                }
                                 {showUserDropdown &&
                                     <div className="absolute right-0 -bottom-2 translate-y-[100%] flex flex-col p-1 rounded-[10px] bg-[#242C3C] z-20">
                                         <div className="flex flex-col p-2 md:hidden">
