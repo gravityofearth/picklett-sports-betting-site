@@ -1,11 +1,12 @@
 "use client"
 import { useState, useEffect } from "react"
-import { CurrencyDict, showToast, validateCurrency, validatedBtcAddress } from "@/utils"
+import { CurrencyDict, showToast, validateCurrency, validatedCryptoAddress } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { useUser } from "@/store"
 import { FilteringOption, FilteringSelect } from "@/components/FilteringSelect"
 import { useRouter } from "next/navigation"
 import { CircularIndeterminate } from "@/components/Circular"
+import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 
 export default function Withdraw({ params: { dpVsBt } }: {
     params: {
@@ -24,9 +25,10 @@ export default function Withdraw({ params: { dpVsBt } }: {
     const [gamecurrencyWithdraw, setGamecurrencyWithdraw] = useState(false)
     const [sendingRequest, setSendingRequest] = useState(false)
     const router = useRouter()
+    useEffect(() => { setNetwork(CurrencyDict[currency]?.availableNetworks[0]) }, [currency])
     const handleWithdraw = () => {
         const withdrawAmount = Number.parseFloat(amount)
-        if (!gamecurrencyWithdraw && !validatedBtcAddress(address)) {
+        if (!gamecurrencyWithdraw && !validatedCryptoAddress({ address, network })) {
             showToast("Enter address correctly!", "warn")
             return
         }
@@ -72,6 +74,12 @@ export default function Withdraw({ params: { dpVsBt } }: {
                         .then(({ data: { price: priceBTC } }: { data: { price: number } }) => {
                             setTxFee(Math.ceil(fee * priceBTC / 10 ** 6) / 100)
                         })
+                })
+        }
+        if (network === "Solana") {
+            axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=SOLUSDT")
+                .then(({ data: { price: priceSOL } }: { data: { price: number } }) => {
+                    setTxFee(Math.ceil(5000 * priceSOL / LAMPORTS_PER_SOL * 100) / 100)
                 })
         }
     }, [network])
@@ -124,7 +132,11 @@ export default function Withdraw({ params: { dpVsBt } }: {
                                 <div className="flex flex-col gap-2">
                                     <div className="block text-sm text-[#D1D5DC]">Currency</div>
                                     <FilteringSelect value={CurrencyDict[currency]?.element || CurrencyDict["BTC"]?.element}>
-                                        <FilteringOption onClick={() => setCurrency("BTC")} value={CurrencyDict["BTC"]?.element} />
+                                        {
+                                            Object.keys(CurrencyDict).map((currency, i) =>
+                                                <FilteringOption key={i} onClick={() => setCurrency(currency)} value={CurrencyDict[currency]?.element} />
+                                            )
+                                        }
                                     </FilteringSelect>
                                 </div>
                                 <div className="flex flex-col gap-2">

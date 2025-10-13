@@ -1,6 +1,7 @@
 import { WithdrawType } from "@/types"
 import { cookies } from 'next/headers'
 import AdminWithdrawId from "./components"
+import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 export default async function Page({ params }: { params: any }) {
   const cookieStore = await cookies()
   const token = cookieStore.get('jwt')?.value ?? ""
@@ -10,10 +11,11 @@ export default async function Page({ params }: { params: any }) {
       headers: { token },
       cache: "no-store"
     })).json()
-  const vaultBalance =
-    withdraw.network === "Bitcoin" ?
-      Math.ceil(vaultBalance_origin * lockedPrice / 10 ** 8 * 100) / 100 :
-      0
+  const vaultBalance = Math.ceil(vaultBalance_origin /
+    (withdraw.network === "Bitcoin" ? 10 ** 8 :
+      withdraw.network === "Solana" ? LAMPORTS_PER_SOL :
+        0
+    ) * lockedPrice * 100) / 100
 
   return (
     <AdminWithdrawId params={{ withdraw, vaultBalance }} />

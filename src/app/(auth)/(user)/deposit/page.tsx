@@ -50,7 +50,11 @@ export default function DepositPage() {
                                     <div className="flex flex-col gap-2">
                                         <div className="block text-sm text-[#D1D5DC]">Currency</div>
                                         <FilteringSelect value={CurrencyDict[currency]?.element || CurrencyDict["BTC"]?.element}>
-                                            <FilteringOption onClick={() => setCurrency("BTC")} value={CurrencyDict["BTC"]?.element} />
+                                            {
+                                                Object.keys(CurrencyDict).map((currency, i) =>
+                                                    <FilteringOption key={i} onClick={() => setCurrency(currency)} value={CurrencyDict[currency]?.element} />
+                                                )
+                                            }
                                         </FilteringSelect>
                                     </div>
                                     <div className="flex flex-col gap-2">

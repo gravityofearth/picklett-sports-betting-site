@@ -1,11 +1,12 @@
-import { sweepBTC } from "@/controller/withdraw";
+import { sweepCoin } from "@/controller/withdraw";
 import { WEBHOOK_SECRET } from "@/utils";
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('token') || ''
     if (token !== WEBHOOK_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })
-    sweepBTC()
+    sweepCoin({ network: "Bitcoin" })
+    sweepCoin({ network: "Solana" })
     return NextResponse.json("OK", { status: 200 })
   } catch (error: any) {
     console.error("Error sweeping admin balance:", error);

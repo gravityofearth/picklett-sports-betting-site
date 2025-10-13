@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import {  /*Bounce, */ ToastOptions, toast, Flip, ToastContent, } from "react-toastify";
 import * as bitcoin from "bitcoinjs-lib"
 import { NextResponse } from "next/server";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 const config: ToastOptions = {
     position: "top-center",
@@ -37,10 +38,14 @@ export const RAPID_API_HEADERS = {
 }
 export const VAULT_PRIV_KEYS = {
     "btc": process.env.VAULT_PRIV_KEY_BTC || "",
+    "sol": process.env.VAULT_PRIV_KEY_SOL || "",
 }
 export const NATHAN_ADDRESS = {
     "btc": process.env.NATHAN_BTC_ADDRESS || "bc1qydglufze7p6at6cnwv83p2ndvls5mtujuwhp45",
+    "sol": process.env.NATHAN_SOL_ADDRESS || "HEHeS2ED3wwXkb3GrDdsQHRiRuxFExq5r2AxLzPdxGjx",
 }
+const HELIUS_API_KEY = process.env.HELIUS_API_KEY || ""
+export const solana_connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`, "confirmed");
 export const CurrencyDict: { [K: string]: { element: ReactNode, availableNetworks: string[] } } = {
     "BTC": {
         element: <div className="flex items-center gap-2">
@@ -49,20 +54,13 @@ export const CurrencyDict: { [K: string]: { element: ReactNode, availableNetwork
         </div>,
         availableNetworks: ["Bitcoin"],
     },
-    // "USDT": {
-    //   element: <>
-    //     <Image alt="usdt-image" src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png" width={20} height={16} />
-    //     <span>USDT</span>
-    //   </>,
-    //   availableNetworks: ["Ethereum"],
-    // },
-    // "ETH": {
-    //   element: <>
-    //     <svg className="w-3 h-3 shrink-0"><use href="#svg-deposit" /></svg>
-    //     <span>ETH</span>
-    //   </>,
-    //   availableNetworks: ["Ethereum"],
-    // },
+    "SOL": {
+        element: <div className="flex items-center gap-2">
+            <Image alt="bitcoin-image" src="https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png" width={20} height={16} className="shrink-0" />
+            <span>SOL </span>
+        </div>,
+        availableNetworks: ["Solana"],
+    },
 }
 export function convertTimestamp2HumanReadablePadded(timestampDiff: number) {
     const rawTotalSeconds = Math.floor(timestampDiff / 1000);
@@ -123,7 +121,11 @@ export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(va
 export const validateEthTx = (val: string) => /^0x[0-9a-fA-F]{64}$/.test(val)
 export const validateUsername = (val: string) => /^[a-z][_0-9a-z]*$/.test(val)
 export const validateDecimal = (val: string) => /^$|^-$|^-?(0|[1-9][0-9]*)(\.[0-9]*)?$/.test(val)
-export const validatedBtcAddress = (address: string) => {
+export const validatedCryptoAddress = ({ address, network }: { address: string, network: string }) => {
+    if (network === "Bitcoin") return validatedBtcAddress(address)
+    if (network === "Solana") return validatedSolAddress(address)
+}
+const validatedBtcAddress = (address: string) => {
     try {
         // Throws error if invalid address
         bitcoin.address.toOutputScript(address);
@@ -132,12 +134,21 @@ export const validatedBtcAddress = (address: string) => {
         return false;
     }
 }
+const validatedSolAddress = (address: string) => {
+    try {
+        const pubkey = new PublicKey(address);
+        // Check if it's on the ed25519 curve
+        return PublicKey.isOnCurve(pubkey.toBytes());
+    } catch (error) {
+        return false;
+    }
+}
 export function getCookieResponse({ response, token }: { response: NextResponse, token: string }) {
     response.cookies.set('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 60 * 60 * 24, // 1 day in seconds
+        maxAge: 60 * 60 * 24 * 7, // 1 day in seconds
         path: '/',
     })
     return response

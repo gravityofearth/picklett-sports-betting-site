@@ -31,6 +31,7 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                             {adminPage && <th className="pl-6 py-6 pr-2 text-left text-sm text-[#D1D5DC]">Username</th>}
                             <th className={`${adminPage ? "px-2" : "pl-6 pr-2"} py-6 text-left text-sm text-[#D1D5DC]`}>Amount</th>
                             <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Recipient Address</th>
+                            <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Currency</th>
                             <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Status</th>
                             <th className="py-6 px-2 text-left text-sm text-[#D1D5DC]">Result</th>
                             <th className="pl-2 py-6 pr-6 text-left text-sm text-[#D1D5DC]">Time</th>
@@ -58,6 +59,9 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                                     </div>
                                 </td>
                                 <td className="py-6 px-2">
+                                    <code className="text-[#D1D5DC] text-sm">{withdraw.currency} ({withdraw.network})</code>
+                                </td>
+                                <td className="py-6 px-2">
                                     <div className="flex gap-2 items-center">
                                         <svg className="w-4 h-4"><use href={`#svg-${withdraw.result === "success" ? "redeem" : withdraw.result === "failed" ? "failed" : "pending"}`} /></svg>
                                         <div className={`py-1 px-3 rounded-md border text-xs ${withdraw.result === "success" ? "text-[#00D492] bg-[#00BC7D1A] border-[#00BC7D33]" : withdraw.result === "failed" ? "text-[#FF6467] bg-[#FB2C361A] border-[#FB2C3633]" : "text-[#FFBA00] bg-[#FE9A001A] border-[#FE9A0033]"}`}>{withdraw.result}</div>
@@ -66,7 +70,10 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                                 <td className="py-6 px-2">
                                     {
                                         (withdraw.tx !== "undefined" && withdraw.tx) ?
-                                            <a target="_blank" href={`https://mempool.space/tx/${withdraw.tx}`} className="text-[#01A3DB] flex gap-2 items-center">Link<svg className="w-4 h-4"><use href="#svg-export" /></svg></a> :
+                                            <a target="_blank" href={`https://${withdraw.network === "Bitcoin" ? "mempool.space" :
+                                                withdraw.network === "Solana" ? "solscan.io" :
+                                                    ""
+                                                }/tx/${withdraw.tx}`} className="text-[#01A3DB] flex gap-2 items-center">Link<svg className="w-4 h-4"><use href="#svg-export" /></svg></a> :
                                             !withdraw.tx ?
                                                 <p className="text-xs">Gamecurrency</p> :
                                                 <span className="text-sm">{withdraw.reason}</span>

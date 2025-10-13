@@ -26,7 +26,7 @@ export const FilteringSelect = ({ children, value }: { children: ReactNode, valu
                     <div>&gt;</div>
                 </div>
                 {showDropdown &&
-                    <div className="absolute left-0 right-0 top-0 flex flex-col p-1 rounded-[10px] bg-[#242C3C] z-20">
+                    <div className="absolute left-0 right-0 top-[100%] flex flex-col p-1 rounded-[10px] bg-[#242C3C] z-50">
                         {
                             Children.map(children, child =>
                                 // Ensure child is a valid React element before cloning

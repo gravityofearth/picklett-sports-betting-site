@@ -10,7 +10,9 @@ import userModel from "@/model/user";
 import * as bitcoin from "bitcoinjs-lib"
 import ECPairFactory from "ecpair"
 import * as ecc from "tiny-secp256k1"
-import { VAULT_PRIV_KEYS } from "@/utils";
+import { solana_connection, VAULT_PRIV_KEYS } from "@/utils"
+import { Keypair, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from '@solana/web3.js'
+import bs58 from 'bs58'
 export async function createDeposit({ username, currency, network }: { username: string, currency: string, network: string }) {
     await connectMongoDB()
     try {
@@ -25,6 +27,24 @@ export async function createDeposit({ username, currency, network }: { username:
                 address,
                 depositAmount: 0,
                 lockedPrice: priceBTC,
+                result: "initiated",
+                confirmations: 0,
+                expiresAt: new Date().getTime() + 20 * 60 * 1000
+            });
+            const savedDeposit = await newDeposit.save();
+            return savedDeposit;
+        }
+        if (currency === "SOL") {
+            const { data: { price: priceSOL } }: { data: { price: number } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=SOLUSDT")
+            const keypair = Keypair.generate()
+            const address = keypair.publicKey.toBase58()
+            const privateKey = bs58.encode(keypair.secretKey)
+            const newDeposit = new depositModel({
+                username, currency, network,
+                privateKey,
+                address,
+                depositAmount: 0,
+                lockedPrice: priceSOL,
                 result: "initiated",
                 confirmations: 0,
                 expiresAt: new Date().getTime() + 20 * 60 * 1000
@@ -73,23 +93,34 @@ export async function detectDeposit(deposit: any) {
     let expired = true
     while (deposit.expiresAt + 20 * 60 * 1000 > new Date().getTime()) {
         try {
-
-            const { data: { unspent_outputs } }: {
-                data: {
-                    unspent_outputs: {
-                        value: number,
-                        confirmations: number,
-                    }[]
+            if (deposit.network === "Bitcoin") {
+                const { data: { unspent_outputs } }: {
+                    data: {
+                        unspent_outputs: {
+                            value: number,
+                            confirmations: number,
+                        }[]
+                    }
+                } = await axios.get(`https://blockchain.info/unspent?active=${deposit.address}`)
+                if (unspent_outputs.length > 0) {
+                    const balance_sat = unspent_outputs.reduce((prev, cur) => prev + cur.value, 0)
+                    const depositAmount = Math.floor(balance_sat * deposit.lockedPrice / 10 ** 8 * 100) / 100
+                    const confirmations = unspent_outputs.sort((a, b) => a.confirmations - b.confirmations)[0].confirmations
+                    await updateDeposit({ id: deposit._id, result: "confirming", confirmations, depositAmount })
+                    confirmDeposit(deposit)
+                    expired = false
+                    break
                 }
-            } = await axios.get(`https://blockchain.info/unspent?active=${deposit.address}`)
-            if (unspent_outputs.length > 0) {
-                const balance_sat = unspent_outputs.reduce((prev, cur) => prev + cur.value, 0)
-                const depositAmount = Math.floor(balance_sat * deposit.lockedPrice / 10 ** 8 * 100) / 100
-                const confirmations = unspent_outputs.sort((a, b) => a.confirmations - b.confirmations)[0].confirmations
-                await updateDeposit({ id: deposit._id, result: "confirming", confirmations, depositAmount })
-                confirmDeposit(deposit)
-                expired = false
-                break
+            }
+            if (deposit.network === "Solana") {
+                const balance_lamp = await solana_connection.getBalance(new PublicKey(deposit.address))
+                const depositAmount = Math.floor(balance_lamp / LAMPORTS_PER_SOL * deposit.lockedPrice * 100) / 100
+                if (balance_lamp > 0) {
+                    depositSuccess({ id: deposit._id, confirmations: 0, depositAmount })
+                    collectDepositSOL(deposit)
+                    expired = false
+                    break
+                }
             }
         } catch (error) {
             console.error('Error detecting deposit:', error);
@@ -121,7 +152,7 @@ export async function confirmDeposit(deposit: any) {
                     const balance_sat = unspent_outputs.reduce((prev, cur) => prev + cur.value, 0)
                     const depositAmount = Math.floor(balance_sat * deposit.lockedPrice / 10 ** 8 * 100) / 100
                     depositSuccess({ id: deposit._id, confirmations, depositAmount })
-                    collectDeposit(deposit)
+                    collectDepositBTC(deposit)
                     break
                 }
             }
@@ -169,7 +200,7 @@ export async function findDeposit_no_initiated(username: string) {
     const deposit = await depositModel.find(matchStage).sort({ expiresAt: -1 })
     return deposit
 }
-async function collectDeposit(deposit: any) {
+async function collectDepositBTC(deposit: any) {
     const { data: { unspent_outputs } }: {
         data: {
             unspent_outputs: {
@@ -218,4 +249,23 @@ async function collectDeposit(deposit: any) {
     }).catch(error => {
         console.error('Error broadcasting transaction:', error.response?.data || error.message);
     });
+}
+async function collectDepositSOL(deposit: any) {
+    try {
+        const keypair_vault = Keypair.fromSecretKey(bs58.decode(VAULT_PRIV_KEYS.sol))
+        const balance_lamp = await solana_connection.getBalance(new PublicKey(deposit.address));
+        const keypair = Keypair.fromSecretKey(bs58.decode(deposit.privateKey))
+        const tx = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: keypair.publicKey,
+                toPubkey: keypair_vault.publicKey,
+                lamports: balance_lamp - 5000
+            })
+        )
+        const signature = await sendAndConfirmTransaction(solana_connection, tx, [keypair])
+        console.log("Transaction broadcasted successfully", signature)
+    } catch (error) {
+        console.error('Transaction failed:', error);
+        throw error;
+    }
 }

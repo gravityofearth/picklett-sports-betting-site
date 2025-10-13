@@ -55,7 +55,7 @@ export default function DepositPage() {
   }, [])
   const fetchDeposit = () => {
     axios.get(`/api/deposit/${params.depositId}`, { headers: { token: localStorage.getItem("jwt") } })
-      .then(({ data: { deposit, basets, token } }: { data: { deposit: DepositType, basets: number, token: string } }) => {
+      .then(({ data: { deposit, basets, token } }: { data: { deposit: DepositType, basets: number, token?: string } }) => {
         setDeposit(deposit)
         setTimeOffset(deposit.expiresAt + new Date().getTime() - basets)
         setPrices(prev => prev[0] === "0" && prev[1] === "0" ? [deposit.lockedPrice.toString(), "1"] : prev)
@@ -63,7 +63,7 @@ export default function DepositPage() {
           tout_ref.current = setTimeout(fetchDeposit, 2_000);
         }
         if (deposit.result === "success") {
-          setToken(token)
+          if (token) setToken(token)
         }
       })
   }
