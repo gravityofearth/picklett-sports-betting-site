@@ -7,9 +7,7 @@ import mongoose from "mongoose";
 import { increaseBalance } from "./user";
 import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
-import axios from "axios";
 import { decodeEntities } from "@/utils";
-const discord_webhook_url = process.env.DISCORD_WEBHOOK
 export async function createLine({ eventId, oddsId, question, event, league, sports, yes, no, endsAt, result, openedBy }: { eventId?: string, oddsId?: string, question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
     await connectMongoDB()
     try {
@@ -18,7 +16,6 @@ export async function createLine({ eventId, oddsId, question, event, league, spo
             question: decodeEntities(question), event: decodeEntities(event),
         });
         const savedLine = await newLine.save();
-        sendDiscordWebhook(newLine)
         return savedLine;
     } catch (error) {
         console.error('Error creating line:', error);
@@ -36,7 +33,6 @@ export async function updateLine({ question, event, league, sports, yes, no, end
             },
             { new: true }
         )
-        sendDiscordWebhook(updatedLine, true)
         return updatedLine;
     } catch (error) {
         console.error('Error creating line:', error);
@@ -57,50 +53,6 @@ export async function updateLineEndsAt({ endsAt, _id }: { endsAt: number, _id: s
     } catch (error) {
         console.error('Error updating Line EndsAt:', error);
         throw error
-    }
-}
-function sendDiscordWebhook(line: any, isUpdated?: boolean) {
-    if (discord_webhook_url) {
-        const webhook_payload = {
-            "username": "Picklett Live Alert",
-            "avatar_url": "https://cdn.discordapp.com/avatars/592720707981410304/4887cbde76665c21df2e9bed925bbeb9.webp?size=128",
-            "content": "",
-            "embeds": [
-                {
-                    "author": {
-                        "name": "picklett.com",
-                        "url": "https://www.picklett.com",
-                        "icon_url": "https://www.picklett.com/favicon.ico"
-                    },
-                    "title": `Click here to predict`,
-                    "url": "https://www.picklett.com/user",
-                    "description": `## ${line.question} \n  **${line.event} (${line.league}) ** \n -${line.sports}-`,
-                    "color": 15258703,
-                    "fields": [
-                        {
-                            "name": "Yes Odds",
-                            "value": `${line.yes}`,
-                            "inline": true
-                        },
-                        {
-                            "name": "No Odds",
-                            "value": `${line.no}`,
-                            "inline": true
-                        },
-                        {
-                            "name": "Game start timing",
-                            "value": `${new Date(line.endsAt).toUTCString()}`,
-                            "inline": false
-                        }
-                    ],
-                    "footer": {
-                        "text": "Powered by Picklett.com",
-                        "icon_url": "https://www.picklett.com/favicon.ico"
-                    }
-                }
-            ]
-        }
-        axios.post(discord_webhook_url, webhook_payload)
     }
 }
 export async function findPendingLines(role: string) {
