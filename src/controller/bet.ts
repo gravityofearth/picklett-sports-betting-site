@@ -12,7 +12,8 @@ export async function createLine({ eventId, oddsId, question, event, league, spo
     await connectMongoDB()
     try {
         const newLine = new lineModel({
-            eventId, oddsId, league, sports, yes, no, endsAt, result, openedBy,
+            eventId, oddsId, league, sports, endsAt, result, openedBy,
+            yes: Math.floor(yes * 100) / 100, no: Math.floor(no * 100) / 100,
             question: decodeEntities(question), event: decodeEntities(event),
         });
         const savedLine = await newLine.save();
@@ -29,7 +30,8 @@ export async function updateLine({ question, event, league, sports, yes, no, end
             { _id: new mongoose.Types.ObjectId(_id) },
             {
                 question: decodeEntities(question), event: decodeEntities(event),
-                league, sports, yes, no, endsAt, result,
+                yes: Math.floor(yes * 100) / 100, no: Math.floor(no * 100) / 100,
+                league, sports, endsAt, result,
             },
             { new: true }
         )
