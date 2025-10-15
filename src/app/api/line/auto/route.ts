@@ -300,32 +300,36 @@ const openLines = async () => {
           console.log("Getting match detail info...", parentMatch.PMatchNo)
           await new Promise((res) => setTimeout(res, 3000))
           for (let match of esports[0].LG[0].ParentMatch[0].Match) {
-            const eventId = parentMatch.PMatchNo.toString()
-            const oddsId = JSON.stringify({
-              GameOrder: match.GameOrder,
-              GTCode: match.GTCode,
-              home: parentMatch.PHTAbbr,
-              away: parentMatch.PATAbbr,
-              StartTime: match.MCDate.slice(0, 10),
-            })
-            const home = parentMatch.PHTName
-            const away = parentMatch.PATName
-            const question = `${home} ${match.GTName.replace("{TeamA}", home).replace("{TeamB}", away).replace("Game", "Map")} - ${esport.SportAbbr}`
-            const event = `${home} vs ${away}`
-            const league = leagueData.LGName
-            const sports = "Esports" as SportsType
-            const yes = match.Odds[0].SEL.filter(v => v.SCode === 1)[0].Odds
-            const no = match.Odds[0].SEL.filter(v => v.SCode === 2)[0].Odds
-            const endsAt = new Date(match.MCDate).getTime()
-            if (match.GameOrder > 2) continue // Filter from Map 3
-            if (match.GTName.includes("+")) continue
-            if (!(yes >= 1.8 && no >= 1.8 && yes <= 2.5 && no <= 2.5)) continue
-            const line = {
-              eventId, oddsId, question, event, league, sports, yes, no, endsAt,
-              result: "pending", openedBy: "bot"
+            try {
+              const eventId = parentMatch.PMatchNo.toString()
+              const oddsId = JSON.stringify({
+                GameOrder: match.GameOrder,
+                GTCode: match.GTCode,
+                home: parentMatch.PHTAbbr,
+                away: parentMatch.PATAbbr,
+                StartTime: match.MCDate.slice(0, 10),
+              })
+              const home = parentMatch.PHTName
+              const away = parentMatch.PATName
+              const question = `${home} ${match.GTName.replace("{TeamA}", home).replace("{TeamB}", away).replace("Game", "Map")} - ${esport.SportAbbr}`
+              const event = `${home} vs ${away}`
+              const league = leagueData.LGName
+              const sports = "Esports" as SportsType
+              const yes = match.Odds[0].SEL.filter(v => v.SCode === 1)[0].Odds
+              const no = match.Odds[0].SEL.filter(v => v.SCode === 2)[0].Odds
+              const endsAt = new Date(match.MCDate).getTime()
+              if (match.GameOrder > 2) continue // Filter from Map 3
+              if (match.GTName.includes("+")) continue
+              if (!(yes >= 1.8 && no >= 1.8 && yes <= 2.5 && no <= 2.5)) continue
+              const line = {
+                eventId, oddsId, question, event, league, sports, yes, no, endsAt,
+                result: "pending", openedBy: "bot"
+              }
+              if (pendingLines.filter(v => (Number(v.eventId) === Number(line.eventId) /* && Number(v.oddsId) === Number(line.oddsId) */)).length === 0)
+                possibleLines.push(line)
+            } catch (error) {
+              console.error("Error in creating e-sports lines: match loop: skipped this match", error)
             }
-            if (pendingLines.filter(v => (Number(v.eventId) === Number(line.eventId) /* && Number(v.oddsId) === Number(line.oddsId) */)).length === 0)
-              possibleLines.push(line)
           }
         }
       }
