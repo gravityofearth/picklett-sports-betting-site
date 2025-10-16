@@ -50,7 +50,7 @@ const resolveLines = async () => {
               oddsKey === "money_line" ? team_1_score > team_2_score :
                 oddsKey === "spreads" ? team_1_score + Number(hdp_points) > team_2_score :
                   oddsKey === "totals" ? team_1_score + team_2_score > Number(hdp_points) :
-                    hdp_points === "home" ? team_1_score : team_2_score > points
+                    (hdp_points === "home" ? team_1_score : team_2_score) > points
             await resolveBet(_id, result ? "yes" : "no")
             console.log("--- Sports line Resolved! ---", _id, result ? "yes" : "no")
           }
