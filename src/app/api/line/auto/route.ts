@@ -238,7 +238,7 @@ const openLines = async () => {
     await new Promise((res) => setTimeout(res, 3000))
   }
   console.log("Autoline sports creation finished!")
-  const timezone = `${(24 - new Date().getUTCHours()).toString().padStart(2, '0')}:00:00`
+  const timezone = `${((24 - new Date().getUTCHours()) % 24).toString().padStart(2, '0')}:00:00`
   try {
     const { data: { Sport: esports } }: { data: { Sport: EsportsType[] } } = await axios.post(`https://w2e-api.esportsmatrix.io/api/esbull/api/GetIndexMatchV2`, {
       "GameCat": 1,
