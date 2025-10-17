@@ -48,7 +48,7 @@ export async function createWithdraw({ username, currency, network, address, amo
         let result = "pending"
         let tx = "undefined"
         let reason = "Insufficient vault balance"
-        const amount_satlamp = Math.ceil(amount * 0.99 *
+        const amount_satlamp = Math.floor(amount * 0.99 *
             (network === "Bitcoin" ? 10 ** 8 :
                 network === "Solana" ? LAMPORTS_PER_SOL
                     : 1)
@@ -255,13 +255,17 @@ export async function sweepCoin({ network }: { network: string }) {
     const BALANCE_HOLD = 101
     try {
         const { lockedPrice, vaultBalance } = await getVaultBalance({ network })
-        const balance = Math.floor(vaultBalance / 10 ** 8 * lockedPrice * 100) / 100
+        const balance = Math.floor(vaultBalance / (
+            network === "Bitcoin" ? 10 ** 8 :
+                network === "Solana" ? LAMPORTS_PER_SOL
+                    : 1)
+            * lockedPrice * 100) / 100
         if (balance >= BALANCE_THRESHOLD) {
             const transfer_balance = Math.floor(balance - BALANCE_HOLD)
             const address = network === "Bitcoin" ? NATHAN_ADDRESS.btc :
                 network === "Solana" ? NATHAN_ADDRESS.sol :
                     ""
-            const amount_satlamp = Math.ceil(transfer_balance *
+            const amount_satlamp = Math.floor(transfer_balance *
                 (network === "Bitcoin" ? 10 ** 8 :
                     network === "Solana" ? LAMPORTS_PER_SOL
                         : 1)
@@ -293,7 +297,7 @@ export async function approveWithdraw({ id }: { id: string }) {
         }
 
         const address = withdraw.address
-        const amount_satlamp = Math.ceil(withdraw.amount * 0.99 * (
+        const amount_satlamp = Math.floor(withdraw.amount * 0.99 * (
             withdraw.network === "Bitcoin" ? 10 ** 8 :
                 withdraw.network === "Solana" ? LAMPORTS_PER_SOL :
                     0
