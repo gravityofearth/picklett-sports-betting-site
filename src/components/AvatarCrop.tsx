@@ -189,7 +189,7 @@ export default function AvatarCrop({ params: { avatarFile, closeModal } }: { par
     }
 
     return (
-        <div>
+        <div className='pb-8'>
             <button className='cursor-pointer underline' onClick={closeModal}>Back</button>
             <p className='w-full text-center text-2xl'>
                 Crop Image And Upload
@@ -212,23 +212,25 @@ export default function AvatarCrop({ params: { avatarFile, closeModal } }: { par
                             <Checkbox onClick={handleToggleAspectClick} color="success" sx={{ color: green[800], '&.Mui-checked': { color: green[600] } }} />
                         </div>
                     </div>
-                    <ReactCrop
-                        crop={crop}
-                        onChange={(_, percentCrop) => setCrop(percentCrop)}
-                        onComplete={(c) => setCompletedCrop(c)}
-                        aspect={aspect}
-                        // minWidth={400}
-                        minHeight={10}
-                    // circularCrop
-                    >
-                        <img
-                            ref={imgRef}
-                            alt="Crop me"
-                            src={imgSrc}
-                            style={{ transform: `scale(${scale}) rotate(${rotate}deg)` }}
-                            onLoad={onImageLoad}
-                        />
-                    </ReactCrop>
+                    <div className='w-full flex justify-center'>
+                        <ReactCrop
+                            crop={crop}
+                            onChange={(_, percentCrop) => setCrop(percentCrop)}
+                            onComplete={(c) => setCompletedCrop(c)}
+                            aspect={aspect}
+                            // minWidth={400}
+                            minHeight={10}
+                        // circularCrop
+                        >
+                            <img
+                                ref={imgRef}
+                                alt="Crop me"
+                                src={imgSrc}
+                                style={{ transform: `scale(${scale}) rotate(${rotate}deg)` }}
+                                onLoad={onImageLoad}
+                            />
+                        </ReactCrop>
+                    </div>
                     <div>
                         <button onClick={() => setStep(2)} className="max-md:col-span-2 w-full py-[14px] max-md:py-[6px] rounded-[10px] border border-[#364153] text-white bg-[#14679F] hover:bg-[#3c85b6] text-[14px] font-semibold cursor-pointer disabled:cursor-not-allowed">
                             Next

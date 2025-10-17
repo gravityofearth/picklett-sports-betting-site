@@ -87,12 +87,13 @@ export default function Settings() {
             return;
         }
         setAvatarFile(files[0])
+        event.target.value = ""
     }
     const closeModal = () => setAvatarFile(undefined)
     return (
         <div className="w-full flex justify-center">
             {avatarFile &&
-                <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-50">
+                <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-50 overflow-y-auto">
                     <div className="w-3xl max-w-full bg-black p-4">
                         <AvatarCrop params={{ avatarFile, closeModal }} />
                     </div>
