@@ -48,7 +48,7 @@ export async function createWithdraw({ username, currency, network, address, amo
         let result = "pending"
         let tx = "undefined"
         let reason = "Insufficient vault balance"
-        const amount_satlamp = Math.ceil(amount * 0.995 *
+        const amount_satlamp = Math.ceil(amount * 0.99 *
             (network === "Bitcoin" ? 10 ** 8 :
                 network === "Solana" ? LAMPORTS_PER_SOL
                     : 1)
@@ -293,7 +293,7 @@ export async function approveWithdraw({ id }: { id: string }) {
         }
 
         const address = withdraw.address
-        const amount_satlamp = Math.ceil(withdraw.amount * 0.995 * (
+        const amount_satlamp = Math.ceil(withdraw.amount * 0.99 * (
             withdraw.network === "Bitcoin" ? 10 ** 8 :
                 withdraw.network === "Solana" ? LAMPORTS_PER_SOL :
                     0

@@ -207,11 +207,11 @@ export default function Withdraw({ params: { dpVsBt } }: {
                                 </div>
                                 <div className="flex justify-between gap-4 items-center">
                                     <span>Transaction Fee</span>
-                                    <span>${(txFee + Number(amount) * 0.005).toFixed(2)}</span>
+                                    <span>${(txFee + Number(amount) * 0.01).toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between items-center gap-1">
                                     <span>You will receive</span>
-                                    <span>${Math.max(Number(amount) * 0.995 - txFee, 0).toFixed(2)}</span>
+                                    <span>${Math.max(Number(amount) * 0.99 - txFee, 0).toFixed(2)}</span>
                                 </div>
                             </div>
                             {dpVsBt.bet < dpVsBt.deposit &&
