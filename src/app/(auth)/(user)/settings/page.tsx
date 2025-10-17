@@ -1,5 +1,6 @@
 "use client"
 
+import AvatarCrop from "@/components/AvatarCrop"
 import { useUser } from "@/store"
 import { showToast, validateUsername } from "@/utils"
 import axios, { AxiosError } from "axios"
@@ -21,6 +22,7 @@ export default function Settings() {
     const [currentPassword, setCurrentPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
+    const [avatarFile, setAvatarFile] = useState<File>()
 
     const handleUsername = async () => {
         if (!newUsername || !currentUsername || newUsername.trim() === currentUsername.trim()) return
@@ -84,35 +86,18 @@ export default function Settings() {
         if (!files || files.length === 0) {
             return;
         }
-
-        const formData = new FormData();
-        for (const file of Array.from(files)) {
-            formData.append("file", file);
-        }
-        setSendingRequest(true)
-        axios.post("/api/profile/avatar", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-                token: localStorage.getItem("jwt")
-            },
-            onUploadProgress: progressEvent => {
-                const { loaded, total } = progressEvent;
-                if (!total) return
-                const percentCompleted = Math.round((loaded * 100) / total);
-                setUploadProgress(percentCompleted)
-                console.log(`Upload progress: ${percentCompleted}% (${loaded} bytes of ${total} bytes)`);
-            }
-        }).then(({ data: { token } }) => {
-            setToken(token)
-        }).catch((e: AxiosError) => {
-            showToast(e.response?.statusText || "Unknown Error", "error")
-        }).finally(() => {
-            setSendingRequest(false)
-            setUploadProgress(0)
-        })
+        setAvatarFile(files[0])
     }
+    const closeModal = () => setAvatarFile(undefined)
     return (
         <div className="w-full flex justify-center">
+            {avatarFile &&
+                <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-50">
+                    <div className="w-3xl max-w-full bg-black p-4">
+                        <AvatarCrop params={{ avatarFile, closeModal }} />
+                    </div>
+                </div>
+            }
             <div className="w-full max-w-2xl flex flex-col bg-linear-to-r from-[#101828] to-[#1E2939] border border-[#364153] rounded-2xl p-8 gap-8">
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col gap-2">

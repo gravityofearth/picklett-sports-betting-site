@@ -1,6 +1,6 @@
 "use client"
 
-import { CircularIndeterminate } from "@/components/Circular";
+import { CircularIndeterminate } from "@/components/MUIs"
 import { vaultBalanceType } from "@/types"
 import { convertTimestamp2HumanReadablePadded } from "@/utils";
 import axios from "axios";

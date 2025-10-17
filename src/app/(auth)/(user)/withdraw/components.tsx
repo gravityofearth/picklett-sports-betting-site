@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios"
 import { useUser } from "@/store"
 import { FilteringOption, FilteringSelect } from "@/components/FilteringSelect"
 import { useRouter } from "next/navigation"
-import { CircularIndeterminate } from "@/components/Circular"
+import { CircularIndeterminate } from "@/components/MUIs"
 import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 
 export default function Withdraw({ params: { dpVsBt } }: {

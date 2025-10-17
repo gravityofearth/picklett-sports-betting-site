@@ -1,6 +1,6 @@
 "use client"
 
-import { CircularIndeterminate } from "@/components/Circular"
+import { CircularIndeterminate } from "@/components/MUIs"
 import { WithdrawType } from "@/types"
 import { showToast } from "@/utils"
 import axios, { AxiosError } from "axios"

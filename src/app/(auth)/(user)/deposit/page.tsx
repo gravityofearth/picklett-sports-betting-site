@@ -5,7 +5,7 @@ import { CurrencyDict, showToast } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { FilteringOption, FilteringSelect } from "@/components/FilteringSelect"
 import { useRouter } from "next/navigation"
-import { CircularIndeterminate } from "@/components/Circular"
+import { CircularIndeterminate } from "@/components/MUIs"
 
 export default function DepositPage() {
     const [currency, setCurrency] = useState("BTC")
