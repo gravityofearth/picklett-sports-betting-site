@@ -19,7 +19,7 @@ type MarketType = {
         description: string;
         money_line: {
           home: number;
-          draw: number;
+          draw: number | null;
           away: number;
         } | null
         spreads: {
@@ -183,6 +183,8 @@ const openLines = async () => {
             const typedOddsKey = oddsKey as OddsType
             const oddsData = oddsDataDict[typedOddsKey]
             for (let hdp_points in typedOddsKey === "money_line" ? { "0.5": period.money_line } : period[typedOddsKey]) {
+              if (typedOddsKey === "money_line" && period.money_line && period.money_line.draw) continue
+              if (typedOddsKey === "money_line" && period.money_line && period.money_line.home >= 2 && period.money_line.away >= 2) continue
               const points = period.team_total?.[hdp_points as "home" | "away"]?.points ?? 0
               const oddsId = JSON.stringify({
                 number: period.number,
