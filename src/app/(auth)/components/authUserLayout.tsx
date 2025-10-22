@@ -52,6 +52,7 @@ export default function AuthUserLayout({
                             <Link href="/affiliate" className={`${pathname === "/affiliate" ? "text-[#00BFFF]" : ""}`}>Affiliate</Link>
                             <Link href="/leaderboard" className={`${pathname === "/leaderboard" ? "text-[#00BFFF]" : ""}`}>Winstreak</Link>
                             <Link href="/bet-history" className={`${pathname === "/bet-history" ? "text-[#00BFFF]" : ""}`}>Bet History</Link>
+                            <Link href="/clans" className={`${pathname === "/clans" ? "text-[#00BFFF]" : ""}`}>Clans</Link>
                             <Link href="https://discord.gg/3ra2aXNWV8">
                                 <Image alt="discord" width={24} height={18} src={"/discord.png"} />
                             </Link>
@@ -155,6 +156,7 @@ export default function AuthUserLayout({
                             <Link href="/affiliate" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/affiliate" ? "text-[#00BFFF]" : ""}`}>Affiliate</Link>
                             <Link href="/leaderboard" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/leaderboard" ? "text-[#00BFFF]" : ""}`}>Winstreak</Link>
                             <Link href="/bet-history" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/bet-history" ? "text-[#00BFFF]" : ""}`}>Bet History</Link>
+                            <Link href="/clans" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/clans" ? "text-[#00BFFF]" : ""}`}>Clans</Link>
                             <Link href="https://discord.gg/3ra2aXNWV8" className="p-2 hover:bg-[#333] rounded-md">Discord Community</Link>
                         </div>
                         <div className="w-full bg-black/50 h-full" onClick={() => { setShowSidebar(false) }}></div>

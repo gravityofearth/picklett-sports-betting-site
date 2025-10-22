@@ -36,7 +36,8 @@ input:-webkit-autofill:focus {
 }
 
 input,
-select {
+select,
+textarea {
   background-color: transparent;
   outline: none;
 }
@@ -57,6 +58,7 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
 /* Hide the default icon if needed */
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(0.8);
