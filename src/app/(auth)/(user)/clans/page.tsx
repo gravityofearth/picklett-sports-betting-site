@@ -61,7 +61,7 @@ export default function ClansPage() {
               </div>
               <div className="flex flex-col gap-4">
                 <div className="text-white/70 font-medium">Top-ranked clan seeking experienced bettors with 60%+ win rate</div>
-                <div className="text-[#F59E0B] font-medium">Requirements: 60%+ win rate, 100+ bets placed</div>
+                <div className="text-[#F59E0B] font-medium">Requirements: 60%+ win rate, 100+ bets placed</div>
               </div>
               <Link href="/clans/clanId/members" className="py-4 px-6 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd] font-medium text-center">View</Link>
             </div>

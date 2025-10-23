@@ -14,6 +14,7 @@ export default function AuthLayout({
                 <Link href="/admin/line" className={`${pathname === "/admin/line" ? "text-[#00BFFF]" : ""}`}>Line</Link>
                 <Link href="/admin/redemption" className={`${pathname === "/admin/redemption" ? "text-[#00BFFF]" : ""}`}>Redemption</Link>
                 <Link href="/admin/vault" className={`${pathname === "/admin/vault" ? "text-[#00BFFF]" : ""}`}>Vault</Link>
+                <Link href="/admin/clan-war" className={`${pathname === "/admin/clan-war" ? "text-[#00BFFF]" : ""}`}>Clan War</Link>
             </div>
             {children}
         </div>
