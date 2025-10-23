@@ -7,7 +7,7 @@ export default function ClansPage() {
   const [modalMode, setModalMode] = useState<"deposit" | "distribute" | "">("")
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-2xl font-medium">Clan Coffer</div>
+      <div className="text-2xl ">Clan Coffer</div>
       <div className="w-full relative z-30">
         <div className="w-full flex gap-4 justify-between">
           <CofferStep number={1} content="Members Contribute" description="Anyone can deposit funds into the shared coffer" />
@@ -20,7 +20,7 @@ export default function ClansPage() {
         <div className="absolute z-10 translate-x-[-50%]"><Image alt="clan-balance-left-decoration" width={566} height={495} src="/clan_balance_left.png" /></div>
         <div className="bg-[#33383F] rounded-full py-8 px-32 flex flex-col items-center">
           <div className="h-fit flex flex-col items-center z-30">
-            <div className="text-2xl leading-8 font-medium">Total Balance</div>
+            <div className="text-2xl leading-8 ">Total Balance</div>
             <div className="flex gap-2 items-baseline">
               <div className="text-[#FFE720] text-7xl font-bold">125400</div>
               <svg className="w-12 h-12"><use href="#svg-dollar-new" /></svg>
@@ -43,10 +43,10 @@ export default function ClansPage() {
       </div>
       <div className="h-2"></div>
       <div className="flex flex-col gap-6">
-        <span className="text-2xl font-medium leading-[42px]">Recent Transactions</span>
+        <span className="text-2xl  leading-[42px]">Recent Transactions</span>
         <div className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl px-8 py-4">
           <div className="flex flex-col gap-2">
-            <span className="text-2xl font-medium leading-6">Deposit by BetKing</span>
+            <span className="text-2xl  leading-6">Deposit by BetKing</span>
             <span className="">2 hours ago</span>
           </div>
           <span className="text-[32px] font-bold">$45000</span>
@@ -70,7 +70,7 @@ const CofferStep = ({ number, content, description }: { number: number, content:
       </div>
       <div className="flex flex-col items-center">
         <div className="font-semibold">Step {number}</div>
-        <div className="text-xs font-medium">{content}</div>
+        <div className="text-xs ">{content}</div>
       </div>
       <div className="text-xs text-white/80">{description}</div>
     </div>
@@ -82,9 +82,9 @@ const DepositDistributeModal = ({ leader, view, setView }: { leader?: boolean, v
       {
         leader && <div className="w-full flex">
           <div className="w-full border-b border-white/10"></div>
-          <div onClick={() => setView("deposit")} className={`w-full border-b text-center font-medium cursor-pointer select-none ${view === "deposit" ? "border-[#1475E1]" : "border-white/10"}`}>Deposit</div>
+          <div onClick={() => setView("deposit")} className={`w-full border-b text-center  cursor-pointer select-none ${view === "deposit" ? "border-[#1475E1]" : "border-white/10"}`}>Deposit</div>
           <div className="w-full border-b border-white/10"></div>
-          <div onClick={() => setView("distribute")} className={`w-full border-b text-center font-medium cursor-pointer select-none ${view === "distribute" ? "border-[#1475E1]" : "border-white/10"}`}>Distribute</div>
+          <div onClick={() => setView("distribute")} className={`w-full border-b text-center  cursor-pointer select-none ${view === "distribute" ? "border-[#1475E1]" : "border-white/10"}`}>Distribute</div>
           <div className="w-full border-b border-white/10"></div>
         </div>
       }
@@ -97,7 +97,7 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
   return (
     <>
       <div className="w-full flex justify-between items-center">
-        <span className="font-medium leading-8">Deposit Coffer Funds</span>
+        <span className=" leading-8">Deposit Coffer Funds</span>
         <svg onClick={() => setView("")} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
       </div>
       <div className="p-3 rounded-xl border border-white/20 bg-[#0D111B]/60 flex gap-2">
@@ -107,20 +107,20 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
-            <span className="font-medium">Coffer Balance</span>
+            <span className="">Coffer Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
               <span className="font-bold text-[#FFE720]">125000</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Amount</span>
+            <span className="text-sm ">Amount</span>
             <div className="bg-[#0D111B] flex justify-between items-center rounded-lg border border-white/20 pl-2 p-1">
               <div className="flex gap-2 items-center">
                 <svg className="w-4 h-4"><use href="#svg-dollar-stroke" /></svg>
                 <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="Enter Amount" className="text-sm" />
               </div>
-              <button className="text-xs font-medium p-2 bg-white/30 rounded-sm cursor-pointer">Max</button>
+              <button className="text-xs  p-2 bg-white/30 rounded-sm cursor-pointer">Max</button>
             </div>
             <div className="w-full flex justify-between gap-2">
               <button onClick={() => setAmount(100)} className={`rounded-sm w-full p-2 cursor-pointer ${amount === 100 ? "bg-[#1475E1]" : "bg-white/10"}`}>$100</button>
@@ -130,7 +130,7 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
             </div>
           </div>
         </div>
-        <button className="p-4 w-full bg-[#1475E1] text-lg rounded-lg font-medium">Deposit from Balance</button>
+        <button className="p-4 w-full bg-[#1475E1] text-lg rounded-lg ">Deposit from Balance</button>
       </div>
     </>
   )
@@ -141,7 +141,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
   return (
     <>
       <div className="w-full flex justify-between items-center">
-        <span className="font-medium leading-8">Distribute Coffer Funds</span>
+        <span className=" leading-8">Distribute Coffer Funds</span>
         <svg onClick={() => setView("")} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
       </div>
       <div className="p-3 rounded-xl border border-white/20 bg-[#0D111B]/60 flex gap-2">
@@ -151,14 +151,14 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
-            <span className="font-medium">Coffer Balance</span>
+            <span className="">Coffer Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
               <span className="font-bold text-[#FFE720]">125000</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Distribution Type</span>
+            <span className="text-sm ">Distribution Type</span>
             <div className="w-full flex gap-2">
               <button
                 onClick={() => setDistributeMode("single")}
@@ -178,7 +178,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
           </div>
           {distributeMode === "single" &&
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-medium">Select Members</span>
+              <span className="text-sm ">Select Members</span>
               <select name="distribute members" id="" className="bg-[#0D111B] border border-white/20 p-2 rounded-lg">
                 <option value="bettor">Bettor</option>
               </select>
@@ -188,13 +188,13 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             </div>
           }
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Amount</span>
+            <span className="text-sm ">Amount</span>
             <div className="bg-[#0D111B] flex justify-between items-center rounded-lg border border-white/20 pl-2 p-1">
               <div className="flex gap-2 items-center">
                 <svg className="w-4 h-4"><use href="#svg-dollar-stroke" /></svg>
                 <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="Enter Amount" className="text-sm" />
               </div>
-              <button className="text-xs font-medium p-2 bg-white/30 rounded-sm cursor-pointer">Max</button>
+              <button className="text-xs  p-2 bg-white/30 rounded-sm cursor-pointer">Max</button>
             </div>
             <div className="w-full flex justify-between gap-2">
               <button onClick={() => setAmount(100)} className={`rounded-sm w-full p-2 cursor-pointer ${amount === 100 ? "bg-[#1475E1]" : "bg-white/10"}`}>$100</button>
@@ -204,7 +204,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             </div>
           </div>
         </div>
-        <button className="p-4 w-full bg-[#1475E1] text-lg rounded-lg font-medium">Distribute</button>
+        <button className="p-4 w-full bg-[#1475E1] text-lg rounded-lg ">Distribute</button>
       </div>
     </>
   )

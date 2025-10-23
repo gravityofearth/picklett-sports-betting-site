@@ -9,12 +9,12 @@ export default function Home() {
     <div className="flex justify-center">
       <div className="w-full max-w-3xl flex flex-col gap-6">
         <div className="flex flex-col">
-          <div className="text-xl font-medium">Create Your Clan</div>
+          <div className="text-xl ">Create Your Clan</div>
           <div className="text-white/80">Build your team and start competing</div>
         </div>
         <div className="rounded-xl border border-white/20 p-3 flex justify-between bg-[#1C2534]">
           <div className="flex flex-col">
-            <div className="font-medium">Clan Creation Fee: $500</div>
+            <div className="">Clan Creation Fee: $500</div>
             <div className="text-sm text-white/80">As the clan leader, you'll be able to invite members, manage the coffer, and challenge other clans to wars.</div>
           </div>
           <div className="flex flex-col">
@@ -31,7 +31,7 @@ export default function Home() {
             <div className="flex flex-col gap-2">
               <div className="w-fit px-3 py-2 bg-white flex gap-2 rounded-lg cursor-pointer hover:bg-white/80">
                 <svg className="w-6 h-6"><use href="#svg-upload-image-button" /></svg>
-                <div className="text-black font-medium">Upload Icon</div>
+                <div className="text-black ">Upload Icon</div>
               </div>
               <div className="text-sm">Upload a square image (recommended: 512x512px, max 5MB)<br />Supported formats: JPG, PNG, GIF, WebP</div>
             </div>

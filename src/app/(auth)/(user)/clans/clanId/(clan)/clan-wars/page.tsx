@@ -3,7 +3,7 @@ import Link from "next/link"
 export default function ClansPage() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-2xl font-medium">Active Wars</div>
+      <div className="text-2xl ">Active Wars</div>
       <div className="w-full p-4 flex justify-between rounded-2xl bg-white/10">
         <div className="w-full text-lg">War Type</div>
         <div className="w-full text-lg">Participants</div>
@@ -25,10 +25,10 @@ const ClanWar = ({ warType, participant1, participant2, stake, prizePool, timing
       <div className="w-full flex items-center gap-2">
         <svg className="w-6 h-6"><use href="#svg-clan-war" /></svg>
         <div className="flex flex-col gap-1">
-          <span className="font-medium">{warType}</span>
+          <span className="">{warType}</span>
           <div className="flex gap-2 items-center p-1 rounded-lg bg-[#1475E1]/30">
             <svg className="w-[14px] h-[14px]"><use href="#svg-member" /></svg>
-            <span className="text-xs font-medium">5 Members</span>
+            <span className="text-xs ">5 Members</span>
           </div>
         </div>
       </div>
@@ -61,10 +61,10 @@ const ClanWar = ({ warType, participant1, participant2, stake, prizePool, timing
         }
       </div>
       <div className="w-full">
-        <div className="text-2xl font-medium">${stake}</div>
+        <div className="text-2xl ">${stake}</div>
       </div>
       <div className="w-full">
-        <div className="text-2xl font-medium">${prizePool}</div>
+        <div className="text-2xl ">${prizePool}</div>
       </div>
       <div className="w-full">
         {timing}

@@ -19,15 +19,15 @@ export default function Page({
             <div className="flex gap-4">
               <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl w-[104px] h-[104px]" />
               <div className="flex flex-col gap-2">
-                <div className="text-[40px] font-medium">Elite Bettors</div>
+                <div className="text-[40px] ">Elite Bettors</div>
                 <div className="flex gap-4 items-center">
                   <div className="flex gap-2 items-center">
                     <svg className="w-6 h-6"><use href="#svg-crown-new" /></svg>
-                    <span className="font-medium text-white/80">Rank #1</span>
+                    <span className=" text-white/80">Rank #1</span>
                   </div>
                   <div className="flex gap-2 items-center">
                     <svg className="w-6 h-6"><use href="#svg-member" /></svg>
-                    <span className="font-medium text-white/80">48/50</span>
+                    <span className=" text-white/80">48/50</span>
                   </div>
                 </div>
                 <div className="text-sm max-w-3xl">
@@ -35,20 +35,20 @@ export default function Page({
                 </div>
               </div>
             </div>
-            <button className="text-lg font-medium bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
+            <button className="text-lg  bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
           </div>
           <div className="flex justify-between gap-4">
             <ClanCard icon="#svg-clan-level" title="Clan Level" value="8">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex justify-between w-full">
-                  <div className="text-white/70 font-medium">XP Progress</div>
+                  <div className="text-white/70 ">XP Progress</div>
                   <div className="text-[#1475E1] font-semibold">83%</div>
                 </div>
                 <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
                   <div className="w-1/2 bg-[#1475E1] h-full rounded-full"></div>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <span onClick={() => setLevelModalView(true)} className="text-sm font-medium cursor-pointer hover:underline">See what's on Level 9</span>
+                  <span onClick={() => setLevelModalView(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
                   <svg className="w-4 h-4"><use href="#svg-arrow-right" /></svg>
                 </div>
               </div>
@@ -57,7 +57,7 @@ export default function Page({
               <div className="flex gap-2 h-full items-end">
                 <div className="flex gap-1 items-center">
                   <svg className="w-6 h-6"><use href="#svg-chart-new" /></svg>
-                  <span className="text-sm text-[#22C55E] font-medium">+12.5%</span>
+                  <span className="text-sm text-[#22C55E] ">+12.5%</span>
                 </div>
                 <div className="text-sm text-white/70">vs last week</div>
               </div>
@@ -65,7 +65,7 @@ export default function Page({
             <ClanCard icon="#svg-member" title="Active Members" value="45/50">
               <div className="flex flex-col gap-2 justify-end h-full">
                 <div className="flex justify-between">
-                  <div className="text-white/70 font-medium">5 Slots left</div>
+                  <div className="text-white/70 ">5 Slots left</div>
                   <div className="flex">
                     <div className="flex items-center justify-center w-[22px] h-[22px] translate-x-[160%] z-40 bg-white rounded-full">
                       <Image alt="avatar" src={`/api/profile/avatar-todo`} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
@@ -91,7 +91,7 @@ export default function Page({
             </ClanCard>
             <ClanCard icon="#svg-clan-winrate" title="Win Rate" value="68.5%">
               <div className="flex flex-col gap-2 justify-end h-full">
-                <div className="text-[#22C55E] font-medium">Won: 46</div>
+                <div className="text-[#22C55E] ">Won: 46</div>
                 <div className="w-full h-2 bg-[#EF4444] rounded-full">
                   <div className="w-1/2 bg-[#22C55E] h-full rounded-full"></div>
                 </div>
@@ -122,7 +122,7 @@ const BreadcrumbButton = ({ title, svg, href }: { title: string, svg?: string, h
   return (
     <Link className={`px-4 py-2 flex items-center gap-2 rounded-xl cursor-pointer ${pathname.includes(`/${href}`) ? "bg-[#1475E1]" : "bg-white/10"} `} href={href}>
       {svg && <svg className="w-6 h-6"><use href={svg} /></svg>}
-      <span className="font-medium select-none">{title}</span>
+      <span className=" select-none">{title}</span>
     </Link>
   )
 }
@@ -147,7 +147,7 @@ const LevelModal = ({ setView }: { setView: React.Dispatch<React.SetStateAction<
     <div className="w-xl p-6 rounded-3xl bg-[#0E1B2F] flex flex-col gap-4">
       <div className="flex justify-between w-full items-start">
         <div className="flex flex-col gap-2">
-          <span className="text-2xl leading-6 font-medium">Level 9 Benefits</span>
+          <span className="text-2xl leading-6 ">Level 9 Benefits</span>
           <span>2500 XP needed</span>
         </div>
         <svg onClick={() => setView(false)} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
@@ -168,8 +168,8 @@ const LevelModal = ({ setView }: { setView: React.Dispatch<React.SetStateAction<
       </div>
       <div className="flex flex-col gap-2 w-full">
         <div className="flex justify-between w-full">
-          <span className="font-medium">Progress to Level 9</span>
-          <span className="font-medium">83% Complete</span>
+          <span className="">Progress to Level 9</span>
+          <span className="">83% Complete</span>
         </div>
         <div className="h-2 rounded-full w-full bg-[#1475E1]/20">
           <div className="h-2 rounded-full w-4/5 bg-[#1475E1]"></div>

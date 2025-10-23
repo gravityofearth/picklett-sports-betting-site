@@ -2,11 +2,11 @@ export default function ClansPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <div className="text-2xl font-medium">Pending Members</div>
+        <div className="text-2xl ">Pending Members</div>
         <div className="leading-11 flex gap-2 px-4 rounded-lg border border-white/10 bg-[#1C2534]">
           <div className="flex gap-1 items-center">
             <svg className="w-4 h-4"><use href="#svg-tip" /></svg>
-            <span className="font-medium">Tip</span>
+            <span className="">Tip</span>
           </div>
           <span>Review member stats and win rates before approving. You can also check their social profiles to verify authenticity.</span>
         </div>

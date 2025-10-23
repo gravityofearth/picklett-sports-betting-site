@@ -12,8 +12,8 @@ const WarFeed = ({ avatar, name, event, count, side }: { avatar: string, name: s
       <div className="flex gap-4 items-center">
         <Image alt="avatar" src={avatar} width={64} height={64} className="shrink-0 rounded-[15px] w-[64px] h-[64px]" />
         <div className="flex flex-col gap-2">
-          <span className="text-2xl font-medium">{name}</span>
-          <div className="font-medium">{event}</div>
+          <span className="text-2xl ">{name}</span>
+          <div className="">{event}</div>
         </div>
       </div>
       <div className="flex flex-col gap-2 items-center">

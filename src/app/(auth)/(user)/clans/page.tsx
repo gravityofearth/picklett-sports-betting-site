@@ -9,18 +9,18 @@ export default function ClansPage() {
           <div className="flex flex-col">
             <div className="flex gap-3 py-3">
               <svg className="w-6 h-6"><use href="#svg-clan" /></svg>
-              <span className="font-medium text-[18px]">Clans</span>
+              <span className=" text-[18px]">Clans</span>
             </div>
             <div className="leading-12">Join forces, challenge rivals, and dominate together</div>
           </div>
           <Link href="/clans/new" className="flex gap-2 py-4 px-6 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd] select-none">
             <svg className="w-6 h-6"><use href="#svg-clan" /></svg>
-            <span className="font-medium">Create Clan</span>
+            <span className="">Create Clan</span>
           </Link>
         </div>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <div className="font-medium text-2xl leading-10">Clan Leaderboard</div>
+            <div className=" text-2xl leading-10">Clan Leaderboard</div>
             <div className="w-full bg-white/10 px-4 py-3 border border-white/20 flex gap-2 items-center rounded-lg">
               <svg className="w-5 h-5"><use href="#svg-search" /></svg>
               <input placeholder="Search clan name" className="text-white/70 w-full" />
@@ -42,28 +42,28 @@ export default function ClansPage() {
               <div className="flex gap-4 items-center">
                 <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl w-[104px] h-[104px]" />
                 <div className="flex flex-col gap-4">
-                  <div className="text-[32px] font-medium leading-12">Elite Bettors</div>
+                  <div className="text-[32px]  leading-12">Elite Bettors</div>
                   <div className="flex gap-4 items-center">
                     <div className="flex gap-2 items-center">
                       <svg className="w-6 h-6"><use href="#svg-crown-new" /></svg>
-                      <span className="font-medium text-white/80">Rank #1</span>
+                      <span className=" text-white/80">Rank #1</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <svg className="w-6 h-6"><use href="#svg-member" /></svg>
-                      <span className="font-medium text-white/80">48/50</span>
+                      <span className=" text-white/80">48/50</span>
                     </div>
                     <div className="flex gap-2 items-center">
                       <svg className="w-6 h-6"><use href="#svg-clan-war" /></svg>
-                      <span className="font-medium text-white/80">2847 wins</span>
+                      <span className=" text-white/80">2847 wins</span>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col gap-4">
-                <div className="text-white/70 font-medium">Top-ranked clan seeking experienced bettors with 60%+ win rate</div>
-                <div className="text-[#F59E0B] font-medium">Requirements: 60%+ win rate, 100+ bets placed</div>
+                <div className="text-white/70 ">Top-ranked clan seeking experienced bettors with 60%+ win rate</div>
+                <div className="text-[#F59E0B] ">Requirements: 60%+ win rate, 100+ bets placed</div>
               </div>
-              <Link href="/clans/clanId/members" className="py-4 px-6 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd] font-medium text-center">View</Link>
+              <Link href="/clans/clanId/members" className="py-4 px-6 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd]  text-center">View</Link>
             </div>
           </div>
         </div>
