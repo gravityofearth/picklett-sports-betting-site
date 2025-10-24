@@ -88,8 +88,8 @@ export default function Home() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <button className="w-full bg-[#0D111B] py-4 rounded-lg border border-white/20 cursor-pointer hover:bg-white/40">Cancel</button>
-          <button className="w-full bg-[#1475E1] py-4 rounded-lg border border-[#1475E1] cursor-pointer hover:bg-[#5999e2]">Create Clan ($100)</button>
+          <button className="w-full bg-[#0D111B] py-4 max-md:py-3 rounded-lg border border-white/20 cursor-pointer hover:bg-white/40">Cancel</button>
+          <button className="w-full bg-[#1475E1] py-4 max-md:py-3 rounded-lg border border-[#1475E1] cursor-pointer hover:bg-[#5999e2]">Create Clan ($100)</button>
         </div>
       </div>
     </div>

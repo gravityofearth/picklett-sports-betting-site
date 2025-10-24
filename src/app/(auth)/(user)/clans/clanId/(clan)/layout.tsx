@@ -11,15 +11,22 @@ export default function Page({
   children: React.ReactNode;
 }>) {
   const [levelModalView, setLevelModalView] = useState(false)
+  const [isExpand, setIsExpand] = useState(false)
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-7xl flex flex-col gap-8">
-        <div className="w-full py-6 px-8 flex flex-col gap-8 rounded-2xl bg-[#1475E1]/10">
+        <div className="w-full py-6 px-8 max-md:py-3 max-md:px-4 flex flex-col gap-8 rounded-2xl bg-[#1475E1]/10">
           <div className="flex justify-between">
-            <div className="flex gap-4">
-              <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl w-[104px] h-[104px]" />
-              <div className="flex flex-col gap-2">
-                <div className="text-[40px] ">Elite Bettors</div>
+            <div className="flex gap-4 w-full max-md:flex-col">
+              <div className="max-md:flex max-md:justify-between">
+                <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl max-md:rounded-[10px] w-[104px] h-[104px] max-md:w-10 max-md:h-10" />
+                <button className="text-lg md:hidden max-md:text-sm max-md:px-4 max-md:py-2 text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
+              </div>
+              <div className="w-full flex flex-col gap-2">
+                <div className="w-full flex justify-between items-center">
+                  <div className="text-[40px] max-md:text-2xl">Elite Bettors</div>
+                  <button className="text-lg max-md:hidden text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
+                </div>
                 <div className="flex gap-4 items-center">
                   <div className="flex gap-2 items-center">
                     <svg className="w-6 h-6 stroke-[#F7E436]"><use href="#svg-crown-new" /></svg>
@@ -35,9 +42,8 @@ export default function Page({
                 </div>
               </div>
             </div>
-            <button className="text-lg  bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className={`w-full grid grid-cols-4 gap-4 max-md:grid-cols-1 ${!isExpand && "max-md:hidden"}`}>
             <ClanCard icon="#svg-clan-level" title="Clan Level" value="8">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex justify-between w-full">
@@ -98,8 +104,13 @@ export default function Page({
               </div>
             </ClanCard>
           </div>
+          <div onClick={() => setIsExpand(!isExpand)} className="w-full md:hidden p-2 bg-white/8 rounded-lg flex gap-1 justify-center items-center">
+            <svg className="w-4 h-4"><use href="#svg-leaderboard-icon" /></svg>
+            <span className="text-xs">{isExpand ? "Show Less" : "Show Stats"}</span>
+            <svg className="w-4 h-4"><use href={`#svg-arrow-${isExpand ? "up" : "down"}`} /></svg>
+          </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full overflow-x-auto">
           <BreadcrumbButton title="Members" svg="#svg-member" href="members" />
           <BreadcrumbButton title="Pending Members" svg="#svg-member" href="pending-members" />
           <BreadcrumbButton title="Coffer" svg="#svg-money-dollar" href="coffer" />
@@ -108,7 +119,7 @@ export default function Page({
         </div>
         {children}
       </div>
-      {levelModalView && <div className="absolute flex justify-center items-center z-50 inset-0">
+      {levelModalView && <div className="fixed flex justify-center items-center z-50 inset-0">
         <div className="fixed inset-0 bg-black/30 backdrop-blur-md z-40"></div>
         <div className="z-50">
           <LevelModal setView={setLevelModalView} />
@@ -120,9 +131,9 @@ export default function Page({
 const BreadcrumbButton = ({ title, svg, href }: { title: string, svg?: string, href: string }) => {
   const pathname = usePathname()
   return (
-    <Link className={`px-4 py-2 flex items-center gap-2 rounded-xl cursor-pointer ${pathname.includes(`/${href}`) ? "bg-[#1475E1]" : "bg-white/10"} `} href={href}>
-      {svg && <svg className="w-6 h-6"><use href={svg} /></svg>}
-      <span className=" select-none">{title}</span>
+    <Link className={`px-4 py-2 max-md:px-2 max-md:py-1 flex items-center gap-2 max-md:gap-1 rounded-xl cursor-pointer ${pathname.includes(`/${href}`) ? "bg-[#1475E1]" : "bg-white/10"} `} href={href}>
+      {svg && <svg className="w-6 h-6 max-md:w-4 max-md:h-4"><use href={svg} /></svg>}
+      <span className="max-md:text-sm text-nowrap select-none">{title}</span>
     </Link>
   )
 }
@@ -144,7 +155,7 @@ const ClanCard = ({ icon, title, value, children }: { icon: string, title: strin
 }
 const LevelModal = ({ setView }: { setView: React.Dispatch<React.SetStateAction<boolean>> }) => {
   return (
-    <div className="w-xl p-6 rounded-3xl bg-[#0E1B2F] flex flex-col gap-4">
+    <div className="w-xl max-md:w-sm p-6 rounded-3xl bg-[#0E1B2F] flex flex-col gap-4">
       <div className="flex justify-between w-full items-start">
         <div className="flex flex-col gap-2">
           <span className="text-2xl leading-6 ">Level 9 Benefits</span>

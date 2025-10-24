@@ -1,9 +1,11 @@
+import Link from "next/link";
+
 export default function ClansPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <div className="text-2xl ">Pending Members</div>
-        <div className="leading-11 flex gap-2 px-4 rounded-lg border border-white/10 bg-[#1C2534]">
+        <div className="md:text-2xl">Pending Members</div>
+        <div className="md:leading-11 max-md:p-2 flex max-md:flex-col gap-2 px-4 rounded-lg border border-white/10 bg-[#1C2534]">
           <div className="flex gap-1 items-center">
             <svg className="w-4 h-4"><use href="#svg-tip" /></svg>
             <span className="">Tip</span>
@@ -11,7 +13,7 @@ export default function ClansPage() {
           <span>Review member stats and win rates before approving. You can also check their social profiles to verify authenticity.</span>
         </div>
       </div>
-      <div className="w-full bg-[#0E1B2F] p-4 rounded-3xl">
+      <div className="max-md:hidden w-full bg-[#0E1B2F] p-4 rounded-3xl">
         <table className="w-full table-fixed border-collapse">
           <thead>
             <tr className="bg-white/10 text-lg">
@@ -47,6 +49,16 @@ export default function ClansPage() {
             </tr>
           </tbody>
         </table>
+      </div>
+      <div className="md:hidden p-6 max-md:p-3 rounded-2xl max-md:rounded-lg w-full bg-[#1475E1]/10 flex flex-col gap-4">
+        <div className="text-[32px] leading-12 max-md:text-[18px] max-md:leading-4">Elite Bettors</div>
+        <div className="flex justify-between">
+          <div className="text-sm flex gap-1"><span className="text-white/70">Total Bets </span><span>245</span></div>
+          <div className="text-sm flex gap-1"><span className="text-white/70">Earning </span><span>$1,850</span></div>
+          <div className="text-sm flex gap-1"><span className="text-white/70">Win rate </span><span>64.2%</span></div>
+        </div>
+        <div className="text-sm text-center w-full"><span className="text-white/70">Requested Time </span><span>2025-10-20 10:30</span></div>
+        <Link href="/clans/clanId/members" className="p-2 rounded-lg bg-[#1475E1] text-sm cursor-pointer hover:bg-[#5796dd] text-center">View</Link>
       </div>
     </div>
   )

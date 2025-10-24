@@ -3,13 +3,13 @@
 import Image from "next/image"
 import { useState } from "react"
 export default function ClansPage() {
-  const [leader, setLeader] = useState(true)
+  const [leader, setLeader] = useState(false)
   const [modalMode, setModalMode] = useState<"deposit" | "distribute" | "">("")
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-2xl ">Clan Coffer</div>
+      <div className="md:text-2xl">Clan Coffer</div>
       <div className="w-full relative z-30">
-        <div className="w-full flex gap-4 justify-between">
+        <div className="w-full grid grid-cols-4 max-md:hidden gap-4 justify-between">
           <CofferStep number={1} content="Members Contribute" description="Anyone can deposit funds into the shared coffer" />
           <CofferStep number={2} content="Pool Resources" description="Funds accumulate for clan activities and wars" />
           <CofferStep number={3} content="Fight Clan Wars" description="Use coffer funds to stake in competitive wars" />
@@ -17,15 +17,15 @@ export default function ClansPage() {
         </div>
       </div>
       <div className="relative flex py-6 justify-center items-center">
-        <div className="absolute z-10 translate-x-[-50%]"><Image alt="clan-balance-left-decoration" width={566} height={495} src="/clan_balance_left.png" /></div>
-        <div className="bg-[#33383F] rounded-full py-8 px-32 flex flex-col items-center">
+        <div className="absolute z-10 translate-x-[-50%]"><Image alt="clan-balance-left-decoration" width={566} height={495} src="/clan_balance_left.png" className="shrink-0 w-[565px] h-[495px] max-md:w-[200px] max-md:h-[180px]" /></div>
+        <div className="bg-[#33383F] rounded-full py-8 max-md:py-4 px-32 max-md:px-10 flex flex-col items-center">
           <div className="h-fit flex flex-col items-center z-30">
-            <div className="text-2xl leading-8 ">Total Balance</div>
+            <div className="md:text-2xl leading-8">Total Balance</div>
             <div className="flex gap-2 items-baseline">
-              <div className="text-[#FFE720] text-7xl font-bold">125400</div>
-              <svg className="w-12 h-12"><use href="#svg-dollar-new" /></svg>
+              <div className="text-[#FFE720] text-7xl max-md:text-[32px] font-bold">125400</div>
+              <svg className="w-12 h-12 max-md:w-5 max-md:h-5"><use href="#svg-dollar-new" /></svg>
             </div>
-            <div className="pt-6 flex gap-2">
+            <div className="pt-6 flex gap-2 max-md:hidden">
               <div onClick={() => setModalMode("deposit")} className="w-[140px] py-2 px-6 rounded-lg border border-white bg-[#1475E1]/10 flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#1475E1]/30">
                 <svg className="w-5 h-5"><use href="#svg-clan-deposit" /></svg>
                 <span className="text-sm ">Deposit</span>
@@ -39,20 +39,40 @@ export default function ClansPage() {
             </div>
           </div>
         </div>
-        <div className="absolute z-10 translate-x-[50%]"><Image alt="clan-balance-right-decoration" width={566} height={495} src="/clan_balance_right.png" /></div>
+        <div className="absolute z-10 translate-x-[50%]"><Image alt="clan-balance-right-decoration" width={566} height={495} src="/clan_balance_right.png" className="shrink-0 w-[565px] h-[495px] max-md:w-[200px] max-md:h-[180px]" /></div>
       </div>
-      <div className="h-2"></div>
-      <div className="flex flex-col gap-6">
-        <span className="text-2xl  leading-[42px]">Recent Transactions</span>
-        <div className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl px-8 py-4">
-          <div className="flex flex-col gap-2">
-            <span className="text-2xl  leading-6">Deposit by BetKing</span>
-            <span className="">2 hours ago</span>
+      <div className="pt-6 px-4 flex gap-2 w-full md:hidden">
+        <div onClick={() => setModalMode("deposit")} className="w-full py-2 px-2 rounded-lg border border-white bg-[#1475E1]/10 flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#1475E1]/30">
+          <svg className="w-5 h-5"><use href="#svg-clan-deposit" /></svg>
+          <span className="text-sm ">Deposit</span>
+        </div>
+        {
+          leader && <div onClick={() => setModalMode("distribute")} className="w-full py-2 px-2 rounded-lg bg-[#1475E1] flex justify-center items-center gap-1 select-none cursor-pointer hover:bg-[#3384e0]">
+            <svg className="w-5 h-5"><use href="#svg-clan-distribute-fund" /></svg>
+            <span className="text-sm">Distribute Fund</span>
           </div>
-          <span className="text-[32px] font-bold">$45000</span>
+        }
+      </div>
+      <div className="w-full relative z-30">
+        <div className="w-full grid grid-cols-2 md:hidden gap-4 justify-between">
+          <CofferStep number={1} content="Members Contribute" description="Anyone can deposit funds into the shared coffer" />
+          <CofferStep number={2} content="Pool Resources" description="Funds accumulate for clan activities and wars" />
+          <CofferStep number={3} content="Fight Clan Wars" description="Use coffer funds to stake in competitive wars" />
+          <CofferStep number={4} content="Share Rewards" description="Leaders distribute winnings to members" />
         </div>
       </div>
-      {modalMode && <div className="absolute flex justify-center items-center z-50 inset-0">
+      <div className="h-2"></div>
+      <div className="flex flex-col gap-6 max-md:gap-3">
+        <span className="md:text-2xl leading-[42px]">Recent Transactions</span>
+        <div className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl max-md:rounded-lg px-8 py-4 max-md:px-4 max-md:py-2">
+          <div className="flex flex-col gap-2">
+            <span className="md:text-2xl leading-6">Deposit by BetKing</span>
+            <span className="max-md:text-xs">2 hours ago</span>
+          </div>
+          <span className="text-[32px] max-md:text-[18px] font-bold">$45000</span>
+        </div>
+      </div>
+      {modalMode && <div className="fixed flex justify-center items-center z-50 inset-0">
         <div className="fixed inset-0 bg-black/30 backdrop-blur-md z-40"></div>
         <div className="z-50"><DepositDistributeModal leader={leader} view={modalMode} setView={setModalMode} /></div>
       </div>}
@@ -63,7 +83,7 @@ const CofferStep = ({ number, content, description }: { number: number, content:
   return (
     <div className="w-full flex flex-col items-center gap-1 py-4 px-4 bg-[#0E1B2F] border border-white/20 rounded-2xl relative">
       {number < 4 &&
-        <svg className="absolute right-0 top-[50%] translate-x-[50%] w-[70px] h-[22px] z-20"><use href="#svg-coffer-step-arrow" /></svg>
+        <svg className="absolute right-0 top-[50%] translate-x-[50%] w-[70px] h-[22px] z-20 max-md:hidden"><use href="#svg-coffer-step-arrow" /></svg>
       }
       <div className="w-11 h-10 rounded-lg bg-[#0D111B] justify-center items-center flex">
         <svg className="w-6 h-6"><use href="#svg-money-dollar" /></svg>
@@ -78,7 +98,7 @@ const CofferStep = ({ number, content, description }: { number: number, content:
 }
 const DepositDistributeModal = ({ leader, view, setView }: { leader?: boolean, view: string, setView: React.Dispatch<React.SetStateAction<"deposit" | "distribute" | "">> }) => {
   return (
-    <div className="flex flex-col gap-6 p-6 bg-[#0E1B2F] rounded-3xl w-md">
+    <div className="flex flex-col gap-6 p-6 bg-[#0E1B2F] rounded-3xl w-md max-md:w-sm">
       {
         leader && <div className="w-full flex">
           <div className="w-full border-b border-white/10"></div>

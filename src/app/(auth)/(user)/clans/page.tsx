@@ -9,18 +9,18 @@ export default function ClansPage() {
           <div className="flex flex-col">
             <div className="flex gap-3 py-3">
               <svg className="w-6 h-6"><use href="#svg-clan" /></svg>
-              <span className=" text-[18px]">Clans</span>
+              <span className="text-[18px]">Clans</span>
             </div>
-            <div className="leading-12">Join forces, challenge rivals, and dominate together</div>
+            <div className="leading-12 max-md:leading-5">Join forces, challenge rivals, and dominate together</div>
           </div>
-          <Link href="/clans/new" className="flex gap-2 py-4 px-6 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd] select-none">
-            <svg className="w-6 h-6"><use href="#svg-clan" /></svg>
-            <span className="">Create Clan</span>
+          <Link href="/clans/new" className="flex gap-2 items-center py-4 px-6 max-md:py-2 max-md:px-3 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd] select-none">
+            <svg className="w-6 h-6 max-md:w-4 max-md:h-4"><use href="#svg-clan" /></svg>
+            <span className="text-nowrap max-md:text-sm">Create Clan</span>
           </Link>
         </div>
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-4">
-            <div className=" text-2xl leading-10">Clan Leaderboard</div>
+          <div className="flex flex-col gap-4 max-md:gap-2">
+            <div className=" text-2xl leading-10 max-md:leading-5 max-md:text-lg">Clan Leaderboard</div>
             <div className="w-full bg-white/10 px-4 py-3 border border-white/20 flex gap-2 items-center rounded-lg">
               <svg className="w-5 h-5"><use href="#svg-search" /></svg>
               <input placeholder="Search clan name" className="text-white/70 w-full" />
@@ -37,13 +37,17 @@ export default function ClansPage() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 max-md:grid-cols-1 gap-6">
             <div className="p-6 rounded-2xl w-full bg-[#1475E1]/10 flex flex-col gap-4">
               <div className="flex gap-4 items-center">
-                <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl w-[104px] h-[104px]" />
+                <div className="md:hidden flex gap-2 items-center">
+                  <svg className="w-6 h-6 stroke-[#F7E436]"><use href="#svg-crown-new" /></svg>
+                  <span className=" text-white/80">Rank #1</span>
+                </div>
+                <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl w-[104px] h-[104px] max-md:w-8 max-md:h-8" />
                 <div className="flex flex-col gap-4">
-                  <div className="text-[32px]  leading-12">Elite Bettors</div>
-                  <div className="flex gap-4 items-center">
+                  <div className="text-[32px] leading-12 max-md:text-[18px] max-md:leading-4">Elite Bettors</div>
+                  <div className="flex gap-4 items-center max-md:hidden">
                     <div className="flex gap-2 items-center">
                       <svg className="w-6 h-6 stroke-[#F7E436]"><use href="#svg-crown-new" /></svg>
                       <span className=" text-white/80">Rank #1</span>
@@ -61,7 +65,12 @@ export default function ClansPage() {
               </div>
               <div className="flex flex-col gap-4">
                 <div className="text-white/70 ">Top-ranked clan seeking experienced bettors with 60%+ win rate</div>
-                <div className="text-[#F59E0B] ">Requirements: 60%+ win rate, 100+ bets placed</div>
+                <div className="text-[#F59E0B] max-md:hidden">Requirements: 60%+ win rate, 100+ bets placed</div>
+                <div className="flex justify-between">
+                  <div className="text-sm flex gap-2"><span className="text-white/70">Members </span><span>48</span></div>
+                  <div className="text-sm flex gap-2"><span className="text-white/70">Wins </span><span>2847</span></div>
+                  <div className="text-sm flex gap-2"><span className="text-white/70">Win rate </span><span>64.2%</span></div>
+                </div>
               </div>
               <Link href="/clans/clanId/members" className="py-4 px-6 rounded-lg bg-[#1475E1] cursor-pointer hover:bg-[#5796dd]  text-center">View</Link>
             </div>
