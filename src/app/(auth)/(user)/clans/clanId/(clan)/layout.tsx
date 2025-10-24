@@ -22,7 +22,7 @@ export default function Page({
                 <div className="text-[40px] ">Elite Bettors</div>
                 <div className="flex gap-4 items-center">
                   <div className="flex gap-2 items-center">
-                    <svg className="w-6 h-6"><use href="#svg-crown-new" /></svg>
+                    <svg className="w-6 h-6 stroke-[#F7E436]"><use href="#svg-crown-new" /></svg>
                     <span className=" text-white/80">Rank #1</span>
                   </div>
                   <div className="flex gap-2 items-center">

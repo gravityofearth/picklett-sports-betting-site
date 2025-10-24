@@ -31,9 +31,9 @@ export default function ClansPage() {
                 <span className="text-sm ">Deposit</span>
               </div>
               {
-                leader && <div onClick={() => setModalMode("distribute")} className="w-[140px] py-2 px-2 rounded-lg bg-[#1475E1] flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#3384e0]">
+                leader && <div onClick={() => setModalMode("distribute")} className="w-[140px] py-2 px-2 rounded-lg bg-[#1475E1] flex justify-center items-center gap-1 select-none cursor-pointer hover:bg-[#3384e0]">
                   <svg className="w-5 h-5"><use href="#svg-clan-distribute-fund" /></svg>
-                  <span className="text-sm ">Distribute Fund</span>
+                  <span className="text-sm">Distribute Fund</span>
                 </div>
               }
             </div>
@@ -204,7 +204,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             </div>
           </div>
         </div>
-        <button className="p-4 w-full bg-[#1475E1] text-lg rounded-lg ">Distribute</button>
+        <button className="p-4 w-full bg-[#1475E1] text-lg rounded-lg">Distribute</button>
       </div>
     </>
   )
