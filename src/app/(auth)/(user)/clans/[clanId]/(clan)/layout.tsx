@@ -10,7 +10,7 @@ export default function Page({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [levelModalView, setLevelModalView] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [isExpand, setIsExpand] = useState(false)
   return (
     <div className="flex justify-center">
@@ -43,7 +43,7 @@ export default function Page({
               </div>
             </div>
           </div>
-          <div className={`w-full grid grid-cols-4 gap-4 max-md:grid-cols-1 ${!isExpand && "max-md:hidden"}`}>
+          <div className={`w-full grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-md:grid-cols-1 ${!isExpand && "max-md:hidden"}`}>
             <ClanCard icon="#svg-clan-level" title="Clan Level" value="8">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex justify-between w-full">
@@ -54,7 +54,7 @@ export default function Page({
                   <div className="w-1/2 bg-[#1475E1] h-full rounded-full"></div>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <span onClick={() => setLevelModalView(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
+                  <span onClick={() => setShowModal(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
                   <svg className="w-4 h-4"><use href="#svg-arrow-right" /></svg>
                 </div>
               </div>
@@ -72,23 +72,14 @@ export default function Page({
               <div className="flex flex-col gap-2 justify-end h-full">
                 <div className="flex justify-between">
                   <div className="text-white/70 ">5 Slots left</div>
-                  <div className="flex">
-                    <div className="flex items-center justify-center w-[22px] h-[22px] translate-x-[160%] z-40 bg-white rounded-full">
-                      <Image alt="avatar" src={`/api/profile/avatar-todo`} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
-                    </div>
-                    <div className="flex items-center justify-center w-[22px] h-[22px] translate-x-[120%] z-30 bg-white rounded-full">
-                      <Image alt="avatar" src={`/api/profile/avatar-todo`} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
-                    </div>
-                    <div className="flex items-center justify-center w-[22px] h-[22px] translate-x-[80%] z-20 bg-white rounded-full">
-                      <Image alt="avatar" src={`/api/profile/avatar-todo`} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
-                    </div>
-                    <div className="flex items-center justify-center w-[22px] h-[22px] translate-x-[40%] z-10 bg-white rounded-full">
-                      <Image alt="avatar" src={`/api/profile/avatar-todo`} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
-                    </div>
-                    <div className="flex items-center justify-center w-[22px] h-[22px] bg-white rounded-full">
-                      <Image alt="avatar" src={`/api/profile/avatar-todo`} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
-                    </div>
-                  </div>
+                  <IntersectingAvatars urls={[
+                    `/api/profile/avatar-todo`,
+                    `/api/profile/avatar-todo`,
+                    `/api/profile/avatar-todo`,
+                    `/api/profile/avatar-todo`,
+                    `/api/profile/avatar-todo`,
+                  ]} />
+
                 </div>
                 <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
                   <div className="w-1/2 bg-[#1475E1] h-full rounded-full"></div>
@@ -104,7 +95,7 @@ export default function Page({
               </div>
             </ClanCard>
           </div>
-          <div onClick={() => setIsExpand(!isExpand)} className="w-full md:hidden p-2 bg-white/8 rounded-lg flex gap-1 justify-center items-center">
+          <div onClick={() => setIsExpand(v => !v)} className="w-full md:hidden p-2 bg-white/8 rounded-lg flex gap-1 justify-center items-center cursor-pointer select-none">
             <svg className="w-4 h-4"><use href="#svg-leaderboard-icon" /></svg>
             <span className="text-xs">{isExpand ? "Show Less" : "Show Stats"}</span>
             <svg className="w-4 h-4"><use href={`#svg-arrow-${isExpand ? "up" : "down"}`} /></svg>
@@ -119,19 +110,27 @@ export default function Page({
         </div>
         {children}
       </div>
-      {levelModalView && <div className="fixed flex justify-center items-center z-50 inset-0">
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md z-40"></div>
-        <div className="z-50">
-          <LevelModal setView={setLevelModalView} />
+      {showModal && <LevelModal close={() => setShowModal(false)} />}
+    </div>
+  )
+}
+const IntersectingAvatars = ({ urls }: { urls: string[] }) => {
+  return (
+    <div className="flex pr-[10px]">
+      {urls.map((url, i) =>
+        <div key={i} className="w-[12px]">
+          <div className="flex items-center justify-center w-[22px] h-[22px] bg-white rounded-full">
+            <Image alt="avatar" src={url} width={20} height={20} className="shrink-0 rounded-3xl w-5 h-5" />
+          </div>
         </div>
-      </div>}
+      )}
     </div>
   )
 }
 const BreadcrumbButton = ({ title, svg, href }: { title: string, svg?: string, href: string }) => {
   const pathname = usePathname()
   return (
-    <Link className={`px-4 py-2 max-md:px-2 max-md:py-1 flex items-center gap-2 max-md:gap-1 rounded-xl cursor-pointer ${pathname.includes(`/${href}`) ? "bg-[#1475E1]" : "bg-white/10"} `} href={href}>
+    <Link className={`px-4 py-2 max-md:px-2 max-md:py-1 flex items-center gap-2 max-md:gap-1 rounded-xl max-md:rounded-lg cursor-pointer ${pathname.includes(`/${href}`) ? "bg-[#1475E1]" : "bg-white/10"} `} href={href}>
       {svg && <svg className="w-6 h-6 max-md:w-4 max-md:h-4"><use href={svg} /></svg>}
       <span className="max-md:text-sm text-nowrap select-none">{title}</span>
     </Link>
@@ -153,37 +152,40 @@ const ClanCard = ({ icon, title, value, children }: { icon: string, title: strin
     </div>
   )
 }
-const LevelModal = ({ setView }: { setView: React.Dispatch<React.SetStateAction<boolean>> }) => {
+const LevelModal = ({ close }: { close: () => void }) => {
   return (
-    <div className="w-xl max-md:w-sm p-6 rounded-3xl bg-[#0E1B2F] flex flex-col gap-4">
-      <div className="flex justify-between w-full items-start">
+    <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-md z-50"></div>
+      <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col gap-4 z-50">
+        <div className="flex justify-between w-full items-start">
+          <div className="flex flex-col gap-2">
+            <span className="text-2xl leading-6 ">Level 9 Benefits</span>
+            <span>2500 XP needed</span>
+          </div>
+          <svg onClick={close} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
+        </div>
         <div className="flex flex-col gap-2">
-          <span className="text-2xl leading-6 ">Level 9 Benefits</span>
-          <span>2500 XP needed</span>
+          <div className="flex gap-2 items-center">
+            <svg className="w-6 h-6"><use href="#svg-check-new" /></svg>
+            <span className="text-sm leading-4">Elite clan status</span>
+          </div>
+          <div className="flex gap-2 items-center">
+            <svg className="w-6 h-6"><use href="#svg-check-new" /></svg>
+            <span className="text-sm leading-4">+5% bet winnings to members</span>
+          </div>
+          <div className="flex gap-2 items-center">
+            <svg className="w-6 h-6"><use href="#svg-check-new" /></svg>
+            <span className="text-sm leading-4">Premium clan emblem options</span>
+          </div>
         </div>
-        <svg onClick={() => setView(false)} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-center">
-          <svg className="w-6 h-6"><use href="#svg-check-new" /></svg>
-          <span className="text-sm leading-4">Elite clan status</span>
-        </div>
-        <div className="flex gap-2 items-center">
-          <svg className="w-6 h-6"><use href="#svg-check-new" /></svg>
-          <span className="text-sm leading-4">+5% bet winnings to members</span>
-        </div>
-        <div className="flex gap-2 items-center">
-          <svg className="w-6 h-6"><use href="#svg-check-new" /></svg>
-          <span className="text-sm leading-4">Premium clan emblem options</span>
-        </div>
-      </div>
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex justify-between w-full">
-          <span className="">Progress to Level 9</span>
-          <span className="">83% Complete</span>
-        </div>
-        <div className="h-2 rounded-full w-full bg-[#1475E1]/20">
-          <div className="h-2 rounded-full w-4/5 bg-[#1475E1]"></div>
+        <div className="flex flex-col gap-2 w-full">
+          <div className="flex justify-between gap-2 w-full">
+            <span className="">Progress to Level 9</span>
+            <span className="">83% Complete</span>
+          </div>
+          <div className="h-2 rounded-full w-full bg-[#1475E1]/20">
+            <div className="h-2 rounded-full w-4/5 bg-[#1475E1]"></div>
+          </div>
         </div>
       </div>
     </div>

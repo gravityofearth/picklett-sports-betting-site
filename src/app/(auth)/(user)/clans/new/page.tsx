@@ -12,14 +12,14 @@ export default function Home() {
           <div className="text-xl ">Create Your Clan</div>
           <div className="text-white/80">Build your team and start competing</div>
         </div>
-        <div className="rounded-xl border border-white/20 p-3 flex justify-between bg-[#1C2534]">
-          <div className="flex flex-col">
+        <div className="rounded-xl border border-white/20 p-3 flex justify-between gap-4 bg-[#1C2534]">
+          <div className="flex flex-col gap-2">
             <div className="">Clan Creation Fee: $500</div>
             <div className="text-sm text-white/80">As the clan leader, you'll be able to invite members, manage the coffer, and challenge other clans to wars.</div>
           </div>
-          <div className="flex flex-col">
-            <div className="text-sm">Your Balance</div>
-            <div className="text font-bold">$1250</div>
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-sm text-nowrap">Your Balance</div>
+            <div className="text font-bold">$ 1250</div>
           </div>
         </div>
         <div className="flex flex-col gap-2">
@@ -38,7 +38,7 @@ export default function Home() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 col-span-2">
             <div>Clan Name <span className="text-red-500">*</span></div>
             <input type="text" className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Enter clan name (3-20 characters)" />
             <div className="text-sm text-white/70">0/20 characters</div>

@@ -1,4 +1,4 @@
-export default function ClansPage() {
+export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
