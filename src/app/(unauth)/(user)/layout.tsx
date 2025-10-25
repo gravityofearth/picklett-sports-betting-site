@@ -39,7 +39,7 @@ export default function UnauthUserLayout({
                     <Link href="/login" className="font-semibold text-[#D1D5DC]">Sign In</Link>
                 </div>
             </div>
-            <div className="w-full p-6 max-w-[1440px]">
+            <div className="w-full p-6 max-w-[1440px] max-md:p-4">
                 {showSidebar &&
                     <div className="fixed flex top-0 left-0 right-0 h-[100vh] font-semibold text-[#D1D5DC]">
                         <div className="flex flex-col px-1 py-6 bg-[#020618] gap-y-2 w-full h-full">

@@ -17,8 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head><link href="https://fonts.cdnfonts.com/css/euclid-circular-b" rel="stylesheet"></link></head>
       <body
-        className={`antialiased`} style={{fontFamily:"Segoe UI"}}
+        className={`antialiased`} style={{ fontFamily: "Euclid Circular B, Segoe UI" }}
       >
         <GlobalContextProvider>
           <SVGs />
