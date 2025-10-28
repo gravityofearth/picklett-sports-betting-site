@@ -19,7 +19,7 @@ export const FilteringSelect = ({ children, value }: { children: ReactNode, valu
         <div className="relative cursor-pointer">
             {showDropdown && <div onClick={() => setShowDropdown(false)} className="absolute left-0 right-0 top-0 bottom-0 z-10"></div>}
             <div className="relative">
-                <div onClick={() => setShowDropdown(prev => !prev)} className="relative border border-[#E5E5E566] rounded-[10px] flex justify-between gap-2 px-3 py-2 z-20">
+                <div onClick={() => setShowDropdown(prev => !prev)} className="relative border border-[#E5E5E566] bg-[#0D111B] rounded-[10px] flex justify-between gap-2 px-3 py-2 z-20">
                     <div>
                         {value}
                     </div>

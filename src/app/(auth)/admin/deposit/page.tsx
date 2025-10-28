@@ -15,7 +15,7 @@ export default async function AdminDepositsPage() {
       cache: "no-store"
     })).json()
     return (
-      <div className="w-full max-w-7xl mx-auto p-4">
+      <div className="w-full mx-auto p-4">
         <DepositTable userDeposits={deposits} username={username} adminPage />
       </div>
     )

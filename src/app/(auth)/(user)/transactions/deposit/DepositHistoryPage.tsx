@@ -16,8 +16,8 @@ export default async function DepositHistoryPage() {
 
     return (
       <div className="flex justify-center">
-        <div className="w-full max-w-7xl flex flex-col gap-6">
-          <div className="w-full grid grid-cols-3 max-md:grid-cols-1 gap-6">
+        <div className="w-full flex flex-col gap-6">
+          <div className="w-full grid grid-cols-3 max-lg:grid-cols-1 gap-6">
             <SumCard icon="redeem" amount={deposits.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed deposits" color="#00D492" />
             <SumCard icon="pending" amount={deposits.filter(v => v.result === "confirming").length.toString()} heading="Pending" description="Pending deposits" color="#FFBA00" />
             <SumCard icon="failed" amount={deposits.filter(v => v.result === "expired").length.toString()} heading="Expired" description="Expired deposits" color="#FF6467" />

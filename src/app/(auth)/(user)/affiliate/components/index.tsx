@@ -24,7 +24,7 @@ export default function AffiliatePage({ params: { rewards, ref, role } }: {
     }
     return (
         <div className="flex justify-center">
-            <div className="w-full max-w-7xl flex flex-col gap-6">
+            <div className="w-full flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                     <h1 className="font-semibold text-[26px] text-[#D9D9D9]">Affilate Program</h1>
                     <p className="text-[#99A1AF]">Earn rewards by inviting friends to join our platform</p>
@@ -52,7 +52,7 @@ export default function AffiliatePage({ params: { rewards, ref, role } }: {
                         </button>
                     </div>
                 </div>
-                <div className="w-full grid grid-cols-3 max-md:grid-cols-1 gap-6">
+                <div className="w-full grid grid-cols-3 max-lg:grid-cols-1 gap-6">
                     <SumCard icon="dollar" amount={`$${rewards.reduce((prev, current) => (prev + current.earning), 0)}`} heading="Total Earnings" description="Lifetime affiliate earnings" color="#00D492" />
                     <SumCard icon="referee" amount={[...new Set(rewards.map(reward => reward.detail.map(v => v.referee)).reduce((prev, current) => ([...prev, ...current]), []))].length.toString()} heading=" Total Referrals" description="Active referred users" color="#01A3DB" />
                     <SumCard icon="commission-rate" amount="5%" heading="Avg Commission" description="Average commission rate" color="#C27AFF" />

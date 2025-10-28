@@ -1,4 +1,5 @@
 "use client"
+import { SportsType } from "@/types";
 import jwt from "jsonwebtoken"
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
@@ -15,7 +16,7 @@ type StoreType = {
     avatar: string,
 }
 const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "" })
-const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
+export const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [username, setUsername] = useState<string | null>(null)
     const [fullname, setFullname] = useState<string>("")
@@ -55,7 +56,6 @@ const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
         </GlobalContext.Provider>
     )
 }
-export default GlobalContextProvider
 export const useUser = () => ({
     username: useContext(GlobalContext).username,
     role: useContext(GlobalContext).role,
@@ -67,4 +67,19 @@ export const useUser = () => ({
     fullname: useContext(GlobalContext).fullname,
     oddstype: useContext(GlobalContext).oddstype,
     avatar: useContext(GlobalContext).avatar,
+})
+
+const SportsFilterContext = createContext<{ sportsFilter: SportsType | "", setSportsFilter: Dispatch<SetStateAction<"" | SportsType>> }>({ sportsFilter: "", setSportsFilter: () => { } })
+export const SportsFilterContextProvider = ({ children }: { children: ReactNode }) => {
+
+    const [sportsFilter, setSportsFilter] = useState<SportsType | "">("")
+    return (
+        <SportsFilterContext.Provider value={{ sportsFilter, setSportsFilter }}>
+            {children}
+        </SportsFilterContext.Provider>
+    )
+}
+export const useSportsFilter = () => ({
+    sportsFilter: useContext(SportsFilterContext).sportsFilter,
+    setSportsFilter: useContext(SportsFilterContext).setSportsFilter,
 })

@@ -4,7 +4,7 @@ import Link from "next/link"
 export default function ClansPage() {
   return (
     <div className="flex justify-center">
-      <div className="w-full max-w-7xl flex flex-col gap-8">
+      <div className="w-full flex flex-col gap-8">
         <div className="flex justify-between items-start">
           <div className="flex flex-col">
             <div className="flex gap-3 py-3">

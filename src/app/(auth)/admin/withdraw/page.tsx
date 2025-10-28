@@ -16,7 +16,7 @@ export default async function AdminWithdrawPage() {
       cache: "no-store"
     })).json()
     return (
-      <div className="w-full max-w-7xl mx-auto p-4">
+      <div className="w-full mx-auto p-4">
         <WithdrawTable withdraws={withdraws} username={username} adminPage />
       </div>
     )

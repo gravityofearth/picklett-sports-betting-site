@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import axios, { AxiosError } from "axios"
 import { LineCardUserType, LineType, SportsType } from "@/types"
 import { convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
-import { useUser } from "@/store"
+import { useSportsFilter, useUser } from "@/store"
 import Pagination from "@/components/Pagination"
-import { SideInfoCard, SportsTab } from "./cards"
+import { SportsTab } from "./cards"
 import { useRouter } from "next/navigation"
 
 export default function UserPage({ params: { balance, winstreak, oddstype, timeOffset, lines: lines_origin }, loggedIn }: {
@@ -16,7 +16,7 @@ export default function UserPage({ params: { balance, winstreak, oddstype, timeO
     const router = useRouter()
     const [lines, setLines] = useState<(LineType & LineCardUserType)[]>(lines_origin)
     const { setToken } = useUser()
-    const [sportsFilter, setSportsFilter] = useState<SportsType | "">("")
+    const { sportsFilter, setSportsFilter } = useSportsFilter()
     // Pagination
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(10)
@@ -99,13 +99,6 @@ export default function UserPage({ params: { balance, winstreak, oddstype, timeO
         <div className="w-full flex gap-6">
             <div className="w-full flex flex-col gap-8">
                 <div className="w-full flex flex-col gap-5">
-                    {/* <div className="w-full overflow-x-auto">
-              <div className="min-w-[700px] grid grid-cols-3 gap-4">
-                <PromoCard sport="Basketball" event="Kansas City Chiefs vs Buffalo Bills" icon="basketball" />
-                <PromoCard sport="Soccer" event="Kansas City Chiefs vs Buffalo Bills" icon="soccer" />
-                <PromoCard sport="Tennis" event="Kansas City Chiefs vs Buffalo Bills" icon="tennis" />
-              </div>
-            </div> */}
                     <div className="w-full flex flex-col gap-4 bg-linear-to-r from-[#00BFFF1A] to-[#0077FF1A] p-6 border-[#1E2939] border rounded-[14px]">
                         <div className="flex justify-between items-center">
                             <div className="flex gap-4">
@@ -136,7 +129,7 @@ export default function UserPage({ params: { balance, winstreak, oddstype, timeO
                         </div>
                     </div>}
                     {currentLines.map(line =>
-                        <div key={line._id} className={`grid grid-cols-[auto_400px] max-md:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] p-5 ${timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-[#101828]"}`}>
+                        <div key={line._id} className={`grid grid-cols-[auto_400px] max-lg:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] p-5 ${timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-[#101828]"}`}>
                             <div className="flex flex-col justify-between gap-y-2 w-full">
                                 <div className="flex flex-col gap-1">
                                     <h2 className="text-lg font-semibold">{line.question}</h2>
@@ -230,7 +223,6 @@ export default function UserPage({ params: { balance, winstreak, oddstype, timeO
                     goToPage
                 }} />
             </div>
-            <SideInfoCard winstreak={winstreak} />
         </div>
     )
 }

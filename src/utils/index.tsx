@@ -1,5 +1,3 @@
-import Image from "next/image";
-import { ReactNode } from "react";
 import {  /*Bounce, */ ToastOptions, toast, Flip, ToastContent, } from "react-toastify";
 import * as bitcoin from "bitcoinjs-lib"
 import { NextResponse } from "next/server";
@@ -46,19 +44,13 @@ export const NATHAN_ADDRESS = {
 }
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY || ""
 export const solana_connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`, "confirmed");
-export const CurrencyDict: { [K: string]: { element: ReactNode, availableNetworks: string[] } } = {
+export const CurrencyDict: { [K: string]: { url: string, availableNetworks: string[] } } = {
     "BTC": {
-        element: <div className="flex items-center gap-2">
-            <Image alt="bitcoin-image" src="https://s2.coinmarketcap.com/static/img/coins/64x64/1.png" width={20} height={16} className="shrink-0" />
-            <span>BTC </span>
-        </div>,
+        url: "https://s2.coinmarketcap.com/static/img/coins/64x64/1.png",
         availableNetworks: ["Bitcoin"],
     },
     "SOL": {
-        element: <div className="flex items-center gap-2">
-            <Image alt="bitcoin-image" src="https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png" width={20} height={16} className="shrink-0" />
-            <span>SOL </span>
-        </div>,
+        url: "https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png",
         availableNetworks: ["Solana"],
     },
 }

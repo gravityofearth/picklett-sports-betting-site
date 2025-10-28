@@ -2,58 +2,82 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { SidebarItem } from "@/app/(auth)/components/authUserLayout";
 
 export default function UnauthUserLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const pathname = usePathname()
-    const [showSidebar, setShowSidebar] = useState(false)
+    const [expandSidebar, setExpandSidebar] = useState<boolean>()
+    useEffect(() => {
+        setExpandSidebar(!/Mobi/i.test(navigator.userAgent))
+    }, [])
+    if (expandSidebar === undefined) return <>Loading...</>
     return (
-        <div className="w-full flex flex-col items-center relative">
-            <div className="w-full flex flex-col items-center bg-[#02061880]">
-                <div className="w-full flex justify-between items-center max-w-[1440px] px-6 py-3">
-                    <div className="flex justify-between items-center gap-10">
-                        <div className="gap-3 flex items-center cursor-pointer">
-                            <button onClick={() => setShowSidebar(true)} className="flex md:hidden justify-center items-center hover:cursor-pointer">
-                                <span className="scale-x-125 p-1 hover:bg-[#333] rounded-md">☰</span>
-                            </button>
-                            <Link className="gap-3 flex items-center cursor-pointer max-md:gap-1" href="/">
-                                <div className="w-fit shrink-0 rounded-full flex justify-center bg-white">
-                                    <Image src="/favicon.ico" width={20} height={20} alt="logo" />
-                                </div>
-                                <div className="text-xl font-bold">Picklett</div>
-                            </Link>
+        <div className="flex">
+            <div className={expandSidebar ? "max-md:fixed max-md:inset-0 max-md:flex max-md:z-40" : undefined}>
+                {expandSidebar && <div onClick={() => setExpandSidebar(false)} className="md:hidden max-md:w-full backdrop-blur-[2px]"></div>}
+                <div className={`${expandSidebar ? "w-72 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-40 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
+                    <div className={`flex flex-col ${!expandSidebar && "items-center"} gap-4`}>
+                        <div className="w-full flex items-center justify-between px-2 py-4">
+                            <div onClick={() => { setExpandSidebar(prev => !prev) }} className="p-2 max-md:p-1 rounded-full hover:bg-white/10">
+                                <svg className="w-8 h-8 max-md:w-6 max-md:h-6 cursor-pointer"><use href="#svg-hamburger" /></svg>
+                            </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-8 gap-y-2 max-md:hidden font-semibold text-[#D1D5DC]">
-                            <Link href="/home" className={`${pathname === "/home" ? "text-[#00BFFF]" : ""}`}>Home</Link>
-                            <Link href="/winstreak" className={`${pathname === "/winstreak" ? "text-[#00BFFF]" : ""}`}>Winstreak</Link>
-                            <Link href="https://discord.gg/3ra2aXNWV8">
-                                <Image alt="discord" width={24} height={18} src={"/discord.png"} />
-                            </Link>
+                        <div className="flex flex-col px-2">
+                            <SidebarItem href="/home" svg="#svg-nav-home" title="Home" expandSidebar={expandSidebar} />
+                        </div>
+                        <div className="border-b border-white/30 w-full"></div>
+                        <div className="flex flex-col px-2">
+                            <SidebarItem to="/home" filter="" svg="#svg-nav-all-sports" title="All Sports" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/home" filter="Basketball" svg="#svg-nav-basketball" title="Basketball" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/home" filter="Soccer" svg="#svg-nav-soccer" title="Soccer" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/home" filter="Tennis" svg="#svg-nav-tennis" title="Tennis" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/home" filter="Baseball" svg="#svg-nav-baseball" title="Baseball" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/home" filter="Esports" svg="#svg-nav-esports" title="E-Sports" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/home" filter="Others" svg="#svg-nav-others" title="Others" expandSidebar={expandSidebar} />
+                        </div>
+                        <div className="border-b border-white/30 w-full"></div>
+                        <div className="flex flex-col px-2">
+                            <SidebarItem href="/winstreak" svg="#svg-nav-affiliate" title="Winstreak" expandSidebar={expandSidebar} />
                         </div>
                     </div>
-                    <Link href="/login" className="font-semibold text-[#D1D5DC]">Sign In</Link>
+                    <div className="w-full pb-4 flex justify-center">
+                        <div className={`flex justify-center items-center p-[1px] bg-linear-to-b from-white/40 to-[#1D2731]/40 ${expandSidebar ? "rounded-2xl max-md:rounded-lg" : "rounded-lg"}`}>
+                            <div className={`w-fit flex flex-col gap-4 items-center bg-linear-to-b from-[#182e54] to-[#111b30] ${expandSidebar ? "p-4 rounded-2xl max-md:p-2 max-md:rounded-lg" : "p-2 cursor-pointer rounded-lg"}`}>
+                                {expandSidebar ?
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex gap-3 items-center max-md:gap-1">
+                                            <Image alt="discord" width={30.87} height={24} src={"/discord.png"} className="max-md:w-4 max-md:h-4" />
+                                            <span className="max-md:text-sm">Discord Community</span>
+                                        </div>
+                                        <Link href="https://discord.gg/3ra2aXNWV8" className="bg-[#1F8FE4] border border-[#1880CF] rounded-lg text-sm py-2 px-5 max-md:px-2 max-md:py-1 cursor-pointer hover:bg-[#398fd1] text-center">Join Discord Community</Link>
+                                    </div>
+                                    :
+                                    <Link href="https://discord.gg/3ra2aXNWV8">
+                                        <Image alt="discord" width={24} height={16} src={"/discord.png"} className="max-md:w-4 max-md:h-4" />
+                                    </Link>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div className="w-full p-6 max-w-[1440px] max-md:p-4">
-                {showSidebar &&
-                    <div className="fixed flex top-0 left-0 right-0 h-[100vh] font-semibold text-[#D1D5DC]">
-                        <div className="flex flex-col px-1 py-6 bg-[#020618] gap-y-2 w-full h-full">
-                            <button onClick={() => setShowSidebar(false)} className="flex items-center hover:cursor-pointer px-2">
-                                <span className="scale-x-125 p-1 hover:bg-[#333] rounded-md">☰</span>
-                            </button>
-                            <Link href="/home" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/home" ? "text-[#00BFFF]" : ""}`}>Home</Link>
-                            <Link href="/winstreak" className={`p-2 hover:bg-[#333] rounded-md ${pathname === "/winstreak" ? "text-[#00BFFF]" : ""}`}>Winstreak</Link>
-                            <Link href="https://discord.gg/3ra2aXNWV8" className="p-2 hover:bg-[#333] rounded-md">Discord Community</Link>
+            <div className={`${expandSidebar ? "pl-72" : "pl-20"} max-md:pl-14 w-full flex flex-col items-center relative transition-[padding] ease-in-out`}>
+                <div className={`fixed left-0 ${expandSidebar ? "pl-80" : "pl-28"} max-md:pl-18 w-full flex justify-between items-center pr-8 py-6 max-md:px-4 max-md:py-3 bg-linear-to-b from-[#0e111b] via-80% via-[#0e111b] to-transparent`}>
+                    <Link className="gap-2 flex items-center cursor-pointer max-md:gap-1" href="/">
+                        <div className="w-fit shrink-0 rounded-full flex justify-center bg-white">
+                            <Image src="/favicon.ico" width={24} height={24} alt="logo" className="shrink-0" />
                         </div>
-                        <div className="w-full bg-black/50 h-full" onClick={() => { setShowSidebar(false) }}></div>
-                    </div>
-                }
-                {children}
+                        <div className="max-md:hidden text-2xl font-bold">Picklett</div>
+                    </Link>
+                    <Link href="/login" className="font-semibold text-[#D1D5DC]">Sign In</Link>
+                </div>
+                <div className="w-full p-6 max-md:p-4 max-md:pt-20 pt-29">
+                    {children}
+                </div>
             </div>
         </div>
     );

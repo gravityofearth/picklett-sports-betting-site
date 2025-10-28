@@ -15,8 +15,8 @@ export default async function WithdrawHistoryPage() {
     const { data: { withdraw: withdraws } }: { data: { withdraw: WithdrawType[] } } = await axios.get("http://localhost:3000/api/withdraw", { headers: { token } })
     return (
       <div className="flex justify-center">
-        <div className="w-full max-w-7xl flex flex-col gap-6">
-          <div className="w-full grid grid-cols-3 max-md:grid-cols-1 gap-6">
+        <div className="w-full flex flex-col gap-6">
+          <div className="w-full grid grid-cols-3 max-lg:grid-cols-1 gap-6">
             <SumCard icon="redeem" amount={withdraws.filter(v => v.result === "success").length.toString()} heading="Success" description="Completed withdrawals" color="#00D492" />
             <SumCard icon="pending" amount={withdraws.filter(v => v.result === "pending").length.toString()} heading="Pending" description="Processing withdrawals" color="#FFBA00" />
             <SumCard icon="failed" amount={withdraws.filter(v => v.result === "failed").length.toString()} heading="Fail" description="Unsuccessful attempts" color="#FF6467" />

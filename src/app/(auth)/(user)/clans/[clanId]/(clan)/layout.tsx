@@ -14,7 +14,7 @@ export default function Page({
   const [isExpand, setIsExpand] = useState(false)
   return (
     <div className="flex justify-center">
-      <div className="w-full max-w-7xl flex flex-col gap-8">
+      <div className="w-full flex flex-col gap-8">
         <div className="w-full py-6 px-8 max-md:py-3 max-md:px-4 flex flex-col gap-8 rounded-2xl bg-[#1475E1]/10">
           <div className="flex justify-between">
             <div className="flex gap-4 w-full max-md:flex-col">

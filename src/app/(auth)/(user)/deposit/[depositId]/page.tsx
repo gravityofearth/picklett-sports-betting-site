@@ -8,6 +8,8 @@ import { CircularIndeterminate } from "@/components/MUIs"
 import { useParams, useRouter } from "next/navigation"
 import { DepositType } from "@/types"
 import { useUser } from "@/store"
+import { CoinDisplay, CoinImage } from "@/components/Miscellaneous"
+import Link from "next/link"
 export default function DepositPage() {
   const [copyContent, setCopyContent] = useState(svgCopy)
   const copyToClipboard = async (text: string) => {
@@ -73,34 +75,29 @@ export default function DepositPage() {
   }, [])
   return (
     <div className="flex justify-center">
-      <div className="w-full max-w-7xl flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-semibold text-[26px] text-[#D9D9D9]">Deposit Funds</h1>
-          <p className="text-[#99A1AF]">If you would like to deposit other game currency like old school runescape GP, please open a ticket on discord</p>
-        </div>
+      <div className="w-full flex flex-col gap-6">
         <div className="flex justify-center">
-          <div className="w-md p-8 bg-linear-to-r from-[#0F172B80] to-[#1D293D4D] border border-[#31415880] rounded-[10px] flex flex-col gap-8">
-            <div className="flex gap-2 items-center">
-              <svg className="w-6 h-6"><use href="#svg-dollar-blue" /></svg>
-              <h2 className="text-xl">Deposit Funds</h2>
+          <div className="w-lg p-8 max-md:p-4 bg-[#0E1B2F] border border-[#31415880] rounded-[10px] flex flex-col gap-6">
+            <div className="w-full flex justify-center gap-20 border-b border-white/10">
+              <Link href="/deposit" className="border-b text-center cursor-pointer select-none border-[#1475E1]">Deposit</Link>
+              <Link href="/withdraw" className="border-b text-center cursor-pointer select-none border-white/10">Withdraw</Link>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4 justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex justify-center items-center p-2 border border-[#01A3DB]`}>1</div>
-                <div className={`h-[2px] w-10 bg-[#01A3DB]`}></div>
-                <div className={`w-10 h-10 rounded-full flex justify-center items-center p-2 border ${deposit?.result === "initiated" || deposit?.result === "confirming" ? "bg-[#01A3DB]" : ""} border-[#01A3DB]`}>2</div>
-                <div className={`h-[2px] w-10 ${deposit?.result === "success" || deposit?.result === "expired" ? "bg-[#01A3DB]" : "bg-[#E5E5E566]"}`}></div>
-                <div className={`w-10 h-10 rounded-full flex justify-center items-center p-2 border ${deposit?.result === "success" || deposit?.result === "expired" ? "bg-[#01A3DB] border-[#01A3DB]" : "border-[#E5E5E566]"}`}>3</div>
+                <div className="w-9 h-9 rounded-full flex justify-center items-center p-2 border border-[#01A3DB] bg-[#01A3DB]">1</div>
+                <div className="h-[2px] w-8 bg-[#01A3DB]"></div>
+                <div className="w-9 h-9 rounded-full flex justify-center items-center p-2 border bg-[#01A3DB] border-[#01A3DB]">2</div>
+                <div className={`h-[2px] w-8 ${deposit?.result === "success" || deposit?.result === "expired" ? "bg-[#01A3DB]" : "bg-[#E5E5E566]"}`}></div>
+                <div className={`w-9 h-9 rounded-full flex justify-center items-center p-2 ${deposit?.result === "success" || deposit?.result === "expired" ? "bg-[#01A3DB] border border-[#01A3DB]" : "bg-[#E5E5E566]"}`}>3</div>
               </div>
               {deposit && ["initiated"].includes(deposit.result) &&
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5"><use href="#svg-clock" /></svg>
-                  <span className="text-[#C6C9CC]">{timesRemaining}</span>
+                  <svg className="w-5 h-5"><use href="#svg-clock-new" /></svg>
+                  <span className="text-[#F59E0B]">{timesRemaining}</span>
                 </div>
               }
             </div>
             <div className="flex flex-col gap-6 items-center">
-
               <div className="w-full flex flex-col gap-4">
                 <button onClick={() => router.push(`/deposit`)} className="w-fit flex items-center gap-1 cursor-pointer hover:underline">
                   <svg className="w-5 h-5" fill="#ffffff"><use href="#svg-left-arrow" /></svg>
@@ -112,68 +109,91 @@ export default function DepositPage() {
                   {
                     ["initiated", "confirming"].includes(deposit.result) &&
                     <div className="w-full flex flex-col items-center gap-6">
-                      <div className="flex flex-col gap-2 w-full p-6 border border-[#FE9A0033] bg-linear-to-r from-[#FE9A001A] to-[#FF69001A] rounded-2xl">
-                        <p className="text-[#FFB900]">Note:</p>
-                        <p className="text-[#FEF3C6CC]">Send {deposit.currency} to the following address. </p>
+                      <div className="flex gap-2 items-start w-full p-3 border border-white/20 bg-[#0D111B]/60 rounded-xl">
+                        <svg className="w-4 h-4"><use href="#svg-i" /></svg>
+                        <p className="w-full text-xs text-white/70">Note: Send {deposit.currency} to the following address.</p>
                       </div>
                       <div className="w-full flex flex-col gap-4">
-                        <div className="block text-sm text-[#D1D5DC]">Address</div>
-                        <div className="flex items-center w-full bg-[#1E293999] border border-[#E5E5E566] rounded-lg">
-                          <code onClick={() => copyToClipboard(deposit.address)} className="flex-1 p-2 cursor-pointer font-mono text-sm overflow-x-auto break-all">
+                        <div className="block text-sm">Address</div>
+                        <div className="flex items-center w-full bg-white/10 pl-2  border border-[#E5E5E566] rounded-lg">
+                          <CoinImage src={CurrencyDict[deposit.currency].url} />
+                          <code onClick={() => copyToClipboard(deposit.address)} className="flex-1 py-2 px-1 cursor-pointer font-mono text-sm overflow-x-auto break-all">
                             {deposit.address}
                           </code>
-                          <button onClick={() => copyToClipboard(deposit.address)} className="p-2 cursor-pointer rounded-lg">
+                          <button onClick={() => copyToClipboard(deposit.address)} className="pr-2 cursor-pointer rounded-lg">
                             {copyContent}
                           </button>
                         </div>
                       </div>
-                      <QRCodeImg className="w-36 h-36" value={deposit.address} />
+                      <QRCodeImg className="w-36 h-36 rounded-lg overflow-hidden" value={deposit.address} />
                       {true && deposit.result === "confirming" &&
                         <div className="w-full text-center">
                           <p>Your deposit amount is ${deposit.depositAmount}</p>
                           <p>{deposit.confirmations} / 2 Confirmations</p>
                         </div>
                       }
-                      <div className="w-full flex justify-between gap-2 items-center">
-                        <div className="w-full flex gap-1 items-center border border-[#E5E5E566] rounded-[10px] p-2">
-                          <input onChange={(e) => {
-                            const val = e.target.value
-                            if (validateDecimal(val)) {
-                              setPrices(v => [val, (Math.ceil(Number(val) / deposit.lockedPrice * 10 ** 8) / 10 ** 8).toString()])
-                            }
-                          }} type="number" value={prices[0]} className="w-full text-right" />
-                          <div>USD</div>
-                        </div>
-                        <svg className="w-10 h-10"><use href="#svg-calculator" /></svg>
-                        <div className="w-full flex gap-1 items-center border border-[#E5E5E566] rounded-[10px] p-2">
-                          <input onChange={(e) => {
-                            const val = e.target.value
-                            if (validateDecimal(val)) {
-                              setPrices([(Math.ceil(Number(val) * deposit.lockedPrice * 10 ** 8) / 10 ** 8).toString(), val])
-                            }
-                          }} type="number" value={prices[1]} className="w-full text-right" />
-                          <div className="w-fit">{CurrencyDict[deposit.currency]?.element}</div>
+                      <div className="flex flex-col gap-4">
+                        <div className="block text-sm w-full">Calculator</div>
+                        <div className="w-full flex justify-between gap-2 items-center">
+                          <div className="w-full flex gap-1 items-center border border-[#E5E5E566]  bg-[#0D111B] rounded-[10px] px-2 py-1">
+                            <input onChange={(e) => {
+                              const val = e.target.value
+                              if (validateDecimal(val)) {
+                                setPrices(v => [val, (Math.ceil(Number(val) / deposit.lockedPrice * 10 ** 8) / 10 ** 8).toString()])
+                              }
+                            }} type="number" value={prices[0]} className="w-full text-right" />
+                            <div>USD</div>
+                          </div>
+                          <svg className="w-10 h-10"><use href="#svg-calculator" /></svg>
+                          <div className="w-full flex gap-1 items-center border border-[#E5E5E566] bg-[#0D111B] rounded-[10px] px-2 py-1">
+                            <input onChange={(e) => {
+                              const val = e.target.value
+                              if (validateDecimal(val)) {
+                                setPrices([(Math.ceil(Number(val) * deposit.lockedPrice * 10 ** 8) / 10 ** 8).toString(), val])
+                              }
+                            }} type="number" value={prices[1]} className="w-full text-right" />
+                            <div className="w-fit">
+                              <CoinDisplay coin={deposit.currency} src={CurrencyDict[deposit.currency].url} />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   }
                   {deposit.result === "success" &&
-                    <div className="flex flex-col items-center gap-10">
-                      <div className="text-4xl text-green-400">
-                        Success
+                    <div className="w-full flex flex-col items-center gap-4">
+                      <svg className="w-14 h-14"><use href="#svg-success" /></svg>
+                      <span className="text-[18px]">Deposit Success</span>
+                      <div className="flex flex-col gap-2 w-full rounded-lg border border-white/20 bg-[#1C2534] p-2">
+                        <div className="w-full flex justify-between items-center">
+                          <span className="text-white/80">Currency</span>
+                          <CoinDisplay coin={deposit.currency} src={CurrencyDict[deposit.currency].url} />
+                        </div>
+                        <div className="w-full flex justify-between items-center">
+                          <span className="text-white/80">Network</span>
+                          {CurrencyDict[deposit.currency].availableNetworks}
+                        </div>
+                        <div className="w-full flex justify-between items-center">
+                          <span className="text-white/80">Amount</span>
+                          {deposit.depositAmount} USD
+                        </div>
                       </div>
-                      <svg className="w-20 h-20"><use href="#svg-redeem" /></svg>
-                      <div>
-                        Your deposit amount is ${deposit.depositAmount}
-                      </div>
+                      <Link href="/transactions/deposit" className="w-full text-center text-black text-[18px] font-medium bg-white rounded-lg py-2 px-6">View Transaction History</Link>
+                      <Link href="/deposit" className="w-full text-[18px] font-medium bg-[#1475E1] text-center rounded-lg py-2 px-6">Make Another Deposit</Link>
                     </div>
                   }
                   {deposit.result === "expired" &&
-                    <div className="flex flex-col items-center gap-10">
-                      <div className="text-4xl text-red-400">
-                        Expired
+                    <div className="w-full flex flex-col items-center gap-4">
+                      <svg className="w-14 h-14"><use href="#svg-expired" /></svg>
+                      <span className="text-[18px]">Expired</span>
+                      <div className="w-full bg-[#EF4444]/8 p-3 rounded-lg border border-white/10 flex flex-col gap-2 items-center">
+                        <span className="text-[#EF4444]">This deposit address has expired</span>
+                        <span className="text-[#EF4444] text-sm text-center">For security reasons, deposit addresses are only valid for 20 minutes. Please generate a new address to continue.</span>
                       </div>
-                      <svg className="w-20 h-20"><use href="#svg-failed" /></svg>
+                      <Link href="/deposit" className="w-full flex items-center gap-2 justify-center text-black text-[18px] font-medium bg-white rounded-lg py-2 px-6">
+                        <svg className="w-5 h-5 stroke-black"><use href="#svg-refresh" /></svg>
+                        Generate New Address
+                      </Link>
                     </div>
                   }</> :
                 <CircularIndeterminate />

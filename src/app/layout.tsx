@@ -3,7 +3,7 @@ import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import SVGs from "@/components/SVG";
-import GlobalContextProvider from "@/store";
+import { GlobalContextProvider, SportsFilterContextProvider } from "@/store";
 
 export const metadata: Metadata = {
   title: "Picklett Sports Betting",
@@ -22,20 +22,22 @@ export default function RootLayout({
         className={`antialiased`} style={{ fontFamily: "Euclid Circular B, Segoe UI" }}
       >
         <GlobalContextProvider>
-          <SVGs />
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss={false}
-            draggable
-            pauseOnHover
-            theme="colored"
-          />
-          {children}
+          <SportsFilterContextProvider>
+            <SVGs />
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss={false}
+              draggable
+              pauseOnHover
+              theme="colored"
+            />
+            {children}
+          </SportsFilterContextProvider>
         </GlobalContextProvider>
       </body>
     </html>
