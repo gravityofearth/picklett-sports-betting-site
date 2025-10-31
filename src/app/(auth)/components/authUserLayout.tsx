@@ -184,7 +184,7 @@ export default function AuthUserLayout({
                         </div>
                     </div>
                 </div>
-                <div className="w-full p-6 max-md:p-4 max-md:pt-20 pt-29">
+                <div className="w-full p-8 max-md:p-4 max-md:pt-20 pt-29">
                     {children}
                 </div>
             </div>
