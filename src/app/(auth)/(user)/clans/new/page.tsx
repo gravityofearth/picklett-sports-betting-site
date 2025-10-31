@@ -61,19 +61,19 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex gap-2 items-center">
               <svg className="w-[30px] h-6"><use href="#svg-discord"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" />
+              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
             </div>
             <div className="flex gap-2 items-center">
               <svg className="w-[30px] h-6"><use href="#svg-x"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" />
+              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
             </div>
             <div className="flex gap-2 items-center">
               <svg className="w-[30px] h-6"><use href="#svg-twitch"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" />
+              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
             </div>
             <div className="flex gap-2 items-center">
               <svg className="w-[30px] h-6"><use href="#svg-youtube"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" />
+              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ const depositSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        index: true,
     },
     currency: {
         type: String,

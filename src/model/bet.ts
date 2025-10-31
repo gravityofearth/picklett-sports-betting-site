@@ -3,10 +3,12 @@ const betSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        index: true,
     },
     lineId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
+        index: true,
     },
     amount: {
         type: Number,

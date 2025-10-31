@@ -49,7 +49,7 @@ export default function AuthUserLayout({
                         <div className="flex flex-col px-2">
                             <SidebarItem href="/user" svg="#svg-nav-home" title="Home" expandSidebar={expandSidebar} />
                             {role !== "user" && <SidebarItem href={`/${role}`} svg="#svg-nav-admin" title="Admin" expandSidebar={expandSidebar} />}
-                            {/* <SidebarItem href="/clans" svg="#svg-nav-clan" title="Clan" expandSidebar={expandSidebar} /> */}
+                            <SidebarItem href="/clans" svg="#svg-nav-clan" title="Clan" expandSidebar={expandSidebar} />
                             <SidebarItem href="/bet-history" svg="#svg-nav-my-bets" title="My Bets" expandSidebar={expandSidebar} />
                             <SidebarItem href="/rewards" svg="#svg-nav-vip-club" title="Vip Club" expandSidebar={expandSidebar} />
                         </div>

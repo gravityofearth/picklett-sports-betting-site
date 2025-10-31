@@ -38,6 +38,7 @@ const lineSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['pending', 'yes', 'no'],
+        index: true,
     },
     openedBy: {
         type: String,
