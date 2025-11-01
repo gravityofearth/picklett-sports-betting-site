@@ -66,7 +66,7 @@ export default function UnauthUserLayout({
                 </div>
             </div>
             <div className={`${expandSidebar ? "pl-52" : "pl-20"} max-md:pl-14 w-full flex flex-col items-center relative transition-[padding] ease-in-out`}>
-                <div className={`fixed left-0 ${expandSidebar ? "pl-80" : "pl-28"} max-md:pl-18 w-full flex justify-between items-center pr-8 py-6 max-md:px-4 max-md:py-3 bg-linear-to-b from-[#0e111b] via-80% via-[#0e111b] to-transparent`}>
+                <div className={`fixed left-0 ${expandSidebar ? "pl-60" : "pl-28"} max-md:pl-18 w-full flex justify-between items-center pr-8 py-6 max-md:px-4 max-md:py-3 bg-linear-to-b from-[#0e111b] via-80% via-[#0e111b] to-transparent`}>
                     <Link className="gap-2 flex items-center cursor-pointer max-md:gap-1" href="/">
                         <div className="w-fit shrink-0 rounded-full flex justify-center bg-white">
                             <Image src="/favicon.ico" width={24} height={24} alt="logo" className="shrink-0" />
