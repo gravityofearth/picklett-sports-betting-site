@@ -39,7 +39,7 @@ export default function AuthUserLayout({
         <div className="flex">
             <div className={expandSidebar ? "max-md:fixed max-md:inset-0 max-md:flex max-md:z-40" : undefined}>
                 {expandSidebar && <div onClick={() => setExpandSidebar(false)} className="md:hidden max-md:w-full backdrop-blur-[2px]"></div>}
-                <div className={`${expandSidebar ? "w-72 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-40 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
+                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-40 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
                     <div className={`flex flex-col ${!expandSidebar && "items-center"} gap-4`}>
                         <div className="w-full flex items-center justify-between px-2 py-4 pb-1">
                             <div onClick={() => { setExpandSidebar(prev => !prev) }} className="p-2 max-md:p-1 rounded-full hover:bg-white/10">
@@ -52,6 +52,11 @@ export default function AuthUserLayout({
                             {/* <SidebarItem href="/clans" svg="#svg-nav-clan" title="Clan" expandSidebar={expandSidebar} /> */}
                             <SidebarItem href="/bet-history" svg="#svg-nav-my-bets" title="My Bets" expandSidebar={expandSidebar} />
                             <SidebarItem href="/rewards" svg="#svg-nav-vip-club" title="Vip Club" expandSidebar={expandSidebar} />
+                            <SidebarItem href="/affiliate" svg="#svg-nav-affiliate" title="Affiliate" expandSidebar={expandSidebar} />
+                        </div>
+                        <div className="border-b border-white/30 w-full"></div>
+                        <div className="flex flex-col px-2">
+                            <SidebarItem href="/leaderboard" svg="#svg-nav-winstreak" title="Winstreak" expandSidebar={expandSidebar} highlight />
                         </div>
                         <div className="border-b border-white/30 w-full"></div>
                         <div className="flex flex-col px-2">
@@ -63,22 +68,17 @@ export default function AuthUserLayout({
                             <SidebarItem to="/user" filter="Esports" svg="#svg-nav-esports" title="E-Sports" expandSidebar={expandSidebar} />
                             <SidebarItem to="/user" filter="Others" svg="#svg-nav-others" title="Others" expandSidebar={expandSidebar} />
                         </div>
-                        <div className="border-b border-white/30 w-full"></div>
-                        <div className="flex flex-col px-2">
-                            <SidebarItem href="/affiliate" svg="#svg-nav-affiliate" title="Affiliate" expandSidebar={expandSidebar} />
-                            <SidebarItem href="/leaderboard" svg="#svg-nav-winstreak" title="Winstreak" expandSidebar={expandSidebar} />
-                        </div>
                     </div>
                     <div className="w-full pb-4 flex justify-center">
                         <div className={`flex justify-center items-center p-[1px] bg-linear-to-b from-white/40 to-[#1D2731]/40 ${expandSidebar ? "rounded-2xl max-md:rounded-lg" : "rounded-lg"}`}>
                             <div className={`w-fit flex flex-col gap-4 items-center bg-linear-to-b from-[#182e54] to-[#111b30] ${expandSidebar ? "p-4 rounded-2xl max-md:p-2 max-md:rounded-lg" : "p-2 cursor-pointer rounded-lg"}`}>
                                 {expandSidebar ?
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex gap-3 items-center max-md:gap-1">
-                                            <Image alt="discord" width={30.87} height={24} src={"/discord.png"} className="max-md:w-4 max-md:h-4" />
-                                            <span className="max-md:text-sm">Discord Community</span>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex gap-2 items-center max-md:gap-1">
+                                            <Image alt="discord" width={20} height={16} src={"/discord.png"} className="max-md:w-4 max-md:h-4" />
+                                            <span className="max-md:text-xs text-sm">Discord Community</span>
                                         </div>
-                                        <Link href="https://discord.gg/3ra2aXNWV8" className="bg-[#1F8FE4] border border-[#1880CF] rounded-lg text-sm py-2 px-5 max-md:px-2 max-md:py-1 cursor-pointer hover:bg-[#398fd1] text-center">Join Discord Community</Link>
+                                        <Link href="https://discord.gg/3ra2aXNWV8" className="bg-[#1F8FE4] border border-[#1880CF] rounded-lg text-sm py-2 px-5 max-md:px-2 max-md:py-1 cursor-pointer hover:bg-[#398fd1] text-center">Join</Link>
                                     </div>
                                     :
                                     <Link href="https://discord.gg/3ra2aXNWV8">
@@ -90,7 +90,7 @@ export default function AuthUserLayout({
                     </div>
                 </div>
             </div>
-            <div className={`${expandSidebar ? "pl-72" : "pl-20"} max-md:pl-14 w-full flex flex-col items-center relative transition-[padding] ease-in-out`}>
+            <div className={`${expandSidebar ? "pl-52" : "pl-20"} max-md:pl-14 w-full flex flex-col items-center relative transition-[padding] ease-in-out`}>
                 <div className={`fixed left-0 ${expandSidebar ? "pl-80" : "pl-28"} max-md:pl-18 w-full flex justify-between items-center pr-8 py-6 max-md:px-4 max-md:py-3 bg-linear-to-b from-[#0e111b] via-80% via-[#0e111b] to-transparent`}>
                     <Link className="gap-2 flex items-center cursor-pointer max-md:gap-1" href="/">
                         <div className="w-fit shrink-0 rounded-full flex justify-center bg-white">
@@ -203,7 +203,7 @@ const LinkOrButton = ({ children, href, onClick, className }: { children: ReactN
         </button>
     }
 }
-export const SidebarItem = ({ expandSidebar, href, to, svg, filter, title }: { expandSidebar: boolean, href?: string, to?: string, svg: string, filter?: SportsType | "", title: string }) => {
+export const SidebarItem = ({ expandSidebar, href, to, svg, filter, title, highlight }: { expandSidebar: boolean, href?: string, to?: string, svg: string, filter?: SportsType | "", title: string, highlight?: boolean }) => {
     const pathname = usePathname()
     const router = useRouter()
     const { setSportsFilter } = useSportsFilter()
@@ -212,7 +212,7 @@ export const SidebarItem = ({ expandSidebar, href, to, svg, filter, title }: { e
             filter !== undefined && to ?
                 () => { if (pathname !== to) router.push(to); setSportsFilter(filter) }
                 : undefined
-        } className={`p-2 rounded-md flex gap-3 items-center cursor-pointer ${pathname === href ? "bg-white/20" : "hover:bg-white/10 "}`}>
+        } className={`p-2 rounded-md flex gap-3 items-center cursor-pointer ${highlight ? "bg-radial-[at_50%_75%] from-[#1475E1] via-[#3483dd] to-[#2067b8] to-90%" : pathname === href ? "bg-white/20" : "hover:bg-white/10 "}`}>
             <svg className="w-6 max-md:w-4 h-6 max-md:h-4 fill-white/70"><use href={svg} /></svg>
             {expandSidebar && <span className="max-md:text-sm">{title}</span>}
         </LinkOrButton>
