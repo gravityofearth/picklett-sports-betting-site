@@ -33,7 +33,7 @@ function LoginPage() {
         if (status === 200) {
           setToken(token)
           const target = searchParams.get("redirect")
-          router.push(target || `/user`)
+          router.push(target || `/sports`)
         }
       })
       .catch((e: AxiosError) => {

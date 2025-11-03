@@ -47,7 +47,7 @@ export default function AuthUserLayout({
                             </div>
                         </div>
                         <div className="flex flex-col px-2">
-                            <SidebarItem href="/user" svg="#svg-nav-home" title="Home" expandSidebar={expandSidebar} />
+                            <SidebarItem href="/sports" svg="#svg-nav-home" title="Home" expandSidebar={expandSidebar} />
                             {role !== "user" && <SidebarItem href={`/${role}`} svg="#svg-nav-admin" title="Admin" expandSidebar={expandSidebar} />}
                             {/* <SidebarItem href="/clans" svg="#svg-nav-clan" title="Clan" expandSidebar={expandSidebar} /> */}
                             <SidebarItem href="/bet-history" svg="#svg-nav-my-bets" title="My Bets" expandSidebar={expandSidebar} />
@@ -60,13 +60,13 @@ export default function AuthUserLayout({
                         </div>
                         <div className="border-b border-white/30 w-full"></div>
                         <div className="flex flex-col px-2">
-                            <SidebarItem to="/user" filter="" svg="#svg-nav-all-sports" title="All Sports" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/user" filter="Basketball" svg="#svg-nav-basketball" title="Basketball" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/user" filter="Soccer" svg="#svg-nav-soccer" title="Soccer" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/user" filter="Tennis" svg="#svg-nav-tennis" title="Tennis" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/user" filter="Baseball" svg="#svg-nav-baseball" title="Baseball" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/user" filter="Esports" svg="#svg-nav-esports" title="E-Sports" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/user" filter="Others" svg="#svg-nav-others" title="Others" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="" svg="#svg-nav-all-sports" title="All Sports" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="Basketball" svg="#svg-nav-basketball" title="Basketball" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="Soccer" svg="#svg-nav-soccer" title="Soccer" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="Tennis" svg="#svg-nav-tennis" title="Tennis" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="Baseball" svg="#svg-nav-baseball" title="Baseball" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="Esports" svg="#svg-nav-esports" title="E-Sports" expandSidebar={expandSidebar} />
+                            <SidebarItem to="/sports" filter="Others" svg="#svg-nav-others" title="Others" expandSidebar={expandSidebar} />
                         </div>
                     </div>
                     <div className="w-full pb-4 flex justify-center">

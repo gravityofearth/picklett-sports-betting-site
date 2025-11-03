@@ -35,7 +35,7 @@ export default function RegisterPage({ params: { ref } }: { params: { ref: strin
         if (status === 201) {
           setToken(token)
           showToast("Successfully registered!", "success")
-          router.push("/user")
+          router.push("/sports")
         }
       })
       .catch((e: AxiosError) => {
