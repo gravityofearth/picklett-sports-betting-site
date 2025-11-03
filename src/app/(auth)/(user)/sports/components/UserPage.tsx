@@ -141,7 +141,7 @@ export default function UserPage({ params: { balance, winstreak, oddstype, timeO
                                         <p className="text-[#00BFFF] text-xs">{line.sports}</p>
                                     </div>
                                     <div className="flex gap-[6px] items-center">
-                                        <svg className="w-[10px] h-[12px]"><use href="#svg-clock" /></svg>
+                                        <svg className="w-[10px] h-[12px] shrink-0"><use href="#svg-clock" /></svg>
                                         <p className="text-sm font-semibold">
                                             {
                                                 (() => {

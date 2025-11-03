@@ -1,4 +1,4 @@
-import UserPage from "@/app/(auth)/(user)/user/components/UserPage"
+import UserPage from "@/app/(auth)/(user)/sports/components/UserPage"
 import { LineType } from "@/types"
 export default async function Page() {
   const { lines, basets }: { lines: LineType[], basets: number } = await (await fetch('http://localhost:3000/api/line', {

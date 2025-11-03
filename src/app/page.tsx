@@ -11,5 +11,5 @@ export default async function Page() {
   } catch (error) {
     flag = false
   }
-  redirect(flag ? "/user" : "/home")
+  redirect(flag ? "/sports" : "/home")
 }
