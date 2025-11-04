@@ -14,7 +14,6 @@ export default function AuthUserLayout({
     children: React.ReactNode;
 }>) {
     const { username, fullname, role, balance, avatar, setToken } = useUser()
-    const [isError, setError] = useState(false)
     const pathname = usePathname()
     const logout = () => {
         axios.get(`/api/logout`)
@@ -135,12 +134,7 @@ export default function AuthUserLayout({
                             {showUserDropdown && <div onClick={() => setShowUserDropdown(false)} className="fixed top-0 bottom-0 left-0 right-0 z-10"></div>}
                             <div className="cursor-pointer select-none">
                                 <div onClick={() => { setShowUserDropdown(prev => !prev); setShowBalanceDropdown(false) }}>
-                                    {avatar && !isError ?
-                                        <div className="relative w-8 h-8 rounded-full flex items-center justify-center bg-[#242C3C] overflow-hidden z-20 bg-cover bg-center" style={{ backgroundImage: `url(/api/profile/avatar/${avatar})` }} >
-                                            <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="w-0" width={32} height={32} alt="avatar" />
-                                        </div> :
-                                        <svg className="w-[11px] h-[14px]"><use href="#svg-user" /></svg>
-                                    }
+                                    <Image alt="avatar" src={`/api/profile/avatar/${avatar}`} width={32} height={32} className="shrink-0 rounded-full max-md:rounded-lg w-[32px] max-md:w-5 h-[32px] max-md:h-5" />
                                 </div>
                                 {showUserDropdown &&
                                     <div className="absolute right-0 -bottom-2 translate-y-[100%] flex flex-col p-2 rounded-lg bg-[#0F212E] z-20">

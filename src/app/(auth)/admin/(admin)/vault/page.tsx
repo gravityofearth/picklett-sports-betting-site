@@ -1,18 +1,18 @@
 "use client"
 
 import { CircularIndeterminate } from "@/components/MUIs"
-import { vaultBalanceType } from "@/types"
+import { VaultBalanceType } from "@/types"
 import { convertTimestamp2HumanReadablePadded } from "@/utils";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react"
 
 export default function VaultBalances() {
     const [timeRemaining, setTimeReamining] = useState("")
-    const [balances, setBalances] = useState<vaultBalanceType[]>([])
+    const [balances, setBalances] = useState<VaultBalanceType[]>([])
     const timeOffset_ref = useRef(0)
     useEffect(() => {
         axios.get('/api/vault/balance', { headers: { token: localStorage.getItem("jwt") }, })
-            .then(({ data: { balances, basets } }: { data: { balances: vaultBalanceType[], basets: number } }) => {
+            .then(({ data: { balances, basets } }: { data: { balances: VaultBalanceType[], basets: number } }) => {
                 setBalances(balances)
                 timeOffset_ref.current = new Date().getTime() - basets
             })

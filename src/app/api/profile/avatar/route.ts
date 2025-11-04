@@ -1,45 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GridFSBucket } from "mongodb";
 import connectMongoDB from "@/utils/mongodb";
-import fs from "fs/promises";
-import path from "path";
 import jwt from "jsonwebtoken"
 import { getCookieResponse, JWT_SECRET } from "@/utils";
 import { updateAvatar } from "@/controller/user";
 import { signToken } from "@/controller/auth";
+import { ReceiveUploadedFile } from "./ReceiveUploadedFile";
 
 export async function POST(request: Request) {
   try {
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
-    const formData = await request.formData();
-    const files = formData.getAll("file") as File[];
-
-    if (files.length === 0) {
-      return NextResponse.json({ message: "No files uploaded" }, { status: 400 });
-    }
-
-    for (const file of files) {
-      const extension = file.name.split(".").pop();
-
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const filename = `avatar-${Date.now()}.${extension}`
-      // Save to /public/uploads (make sure this directory exists)
-      const filePath = path.join(process.cwd(), "avatars", filename);
-      await fs.writeFile(filePath, buffer);
-
-
-
-      const updated_user = await updateAvatar({ username, avatar: filename })
-      const new_token = signToken(updated_user)
-      return getCookieResponse({
-        response: NextResponse.json({ token: new_token }, { status: 200 }),
-        token: new_token,
-      })
-    }
-
-    // return NextResponse.json({ message: "Files uploaded successfully" });
+    const filename = await ReceiveUploadedFile(request, "avatar")
+    const updated_user = await updateAvatar({ username, avatar: filename })
+    const new_token = signToken(updated_user)
+    return getCookieResponse({
+      response: NextResponse.json({ token: new_token }, { status: 200 }),
+      token: new_token,
+    })
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Upload failed" }, { status: 500 });

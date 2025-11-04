@@ -72,7 +72,8 @@ export type WithdrawType = {
 export type LeaderType = {
     username: string;
     winstreak: number;
-    totalWins: number;
+    wins: number;
+    earns: number;
     avatar?: string;
 }
 export type AffiliateRewardType = {
@@ -94,7 +95,7 @@ export type RedemptionType = {
     status: "pending" | "redeemed",
     username?: string
 }
-export type vaultBalanceType = {
+export type VaultBalanceType = {
     network: string,
     address: string,
     currencies: {
@@ -104,4 +105,55 @@ export type vaultBalanceType = {
             coin: number,
         },
     }[]
+}
+export type ClanMemberType = {
+    username: string,
+    avatar: string,
+    clan: {
+        clanId: string,
+        joined: boolean,
+        role: string,
+        contribution: number,
+        timestamp: number,
+    },
+    bets: number,
+    wins: number,
+    earns: number,
+}
+export type ClanType = {
+    _id: string,
+    title: string,
+    ownerUserName: string,
+    description: string,
+    icon: string,
+    coffer: number,
+    xp: number,
+    level: number,
+    wins: number,
+    bets: number,
+    members: ClanMemberType[],
+}
+export type UserClanType = {
+    clanId: string,
+    joined: boolean,
+    role: string,
+    contribution: number,
+    timestamp: number,
+}
+export type WarType = {
+    _id: string,
+    type: string,
+    prize: number,
+    stake: number,
+    slots: number,
+    clans?: {
+        clanId: string,
+        members: string[],
+        wins: number,
+        bets: number,
+        title: string, // $lookup
+        icon: string,
+    }[],
+    startsAt: number,
+    minMembers: number,
 }

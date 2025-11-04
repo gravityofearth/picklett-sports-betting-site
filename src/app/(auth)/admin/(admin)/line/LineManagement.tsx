@@ -169,6 +169,7 @@ export default function LineManagement({ params: { username, role } }: { params:
     }, [userBets, lines])
     const fetchData = () => {
         if (!role) return
+        if (!localStorage.getItem("jwt")) return
         axios.get("/api/line", { headers: { token: localStorage.getItem("jwt") } })
             .then(({ data: { lines: returned_lines, token, basets } }: { data: { lines: LineType[], token: string, basets: number } }) => {
                 const newLine = lines.filter(v => v._id === "new")[0]

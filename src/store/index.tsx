@@ -1,5 +1,5 @@
 "use client"
-import { SportsType } from "@/types";
+import { SportsType, UserClanType } from "@/types";
 import jwt from "jsonwebtoken"
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
@@ -14,13 +14,15 @@ type StoreType = {
     fullname: string,
     oddstype: "decimal" | "american",
     avatar: string,
+    clan: UserClanType | undefined,
 }
-const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "" })
+const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "", clan: undefined })
 export const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [username, setUsername] = useState<string | null>(null)
     const [fullname, setFullname] = useState<string>("")
     const [avatar, setAvatar] = useState<string>("")
+    const [clan, setClan] = useState<UserClanType>()
     const [role, setRole] = useState<string | null>(null)
     const [ref, setRef] = useState<string | null>(null)
     const [winstreak, setWinstreak] = useState<number>(0)
@@ -48,10 +50,11 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
         setFullname(decodedToken?.fullname)
         setOddstype(decodedToken?.oddstype)
         setAvatar(decodedToken?.avatar)
+        setClan(decodedToken?.clan)
 
     }, [token, pathname])
     return (
-        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar }}>
+        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar, clan }}>
             {children}
         </GlobalContext.Provider>
     )
@@ -67,6 +70,7 @@ export const useUser = () => ({
     fullname: useContext(GlobalContext).fullname,
     oddstype: useContext(GlobalContext).oddstype,
     avatar: useContext(GlobalContext).avatar,
+    clan: useContext(GlobalContext).clan,
 })
 
 const SportsFilterContext = createContext<{ sportsFilter: SportsType | "", setSportsFilter: Dispatch<SetStateAction<"" | SportsType>> }>({ sportsFilter: "", setSportsFilter: () => { } })

@@ -1,4 +1,8 @@
+"use client"
+import { useClan } from "../layout"
+
 export default function Page() {
+  const {clan}=useClan()
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -17,7 +21,7 @@ export default function Page() {
         <div className="w-full flex flex-col gap-2">
           <span className="text-lg leading-6 max-md:text-sm">Progress</span>
           <div className="w-full rounded-full bg-[#1475E1]/20 h-[10px]">
-            <div className="w-4/5 rounded-full bg-[#1475E1] h-[10px]"></div>
+            <div className="rounded-full bg-[#1475E1] h-[10px]" style={{width:`${clan?.xp}%`}}></div>
           </div>
         </div>
       </div>

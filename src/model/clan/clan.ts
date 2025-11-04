@@ -7,6 +7,8 @@ const clanSchema = new mongoose.Schema({
     coffer: Number,
     xp: Number,
     level: Number,
+    wins: Number,
+    bets: Number,
 });
 
 const clanModel = mongoose.models.Clan || mongoose.model("Clan", clanSchema);

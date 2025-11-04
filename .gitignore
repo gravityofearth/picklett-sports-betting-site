@@ -42,3 +42,4 @@ next-env.d.ts
 
 avatars/*
 !avatars/.gitkeep
+!avatars/avatar-placeholder.*

@@ -1,4 +1,26 @@
+"use client"
+
+import { getWinRate, showToast } from "@/utils"
+import { useClan } from "../layout"
+import { useUser } from "@/store"
+import axios from "axios"
+import { useState } from "react"
+
 export default function Page() {
+  const { pendingMembers, clan, fetchClan } = useClan()
+  const { clan: userClan } = useUser()
+  const [sending, setSending] = useState(false)
+  const handleRequest = (username: string, isApprove: boolean) => {
+    if (!clan) return
+    setSending(true)
+    axios.post(`/api/clan/join/resolve-pending`, { id: clan._id, username, isApprove }, { headers: { token: localStorage.getItem("jwt") } })
+      .then(() => {
+        showToast("Operation succeeded", "success")
+        fetchClan()
+      }).catch((e) => {
+        showToast(e.response?.statusText || "Unknown Error", "error")
+      }).finally(() => setSending(false))
+  }
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -24,19 +46,23 @@ export default function Page() {
             </tr>
           </thead>
           <tbody>
-            <tr className="">
-              <td className="pl-3 py-6 pr-2"> Win striker </td>
-              <td className="pl-3 py-6 pr-2"> 58.3% </td>
-              <td className="pl-3 py-6 pr-2"> 245 </td>
-              <td className="pl-3 py-6 pr-2 font-bold"> $1,850 </td>
-              <td className="pl-3 py-6 pr-2 font-bold"> 2025-10-20 10:30 </td>
-              <td className="w-[200px]">
-                <div className="flex gap-2">
-                  <button className="py-3 px-6 bg-[#1475E1] rounded-lg cursor-pointer hover:bg-[#3e87da]">Approve</button>
-                  <button className="py-3 px-6 bg-[#FEE2E2] rounded-lg cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444]">Reject</button>
-                </div>
-              </td>
-            </tr>
+            {pendingMembers.map((member, i) =>
+              <tr key={i} className="">
+                <td className="pl-3 py-6 pr-2"> {member.username} </td>
+                <td className="pl-3 py-6 pr-2"> {getWinRate({ wins: member.wins, bets: member.bets })} </td>
+                <td className="pl-3 py-6 pr-2"> {member.bets} </td>
+                <td className="pl-3 py-6 pr-2 font-bold"> ${member.earns} </td>
+                <td className="pl-3 py-6 pr-2 font-bold"> {new Date(member.clan.timestamp).toLocaleString("en-US", { year: "numeric", month: "numeric", day: "numeric", hour: 'numeric', minute: 'numeric', hour12: true })} </td>
+                <td className="w-[200px]">
+                  {userClan && userClan.joined && ["owner", "elder"].some(v => v === userClan.role) && clan?._id === userClan.clanId &&
+                    <div className="flex gap-2">
+                      <button disabled={sending} onClick={() => handleRequest(member.username, true)} className="py-3 px-6 bg-[#1475E1] rounded-lg cursor-pointer hover:bg-[#3e87da] disabled:cursor-not-allowed">Approve</button>
+                      <button disabled={sending} onClick={() => handleRequest(member.username, false)} className="py-3 px-6 bg-[#FEE2E2] rounded-lg cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444] disabled:cursor-not-allowed">Reject</button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

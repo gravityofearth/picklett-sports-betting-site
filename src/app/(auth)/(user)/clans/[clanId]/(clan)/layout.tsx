@@ -1,117 +1,175 @@
 "use client"
 
+import { useUser } from "@/store";
+import { ClanMemberType, ClanType, UserClanType } from "@/types";
+import { getWinRate, showToast } from "@/utils";
+import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { useParams, usePathname } from "next/navigation";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
-export default function Page({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+const ClanContext = createContext<{ clan: ClanType | undefined, members: ClanMemberType[], pendingMembers: ClanMemberType[], fetchClan: () => void }>({ clan: undefined, members: [], pendingMembers: [], fetchClan: () => { } })
+export const useClan = () => ({
+  clan: useContext(ClanContext).clan,
+  members: useContext(ClanContext).members,
+  pendingMembers: useContext(ClanContext).pendingMembers,
+  fetchClan: useContext(ClanContext).fetchClan,
+})
+export default function Page({ children, }: Readonly<{ children: React.ReactNode; }>) {
+  const { clan: userClan, setToken } = useUser()
+  const [clan, setClan] = useState<ClanType>()
+  const [clanRank, setClanRank] = useState(0)
+  const params = useParams()
+  const pathname = usePathname()
   const [showModal, setShowModal] = useState(false)
   const [isExpand, setIsExpand] = useState(false)
+  const [sending, setSending] = useState(false)
+  const members = useMemo(() => clan ? clan.members.filter((m: any) => m.clan.joined).sort((b, a) => {
+    if (b.clan.role === "owner") return -1
+    if (a.clan.role === "owner") return 1
+    return a.wins - b.wins
+  }) : [], [clan])
+  const pendingMembers = useMemo(() => clan ? clan.members.filter((m: any) => !m.clan.joined).sort((b, a) => a.wins - b.wins) : [], [clan])
+  const winRate = useMemo(() => clan ? getWinRate({ bets: clan.bets, wins: clan.wins }) : "", [clan])
+  const isMatchingClan = useMemo(() => (userClan && userClan.clanId === clan?._id), [clan, userClan])
+  const isJoined = useMemo(() => (userClan && userClan.clanId === clan?._id) && userClan.joined, [clan, userClan])
+  const fetchClan = () => {
+    if (!pathname) return
+    if (!localStorage.getItem("jwt")) return
+    axios.get(`/api/clan`, { headers: { token: localStorage.getItem("jwt") } })
+      .then(({ data: { token, clans } }: { data: { token: string, clans: ClanType[] } }) => {
+        setToken(token)
+        setClan(clans.find(v => v._id === params.clanId))
+        const sort_clans = clans.sort((b, a) => a.wins - b.wins).map((v, i) => ({ id: v._id, rank: i + 1 }))
+        const rank = sort_clans.find(v => v.id === params.clanId)?.rank || 0
+        setClanRank(rank)
+      })
+  }
+  useEffect(fetchClan, [pathname])
+  const handleClan = () => {
+    if (!clan) return
+    if (isJoined) {
+      //TODO:
+    } else {
+      setSending(true)
+      axios.post(`/api/clan/join`, { id: clan._id }, { headers: { token: localStorage.getItem("jwt") } })
+        .then(() => {
+          showToast("Sent join request to clan owner", "success")
+          fetchClan()
+        }).catch((e) => {
+          showToast(e.response?.statusText || "Unknown Error", "error")
+        }).finally(() => setSending(false))
+    }
+  }
+  if (!clan) return null
   return (
-    <div className="flex justify-center">
-      <div className="w-full flex flex-col gap-8">
-        <div className="w-full py-6 px-8 max-md:py-3 max-md:px-4 flex flex-col gap-8 rounded-2xl bg-[#1475E1]/10">
-          <div className="flex justify-between">
-            <div className="flex gap-4 w-full max-md:flex-col">
-              <div className="max-md:flex max-md:justify-between">
-                <Image alt="avatar" src={`/api/profile/avatar-todo`} width={104} height={104} className="shrink-0 rounded-3xl max-md:rounded-[10px] w-[104px] h-[104px] max-md:w-10 max-md:h-10" />
-                <button className="text-lg md:hidden max-md:text-sm max-md:px-4 max-md:py-2 text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
-              </div>
-              <div className="w-full flex flex-col gap-2">
-                <div className="w-full flex justify-between items-center">
-                  <div className="text-[40px] max-md:text-2xl">Elite Bettors</div>
-                  <button className="text-lg max-md:hidden text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add]">Apply to Join</button>
+    <ClanContext.Provider value={{ clan, members, pendingMembers, fetchClan }}>
+      <div className="flex justify-center">
+        <div className="w-full flex flex-col gap-8">
+          <div className="w-full py-6 px-8 max-md:py-3 max-md:px-4 flex flex-col gap-8 rounded-2xl bg-[#1475E1]/10">
+            <div className="flex justify-between">
+              <div className="flex gap-4 w-full max-md:flex-col">
+                <div className="max-md:flex max-md:justify-between shrink-0">
+                  <Image alt="avatar" src={`/api/profile/avatar/${clan.icon}`} width={104} height={104} className="rounded-3xl max-md:rounded-[10px] w-[104px] h-[104px] max-md:w-10 max-md:h-10" />
+                  <JoinButton params={{
+                    className: `md:hidden max-md:text-sm max-md:px-4 max-md:py-2`,
+                    clan, handleClan, isJoined, isMatchingClan, sending, userClan
+                  }} />
                 </div>
-                <div className="flex gap-4 items-center">
-                  <div className="flex gap-2 items-center">
-                    <svg className="w-6 h-6 stroke-[#F7E436]"><use href="#svg-crown-new" /></svg>
-                    <span className=" text-white/80">Rank #1</span>
+                <div className="w-full flex flex-col gap-2">
+                  <div className="w-full flex justify-between items-center">
+                    <div className="text-[40px] max-md:text-2xl">{clan.title}</div>
+                    <JoinButton params={{
+                      className: `max-md:hidden`,
+                      clan, handleClan, isJoined, isMatchingClan, sending, userClan
+                    }} />
                   </div>
-                  <div className="flex gap-2 items-center">
-                    <svg className="w-6 h-6"><use href="#svg-member" /></svg>
-                    <span className=" text-white/80">48/50</span>
+                  <div className="flex gap-4 items-center">
+                    <div className="flex gap-2 items-center">
+                      <svg className="w-6 h-6 stroke-[#F7E436]"><use href="#svg-crown-new" /></svg>
+                      <span className=" text-white/80">Rank #{clanRank}</span>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <svg className="w-6 h-6"><use href="#svg-member" /></svg>
+                      <span className=" text-white/80">{members.length}/50</span>
+                    </div>
                   </div>
-                </div>
-                <div className="text-sm max-w-3xl">
-                  Our clan is more than just a group — it's a family built on teamwork, respect, and determination. We play with passion, compete with strategy, and grow together through every victory and defeat.
+                  <div className="text-sm max-w-3xl">
+                    {clan.description}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className={`w-full grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-md:grid-cols-1 ${!isExpand && "max-md:hidden"}`}>
-            <ClanCard icon="#svg-clan-level" title="Clan Level" value="8">
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex justify-between w-full">
-                  <div className="text-white/70 ">XP Progress</div>
-                  <div className="text-[#1475E1] font-semibold">83%</div>
+            <div className={`w-full grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-md:grid-cols-1 ${!isExpand && "max-md:hidden"}`}>
+              <ClanCard icon="#svg-clan-level" title="Clan Level" value={`${clan.level}`}>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex justify-between w-full">
+                    <div className="text-white/70 ">XP Progress</div>
+                    <div className="text-[#1475E1] font-semibold">{clan.xp}%</div>
+                  </div>
+                  <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
+                    <div className="bg-[#1475E1] h-full rounded-full" style={{ width: `${clan.xp}%` }}></div>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span onClick={() => setShowModal(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
+                    <svg className="w-4 h-4"><use href="#svg-arrow-right" /></svg>
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
-                  <div className="w-1/2 bg-[#1475E1] h-full rounded-full"></div>
+              </ClanCard>
+              <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value={`$${clan.coffer}`}>
+                <div className="flex gap-2 h-full items-end">
+                  <div className="flex gap-1 items-center">
+                    <svg className="w-6 h-6"><use href="#svg-chart-new" /></svg>
+                    <span className="text-sm text-[#22C55E] ">+12.5%</span>
+                  </div>
+                  <div className="text-sm text-white/70">vs last week</div>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <span onClick={() => setShowModal(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
-                  <svg className="w-4 h-4"><use href="#svg-arrow-right" /></svg>
-                </div>
-              </div>
-            </ClanCard>
-            <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value="$15200">
-              <div className="flex gap-2 h-full items-end">
-                <div className="flex gap-1 items-center">
-                  <svg className="w-6 h-6"><use href="#svg-chart-new" /></svg>
-                  <span className="text-sm text-[#22C55E] ">+12.5%</span>
-                </div>
-                <div className="text-sm text-white/70">vs last week</div>
-              </div>
-            </ClanCard>
-            <ClanCard icon="#svg-member" title="Active Members" value="45/50">
-              <div className="flex flex-col gap-2 justify-end h-full">
-                <div className="flex justify-between">
-                  <div className="text-white/70 ">5 Slots left</div>
-                  <IntersectingAvatars urls={[
-                    `/api/profile/avatar-todo`,
-                    `/api/profile/avatar-todo`,
-                    `/api/profile/avatar-todo`,
-                    `/api/profile/avatar-todo`,
-                    `/api/profile/avatar-todo`,
-                  ]} />
+              </ClanCard>
+              <ClanCard icon="#svg-member" title="Active Members" value={`${members.length}/50`}>
+                <div className="flex flex-col gap-2 justify-end h-full">
+                  <div className="flex justify-between">
+                    <div className="text-white/70 ">{50 - members.length} Slots left</div>
+                    <IntersectingAvatars urls={members.slice(0, 5).map(v => `/api/profile/avatar/${v.avatar}`)} />
 
+                  </div>
+                  <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
+                    <div className="bg-[#1475E1] h-full rounded-full" style={{ width: `${members.length * 2}%` }}></div>
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
-                  <div className="w-1/2 bg-[#1475E1] h-full rounded-full"></div>
+              </ClanCard>
+              <ClanCard icon="#svg-clan-winrate" title="Win Rate" value={winRate}>
+                <div className="flex flex-col gap-2 justify-end h-full">
+                  <div className="text-[#22C55E] ">{clan.wins} Wins</div>
+                  <div className="w-full h-2 bg-[#EF4444] rounded-full">
+                    <div className="bg-[#22C55E] h-full rounded-full" style={{ width: winRate }}></div>
+                  </div>
                 </div>
-              </div>
-            </ClanCard>
-            <ClanCard icon="#svg-clan-winrate" title="Win Rate" value="68.5%">
-              <div className="flex flex-col gap-2 justify-end h-full">
-                <div className="text-[#22C55E] ">Won: 46</div>
-                <div className="w-full h-2 bg-[#EF4444] rounded-full">
-                  <div className="w-1/2 bg-[#22C55E] h-full rounded-full"></div>
-                </div>
-              </div>
-            </ClanCard>
+              </ClanCard>
+            </div>
+            <div onClick={() => setIsExpand(v => !v)} className="w-full md:hidden p-2 bg-white/8 rounded-lg flex gap-1 justify-center items-center cursor-pointer select-none">
+              <svg className="w-4 h-4"><use href="#svg-leaderboard-icon" /></svg>
+              <span className="text-xs">{isExpand ? "Show Less" : "Show Stats"}</span>
+              <svg className="w-4 h-4"><use href={`#svg-arrow-${isExpand ? "up" : "down"}`} /></svg>
+            </div>
           </div>
-          <div onClick={() => setIsExpand(v => !v)} className="w-full md:hidden p-2 bg-white/8 rounded-lg flex gap-1 justify-center items-center cursor-pointer select-none">
-            <svg className="w-4 h-4"><use href="#svg-leaderboard-icon" /></svg>
-            <span className="text-xs">{isExpand ? "Show Less" : "Show Stats"}</span>
-            <svg className="w-4 h-4"><use href={`#svg-arrow-${isExpand ? "up" : "down"}`} /></svg>
+          <div className="flex gap-3 w-full overflow-x-auto">
+            <BreadcrumbButton title="Members" svg="#svg-member" href="members" />
+            <BreadcrumbButton title="Pending Members" svg="#svg-member" href="pending-members" />
+            <BreadcrumbButton title="Coffer" svg="#svg-money-dollar" href="coffer" />
+            <BreadcrumbButton title="Clan Wars" svg="#svg-clan-war" href="clan-wars" />
+            <BreadcrumbButton title="Missions" svg="#svg-mission" href="missions" />
           </div>
+          {children}
         </div>
-        <div className="flex gap-3 w-full overflow-x-auto">
-          <BreadcrumbButton title="Members" svg="#svg-member" href="members" />
-          <BreadcrumbButton title="Pending Members" svg="#svg-member" href="pending-members" />
-          <BreadcrumbButton title="Coffer" svg="#svg-money-dollar" href="coffer" />
-          <BreadcrumbButton title="Clan Wars" svg="#svg-clan-war" href="clan-wars" />
-          <BreadcrumbButton title="Missions" svg="#svg-mission" href="missions" />
-        </div>
-        {children}
+        {showModal && <LevelModal close={() => setShowModal(false)} />}
       </div>
-      {showModal && <LevelModal close={() => setShowModal(false)} />}
-    </div>
+    </ClanContext.Provider>
+  )
+}
+const JoinButton = ({ params: { className, sending, userClan, clan, handleClan, isJoined, isMatchingClan } }: { params: { className: string, sending: boolean, userClan: UserClanType | undefined, clan: ClanType, handleClan: () => void, isJoined: boolean | undefined, isMatchingClan: boolean | undefined } }) => {
+  return (
+    <button onClick={handleClan} disabled={sending || (userClan && userClan.joined && userClan.clanId !== clan._id) || (isMatchingClan && !isJoined)} className={`${className} text-lg text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add] disabled:cursor-not-allowed disabled:bg-[#28425f]`}>{isMatchingClan ? (isJoined ? "Leave Clan" : "Waiting...") : "Apply to Join"}</button>
   )
 }
 const IntersectingAvatars = ({ urls }: { urls: string[] }) => {

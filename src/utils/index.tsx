@@ -150,3 +150,4 @@ export function decodeEntities(encodedStr: string) {
         return String.fromCharCode(dec);
     });
 }
+export const getWinRate = ({ wins, bets }: { wins: number, bets: number }) => `${Math.round(wins * 100 / Math.max(1, bets) * 10) / 10}%`

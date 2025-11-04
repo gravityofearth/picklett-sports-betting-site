@@ -4,12 +4,12 @@ const clanTxSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         index: true,
     },
-    userName: String,
+    username: String,
     warId: Schema.Types.ObjectId,
     amount: Number,
     type: {
         type: String,
-        enum: ['deposit', 'tax', 'distribute', 'war_stake', 'war_prize'],
+        enum: ['deposit', 'tax', 'distribute', 'stake', 'prize'],
     },
     timestamp: Number,
 });

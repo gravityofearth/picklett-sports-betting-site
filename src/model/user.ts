@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema({
     },
     bets: Number,
     wins: Number,
+    earns: Number,
     role: {
         type: String,
         required: true,

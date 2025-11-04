@@ -76,7 +76,6 @@ export default function Settings() {
             }).finally(() => setSendingRequest(false))
     }
     const file_ref = useRef<HTMLInputElement>(null)
-    const [uploadProgress, setUploadProgress] = useState(0)
     const handleAvatarClick = () => {
         setError(false)
         file_ref.current?.click()
@@ -89,13 +88,17 @@ export default function Settings() {
         setAvatarFile(files[0])
         event.target.value = ""
     }
-    const closeModal = () => setAvatarFile(undefined)
     return (
         <div className="w-full flex justify-center">
             {avatarFile &&
                 <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-50 overflow-y-auto">
                     <div className="w-3xl max-w-full bg-black p-4">
-                        <AvatarCrop params={{ avatarFile, closeModal }} />
+                        <AvatarCrop params={{
+                            avatarFile,
+                            closeModal: () => setAvatarFile(undefined),
+                            callback: (data) => setToken(data.token),
+                            api: "/api/profile/avatar",
+                        }} />
                     </div>
                 </div>
             }
@@ -125,9 +128,6 @@ export default function Settings() {
                                         <Image onError={() => setError(true)} src={`/api/profile/avatar/${avatar}`} className="w-0" width={96} height={96} alt="avatar" /> :
                                         <svg className="w-8 h-8"><use href="#svg-user" /></svg>
                                     }
-                                    {uploadProgress > 0 && <div className="absolute w-full h-2 rounded-full bg-[#1E2939]">
-                                        <div className="h-2 rounded-full bg-[#F08105]" style={{ width: `${uploadProgress}%` }}></div>
-                                    </div>}
                                 </div>
                                 <div className="hidden">
                                     <input onChange={handleAvatarChange} type="file" name="file" ref={file_ref} />
