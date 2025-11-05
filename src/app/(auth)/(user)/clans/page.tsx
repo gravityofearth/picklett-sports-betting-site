@@ -16,8 +16,10 @@ export default function ClansPage() {
     if (!userClan) return []
     const sort_clans = clans.sort((b, a) => a.wins - b.wins).map((v, i) => ({ ...v, rank: i + 1 }))
     const myClan = sort_clans.find(v => v._id === userClan.clanId)
-    if (!myClan) return []
-    return [myClan, ...sort_clans.filter(v => v._id !== userClan.clanId)]
+    const otherClans = sort_clans.filter(v => v._id !== userClan.clanId)
+    return myClan ?
+      [myClan, ...otherClans] :
+      otherClans
   }, [clans, userClan])
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function ClansPage() {
             {sortedClans.map((clan, i) =>
               <div key={i} className="relative p-6 max-md:p-4 rounded-2xl w-full bg-[#1475E1]/10 flex flex-col gap-4">
                 {userClan?.clanId === clan._id &&
-                  <div className="px-4 py-2 max-md:p-1 max-md:text-xs md:rounded-md bg-blue-700 absolute right-4 top-4">My Clan</div>
+                  <div className="px-4 py-2 max-md:p-1 max-md:text-xs md:rounded-md bg-[#1475E1] absolute right-4 top-4 select-none">My Clan</div>
                 }
                 <div className="flex gap-4 items-center">
                   <div className="md:hidden flex gap-2 items-center">

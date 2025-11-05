@@ -2,11 +2,11 @@ import Image from "next/image"
 
 export default function Page() {
   return (
-    <WarFeed avatar={`/api/profile/avatar-todo`} name="BetTitan" event="ManCity vs Chelsea" count={4} side="Win" />
+    <WarFeed avatar={`/api/profile/avatar-todo`} name="BetTitan" event="ManCity vs Chelsea" time={4} side="Lose" />
   )
 }
 
-const WarFeed = ({ avatar, name, event, count, side }: { avatar: string, name: string, event: string, count: number, side: "Win" | "Lose" }) => {
+const WarFeed = ({ avatar, name, event, time, side }: { avatar: string, name: string, event: string, time: number, side: "Win" | "Lose" }) => {
   return (
     <div className="w-full p-4 max-md:p-2 rounded-2xl max-md:rounded-lg bg-[#1475E1]/10 flex justify-between">
       <div className="flex gap-4 items-center">
@@ -16,9 +16,9 @@ const WarFeed = ({ avatar, name, event, count, side }: { avatar: string, name: s
           <div className="max-md:text-xs">{event}</div>
         </div>
       </div>
-      <div className="flex flex-col gap-2 items-center">
-        <span className="text-[32px] font-semibold leading-10 max-md:text-lg max-md:leading-6">{side === "Win" ? "+" : "-"}{count}</span>
-        <span className="text-2xl text-white/70 max-md:text-sm">{side}</span>
+      <div className="flex gap-2 items-center">
+        <div className={`text-lg rounded-lg max-md:text-sm py-1 px-2 ${side === "Win" ? "bg-[#22C55E]/20 text-[#22C55E]" : "bg-[#EF4444]/20 text-[#EF4444]"}`}>{side}</div>
+        <span className="text-xl text-white/70 font-mediums">{time}m ago</span>
       </div>
     </div>
   )

@@ -12,6 +12,7 @@ export default function Page({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const percent = 50
   const params = useParams()
   const pathname = usePathname()
   const [war, setWar] = useState<WarType>()
@@ -29,12 +30,12 @@ export default function Page({
           <svg className="w-6 h-6 fill-white"><use href="#svg-left-arrow" /></svg>
           <span className="md:text-2xl leading-6 max-md:leading-4 select-none">Back to Clan</span>
         </Link>
-        <div className="w-full flex flex-col items-center gap-6 p-6 rounded-2xl bg-[#1475E1]/10">
+        <div className="w-full flex flex-col items-center gap-6 p-6 max-md:p-1 rounded-2xl bg-[#1475E1]/10">
           <div className="flex gap-1 items-center">
             <svg className="w-8 h-8 max-md:w-6 max-md:h-6 fill-white"><use href="#svg-clan-war" /></svg>
             <span className="md:text-xl leading-6">24h Wins War</span>
           </div>
-          <div className="w-full px-6 flex justify-between items-center">
+          <div className="w-full px-6 max-md:p-0 flex max-md:flex-col justify-between items-center">
             {war.clans && war.clans.map((clan, i) =>
               <div key={i} className="flex flex-col items-center gap-2">
                 <Image alt="avatar" src={`/api/profile/avatar/${clan.icon}`} width={64} height={64} className="shrink-0 rounded-full max-md:rounded-lg w-[64px] max-md:w-10 h-[64px] max-md:h-10" />
@@ -52,6 +53,21 @@ export default function Page({
                 <svg className="w-6 h-6 max-md:hidden"><use href="#svg-clan-coffer" /></svg>
                 <div className="md:text-xl text-white text-nowrap"><span className="text-white/70 max-md:hidden">Winner takes: </span>${war.prize}</div>
               </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4"><use href="#svg-clock" /></svg>
+                <span className="text-white/70">Ends in 2h 34 m</span>
+              </div>
+            </div>
+          </div>
+          <div className="w-full h-[30px] max-md:h-4 flex relative overflow-hidden">
+            <div className="absolute inset-0 z-50" style={{ translate: `${percent}% 0` }}>
+              <p className="w-fit h-full text-[18px] max-md:text-[10px] -translate-x-[50%] bg-linear-to-r from-[#2665c6] to-[#bb3a06]">{percent}% {100 - percent}%</p>
+            </div>
+            <div className="h-full bg-[#1475E1] rounded-l-full" style={{ width: `${percent}%` }}>
+              <div className="bg-[url(/clan-war-progress-bar-blue.png)] bg-right w-full h-full rounded-l-full opacity-50"></div>
+            </div>
+            <div className="h-full bg-[#E44C1F] rounded-r-full" style={{ width: `${100 - percent}%` }}>
+              <div className="bg-[url(/clan-war-progress-bar-red.png)] bg-left w-full h-full rounded-r-full opacity-60"></div>
             </div>
           </div>
         </div>

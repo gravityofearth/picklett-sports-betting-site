@@ -22,7 +22,10 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   const [clanRank, setClanRank] = useState(0)
   const params = useParams()
   const pathname = usePathname()
-  const [showModal, setShowModal] = useState(false)
+  const [showLevelModal, setShowLevelModal] = useState(false)
+  const [showLeaveModal, setShowLeaveModal] = useState(false)
+  const [showTransferOnwershipModal, setShowTransferOnwershipModal] = useState(false)
+  const [showTransferOnwershipConfirmModal, setShowTransferOnwershipConfirmModal] = useState(false)
   const [isExpand, setIsExpand] = useState(false)
   const [sending, setSending] = useState(false)
   const members = useMemo(() => clan ? clan.members.filter((m: any) => m.clan.joined).sort((b, a) => {
@@ -50,6 +53,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   const handleClan = () => {
     if (!clan) return
     if (isJoined) {
+      setShowLeaveModal(true)
       //TODO:
     } else {
       setSending(true)
@@ -111,10 +115,10 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                   <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
                     <div className="bg-[#1475E1] h-full rounded-full" style={{ width: `${clan.xp}%` }}></div>
                   </div>
-                  <div className="flex gap-2 items-center">
-                    <span onClick={() => setShowModal(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
+                  {/* <div className="flex gap-2 items-center">
+                    <span onClick={() => setShowLevelModal(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>
                     <svg className="w-4 h-4"><use href="#svg-arrow-right" /></svg>
-                  </div>
+                  </div> */}
                 </div>
               </ClanCard>
               <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value={`$${clan.coffer}`}>
@@ -162,7 +166,10 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
           </div>
           {children}
         </div>
-        {showModal && <LevelModal close={() => setShowModal(false)} />}
+        {showLevelModal && <LevelModal close={() => setShowLevelModal(false)} />}
+        {showLeaveModal && <LeaveModal close={() => setShowLeaveModal(false)} openNewModal={() => { setShowTransferOnwershipModal(true); setShowLeaveModal(false); }} />}
+        {showTransferOnwershipModal && <TransferOwnershipModal close={() => setShowTransferOnwershipModal(false)} openNewModal={() => setShowTransferOnwershipConfirmModal(true)} />}
+        {showTransferOnwershipConfirmModal && <TransferOwnershipConfirmModal close={() => setShowTransferOnwershipConfirmModal(false)} />}
       </div>
     </ClanContext.Provider>
   )
@@ -244,6 +251,86 @@ const LevelModal = ({ close }: { close: () => void }) => {
           <div className="h-2 rounded-full w-full bg-[#1475E1]/20">
             <div className="h-2 rounded-full w-4/5 bg-[#1475E1]"></div>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+const LeaveModal = ({ close, openNewModal }: { close: () => void, openNewModal: () => void }) => {
+  return (
+    <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
+      <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
+      <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
+        <svg className="w-10 h-10 stroke-[#F59E0B]"><use href="#svg-warning-new" /></svg>
+        <span className="text-2xl text-[#F59E0B]">Transfer Ownership</span>
+        <span className="text-white/80">Before you leave the clan, transfer ownership to other members.</span>
+        <div className="flex gap-4">
+          <button onClick={openNewModal} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B]">Transfer Ownership</button>
+          <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">Close</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+const TransferOwnershipModal = ({ close, openNewModal }: { close: () => void, openNewModal: () => void }) => {
+  return (
+    <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/70 z-50"></div>
+      <div className="w-7xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col gap-4 z-50">
+        <div className="flex justify-between w-full items-start">
+          <span className="text-2xl">
+            Transfer Ownership
+          </span>
+          <svg onClick={close} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
+        </div>
+        <div className="flex flex-col gap-4 w-full">
+          <div className="p-6 rounded-2xl bg-[#263244]/60 flex justify-between items-center">
+            <div className="flex gap-4 items-center">
+              <div className="w-12 h-12 p-[1px] bg-white rounded-full flex justify-center items-center">
+                <div className="bg-red-500 w-[46px] h-[46px] rounded-full"></div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-xl font-medium">Smart Bet</span>
+                <div className="text-xs p-2 rounded-sm w-fit bg-[#F7931A]">Elder</div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 items-center">
+              <span className="text-xl text-white/80">Contribution</span>
+              <span className="text-2xl font-semibold">$5200</span>
+            </div>
+            <div className="flex flex-col gap-2 items-center">
+              <span className="text-xl text-white/80">Win Rate</span>
+              <span className="text-2xl font-semibold">64.2%</span>
+            </div>
+            <div className="flex flex-col gap-2 items-center">
+              <span className="text-xl text-white/80">Total Won</span>
+              <span className="text-2xl font-semibold">15</span>
+            </div>
+            <button onClick={openNewModal} className="flex gap-2 bg-[#1475E1] cursor-pointer py-2 px-6 rounded-lg">
+              <svg className="w-6 h-6 stroke-white"><use href="#svg-transferonwership" /></svg>
+              <span>TransferOwnership</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+const TransferOwnershipConfirmModal = ({ close }: { close: () => void }) => {
+  return (
+    <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
+      <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
+      <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
+        <svg className="w-10 h-10 stroke-[#F7E436]"><use href="#svg-transferonwership" /></svg>
+        <span className="text-2xl text-white">Transfer Clan Ownership?</span>
+        <span className="text-white/80 text-center">Are you sure you want to transfer clan ownership to "username" You will become a regular member and will no longer have leader privileges. This action cannot be undone.</span>
+        {/* <svg onClick={close} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg> */}
+        <div className="flex gap-4">
+          <button className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B] flex gap-2">
+            <svg className="w-6 h-6 stroke-white"><use href="#svg-transferonwership" /></svg>
+            <span>Transfer Ownership</span>
+          </button>
+          <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">Close</button>
         </div>
       </div>
     </div>
