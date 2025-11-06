@@ -214,7 +214,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         const result = await lineModel.findOneAndUpdate({
             _id: new mongoose.Types.ObjectId(lineId),
             result: "pending"
-        }, { result: winningSide }, { new: true }).session(session)
+        }, { result: winningSide }, { new: true, session })
         if (!result) {
             throw new Error("Not found pending line")
         }

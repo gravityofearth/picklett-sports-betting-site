@@ -16,20 +16,24 @@ export async function createClan({ title, ownerUserName, description, icon }: { 
             coffer: 0, xp: 0, level: 1, wins: 0, bets: 0,
         })
         const savedClan = await newClan.save({ session })
-        const user = await userModel.findOneAndUpdate({ username: ownerUserName }, {
-            $set: {
-                clan: {
-                    clanId: savedClan._id,
-                    joined: true,
-                    role: "owner",
-                    contribution: 0,
-                    timestamp: new Date().getTime()
+        const user = await userModel.findOneAndUpdate(
+            { username: ownerUserName },
+            {
+                $set: {
+                    clan: {
+                        clanId: savedClan._id,
+                        joined: true,
+                        role: "owner",
+                        contribution: 0,
+                        timestamp: new Date().getTime()
+                    },
                 },
+                $inc: {
+                    balance: -50
+                }
             },
-            $inc: {
-                balance: -50
-            }
-        }).session(session)
+            { session }
+        )
         if (user.balance < 50) {
             throw new Error("Insufficient balance to create clan")
         }
@@ -149,8 +153,8 @@ export async function depositClan({ id, username, amount }: { id: string, userna
             {
                 $inc: { coffer: amount }
             },
-            { new: true }
-        ).session(session)
+            { new: true, session }
+        )
         const user = await userModel.findOneAndUpdate(
             { username },
             {
@@ -158,8 +162,9 @@ export async function depositClan({ id, username, amount }: { id: string, userna
                     "clan.contribution": amount,
                     balance: -amount,
                 }
-            }
-        ).session(session)
+            },
+            { session }
+        )
         if (user.balance < amount) {
             throw new Error("Insufficient balance to deposit")
         }
@@ -200,8 +205,8 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
             {
                 $inc: { coffer: -amount }
             },
-            { new: true }
-        ).session(session)
+            { new: true, session }
+        )
         const newClanTx = new clanTxModel({
             clanId: id,
             type: "distribute",
@@ -216,8 +221,9 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
                     $inc: {
                         balance: amount,
                     }
-                }
-            ).session(session)
+                },
+                { session }
+            )
             const blTx = new balanceTransactionModel({
                 username: selectedMember,
                 type: 'clan_distribute',
@@ -371,8 +377,8 @@ export async function joinWar({ warId, clanId, members, startsAt, stake }: { war
             {
                 $inc: { coffer: -stake }
             },
-            { new: true }
-        ).session(session)
+            { new: true, session }
+        )
         if (clan.coffer < 0) throw new Error("Insufficient coffer balance for stake")
         const newClanTx = new clanTxModel({
             clanId, warId,

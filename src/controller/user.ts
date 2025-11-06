@@ -216,8 +216,8 @@ export async function increaseBalanceAndBets(username: string, amount: number, s
             {
                 $inc: { bets: 1 }
             },
-            { new: true }
-        ).session(session)
+            { new: true, session }
+        )
         await clanWarModel.updateMany(
             {
                 startsAt: {
@@ -238,8 +238,9 @@ export async function increaseBalanceAndBets(username: string, amount: number, s
                         'clan.clanId': clanId,
                     },
                 ],
+                session
             }
-        ).session(session)
+        )
 
         return user;
     } catch (error) {
@@ -250,7 +251,7 @@ export async function increaseBalanceAndBets(username: string, amount: number, s
 export async function genLeaders() {
     await connectMongoDB()
     try {
-        const leaders = await userModel.find({ winstreak: { $gte: 2 } } ).select("username winstreak avatar wins earns");
+        const leaders = await userModel.find({ winstreak: { $gte: 2 } }).select("username winstreak avatar wins earns");
         return leaders
     } catch (error) {
         console.error('Error creating line:', error);
