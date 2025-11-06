@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { setSchemaLean } from "..";
 const clanWarSchema = new mongoose.Schema({
     type: {
         type: String,
@@ -19,6 +20,7 @@ const clanWarSchema = new mongoose.Schema({
 clanWarSchema.index({ "clans.clanId": 1 }) // clanwars.find({"clans.clanId": someClanId}) 
 clanWarSchema.index({ startsAt: 1 })
 
+setSchemaLean(clanWarSchema)
 const clanWarModel = mongoose.models.ClanWar || mongoose.model("ClanWar", clanWarSchema);
 export default clanWarModel;
 

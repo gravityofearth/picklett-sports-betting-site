@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from ".";
 const depositSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -44,5 +45,6 @@ const depositSchema = new mongoose.Schema({
     }
 });
 
+setSchemaLean(depositSchema)
 const depositModel = mongoose.models.Deposit || mongoose.model("Deposit", depositSchema);
 export default depositModel;

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from ".";
 const redemptionSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -24,5 +25,6 @@ const redemptionSchema = new mongoose.Schema({
     timestamps: true, // Adds createdAt and updatedAt
 });
 
+setSchemaLean(redemptionSchema)
 const redemptionModel = mongoose.models.Redemption || mongoose.model("Redemption", redemptionSchema);
 export default redemptionModel;

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from ".";
 const affiliateRewardSchema = new mongoose.Schema({
     startsAt: {
         type: Number,
@@ -40,5 +41,6 @@ const affiliateRewardSchema = new mongoose.Schema({
     }]
 });
 
+setSchemaLean(affiliateRewardSchema)
 const affiliateRewardModel = mongoose.models.AffiliateReward || mongoose.model('AffiliateReward', affiliateRewardSchema)
 export default affiliateRewardModel;

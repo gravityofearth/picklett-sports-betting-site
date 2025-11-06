@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from ".";
 const balanceTransactionSchema = new mongoose.Schema({
     username: { type: String, required: true, index: true },
     type: {
@@ -19,5 +20,6 @@ const balanceTransactionSchema = new mongoose.Schema({
     description: String,
 });
 
+setSchemaLean(balanceTransactionSchema)
 const balanceTransactionModel = mongoose.models.BalanceTransaction || mongoose.model('BalanceTransaction', balanceTransactionSchema)
 export default balanceTransactionModel;

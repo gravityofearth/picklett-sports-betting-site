@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
+import { setSchemaLean } from ".";
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -136,5 +137,6 @@ userSchema.methods.correctPassword = async function (candidatePassword: string, 
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 
+setSchemaLean(userSchema)
 const userModel = mongoose.models.User || mongoose.model("User", userSchema);
 export default userModel;

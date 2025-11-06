@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from "..";
 const clanSchema = new mongoose.Schema({
     title: String,
     ownerUserName: String,
@@ -11,5 +12,6 @@ const clanSchema = new mongoose.Schema({
     bets: Number,
 });
 
+setSchemaLean(clanSchema)
 const clanModel = mongoose.models.Clan || mongoose.model("Clan", clanSchema);
 export default clanModel;
