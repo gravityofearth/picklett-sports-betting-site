@@ -51,10 +51,10 @@ export default function Page() {
                 <td className="pl-3 py-6 pr-2"> {member.username} </td>
                 <td className="pl-3 py-6 pr-2"> {getWinRate({ wins: member.wins, bets: member.bets })} </td>
                 <td className="pl-3 py-6 pr-2"> {member.bets} </td>
-                <td className="pl-3 py-6 pr-2 font-bold"> ${member.earns} </td>
+                <td className="pl-3 py-6 pr-2 font-bold"> ${member.earns.toFixed(2)} </td>
                 <td className="pl-3 py-6 pr-2 font-bold"> {new Date(member.clan.timestamp).toLocaleString("en-US", { year: "numeric", month: "numeric", day: "numeric", hour: 'numeric', minute: 'numeric', hour12: true })} </td>
                 <td className="w-[200px]">
-                  {userClan && userClan.joined && ["owner", "elder"].some(v => v === userClan.role) && clan?._id === userClan.clanId &&
+                  {userClan && userClan.joined && userClan.role === "owner" && clan?._id === userClan.clanId &&
                     <div className="flex gap-2">
                       <button disabled={sending} onClick={() => handleRequest(member.username, true)} className="py-3 px-6 bg-[#1475E1] rounded-lg cursor-pointer hover:bg-[#3e87da] disabled:cursor-not-allowed">Approve</button>
                       <button disabled={sending} onClick={() => handleRequest(member.username, false)} className="py-3 px-6 bg-[#FEE2E2] rounded-lg cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444] disabled:cursor-not-allowed">Reject</button>

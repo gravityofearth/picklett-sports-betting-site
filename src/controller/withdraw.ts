@@ -174,7 +174,7 @@ async function transferSOL({ address, amount_lamp }: { address: string, amount_l
 export async function findWithdraw(username: string) {
     await connectMongoDB()
     const matchStage = username === "admin" ? {} : { username }
-    const withdraw = await withdrawModel.find(matchStage).sort({ createdAt: -1 })
+    const withdraw = await withdrawModel.find(matchStage).sort({ _id: -1 })
     return withdraw
 }
 export async function getWithdrawById(id: string) {

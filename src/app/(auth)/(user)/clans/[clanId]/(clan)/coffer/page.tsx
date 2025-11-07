@@ -1,11 +1,15 @@
 "use client"
 
 import Image from "next/image"
-import { useEffect, useMemo, useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
 import { useClan } from "../layout"
 import { useUser } from "@/store"
 import axios from "axios"
-import { showToast } from "@/utils"
+import { formatAgo, showToast } from "@/utils"
+import { CircularIndeterminate } from "@/components/MUIs"
+import { ClanTxType } from "@/types"
+import { useParams } from "next/navigation"
+import Link from "next/link"
 type DepositDistributeModalType = "deposit" | "distribute" | undefined
 export default function Page() {
   const { clan } = useClan()
@@ -73,16 +77,48 @@ export default function Page() {
       <div className="h-2"></div>
       <div className="flex flex-col gap-6 max-md:gap-3">
         <span className="md:text-2xl leading-[42px]">Recent Transactions</span>
-        <div className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl max-md:rounded-lg px-8 py-4 max-md:px-4 max-md:py-2">
-          <div className="flex flex-col gap-2">
-            <span className="md:text-2xl leading-6">Deposit by BetKing</span>
-            <span className="max-md:text-xs">2 hours ago</span>
-          </div>
-          <span className="text-[32px] max-md:text-[18px] font-bold">$45000</span>
-        </div>
+        <ClanTxTable />
       </div>
       {modalMode && <DepositDistributeModal isLeader={isLeader} modalMode={modalMode} setModalMode={setModalMode} />}
     </div >
+  )
+}
+const ClanTxTable = () => {
+  const { clan } = useClan()
+  const params = useParams()
+  const [clanTxs, setClanTxs] = useState<ClanTxType[]>([])
+  useEffect(() => {
+    axios.get(`/api/clan/${params.clanId}/clantx`, { headers: { token: localStorage.getItem("jwt") } })
+      .then(({ data: { clanTxs } }: { data: { clanTxs: ClanTxType[] } }) => {
+        setClanTxs(clanTxs)
+      })
+  }, [])
+  return (
+    <>
+      {clanTxs.map((clanTx, i) =>
+        <div key={i} className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl max-md:rounded-lg px-8 py-4 max-md:px-4 max-md:py-2">
+          <div className="flex flex-col gap-2">
+            <span className="md:text-2xl leading-6">
+              {
+                clanTx.type === "deposit" ? `Deposit by ${clanTx.username}` :
+                  clanTx.type === "tax" ? `Deposit(auto) by ${clanTx.username}` :
+                    clanTx.type === "distribute" ? `Distribute to ${clanTx.username || "all members"}` :
+                      clanTx.type === "stake" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Stake to clan war</LinkToWar> :
+                        clanTx.type === "prize" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Prize for win of war</LinkToWar> :
+                          ""
+              }
+            </span>
+            <span className="max-md:text-xs">{formatAgo(clanTx.timestamp)}</span>
+          </div>
+          <span className="text-[32px] max-md:text-[18px] font-bold">${clanTx.amount.toFixed(2)}</span>
+        </div>
+      )}
+    </>
+  )
+}
+const LinkToWar = ({ children, clanId, warId }: { children: ReactNode, clanId: string, warId: string }) => {
+  return (
+    <Link className="flex gap-2" href={`/clans/${clanId}/wars/${warId}/feed`}>{children} <svg className="w-4 h-4 fill-white"><use href="#svg-new-tab" /></svg></Link>
   )
 }
 const CofferStep = ({ number, content, description }: { number: number, content: string, description: string }) => {
@@ -163,7 +199,7 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
             <span className="">My Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
-              <span className="font-bold text-[#FFE720]">{balance}</span>
+              <span className="font-bold text-[#FFE720]">{balance.toFixed(2)}</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -180,7 +216,9 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
             </div>
           </div>
         </div>
-        <button onClick={handleDeposit} disabled={sending} className="p-4 max-md:p-2 w-full bg-[#1475E1] hover:bg-[#147ee1] text-lg max-md:text-sm rounded-lg cursor-pointer disabled:bg-[#1d3063] disabled:cursor-not-allowed">Deposit from Balance</button>
+        {sending ? <CircularIndeterminate /> :
+          <button onClick={handleDeposit} disabled={sending} className="p-4 max-md:p-2 w-full bg-[#1475E1] hover:bg-[#147ee1] text-lg max-md:text-sm rounded-lg cursor-pointer disabled:bg-[#1d3063] disabled:cursor-not-allowed">Deposit from Balance</button>
+        }
       </div>
     </>
   )
@@ -276,7 +314,9 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             </div>
           </div>
         </div>
-        <button onClick={handleDistribute} disabled={sending} className="p-4 max-md:p-2 w-full bg-[#1475E1] hover:bg-[#147ee1] disabled:bg-[#1d3063] text-lg max-md:text-sm rounded-lg cursor-pointer">Distribute</button>
+        {sending ? <CircularIndeterminate /> :
+          <button onClick={handleDistribute} disabled={sending} className="p-4 max-md:p-2 w-full bg-[#1475E1] hover:bg-[#147ee1] disabled:bg-[#1d3063] text-lg max-md:text-sm rounded-lg cursor-pointer">Distribute</button>
+        }
       </div>
     </>
   )

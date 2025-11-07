@@ -2,20 +2,21 @@
 
 import { useState, useEffect } from "react"
 import axios, { AxiosError } from "axios"
-import { LineCardUserType, LineType, SportsType } from "@/types"
+import { LineCardUserType, LineType, WarType } from "@/types"
 import { convertDecimal2AmericanOdds, convertTimestamp2HumanReadablePadded, showToast } from "@/utils"
 import { useSportsFilter, useUser } from "@/store"
 import Pagination from "@/components/Pagination"
 import { SportsTab } from "./cards"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
-export default function UserPage({ params: { balance, winstreak, oddstype, timeOffset, lines: lines_origin }, loggedIn }: {
-    params: { balance: number, winstreak: number, oddstype: "decimal" | "american", timeOffset: number, lines: (LineType & LineCardUserType)[] },
+export default function UserPage({ params: { activeWars, balance, winstreak, oddstype, timeOffset, lines: lines_origin }, loggedIn }: {
+    params: { activeWars: WarType[], balance: number, winstreak: number, oddstype: "decimal" | "american", timeOffset: number, lines: (LineType & LineCardUserType)[] },
     loggedIn?: boolean,
 }) {
     const router = useRouter()
     const [lines, setLines] = useState<(LineType & LineCardUserType)[]>(lines_origin)
-    const { setToken } = useUser()
+    const { setToken, clan } = useUser()
     const { sportsFilter, setSportsFilter } = useSportsFilter()
     // Pagination
     const [currentPage, setCurrentPage] = useState(1)
@@ -121,13 +122,28 @@ export default function UserPage({ params: { balance, winstreak, oddstype, timeO
                         <SportsTab selected={sportsFilter === "Esports"} onClick={() => { setSportsFilter("Esports"), goToPage(1) }} icon="esports" category="Esports" count={lines.filter(v => v.sports === "Esports").length} />
                         <SportsTab selected={sportsFilter === "Others"} onClick={() => { setSportsFilter("Others"), goToPage(1) }} icon="others" category="Others" count={lines.filter(v => v.sports === "Others").length} />
                     </div>
-                    {winstreak > 1 && <div className="flex items-center gap-3 bg-[#FCC8002B] rounded-[14px] p-4">
-                        <svg className="w-[20px] h-[19px]"><use href="#svg-star" /></svg>
-                        <div>
-                            <p className="font-semibold">You are on {winstreak} winstreak!</p>
-                            <p className="text-sm text-[#D1D5DC]">Hit the next milestone {winstreak >= 7 ? 10 : winstreak >= 5 ? 7 : 5} winstreak, to receive your reward!</p>
+                    {winstreak > 1 &&
+                        <div className="flex items-center gap-3 bg-[#FCC8002B] rounded-[14px] p-4">
+                            <svg className="w-[20px] h-[19px]"><use href="#svg-star" /></svg>
+                            <div>
+                                <p className="font-semibold">You are on {winstreak} winstreak!</p>
+                                <p className="text-sm text-[#D1D5DC]">Hit the next milestone {winstreak >= 7 ? 10 : winstreak >= 5 ? 7 : 5} winstreak, to receive your reward!</p>
+                            </div>
                         </div>
-                    </div>}
+                    }
+                    {activeWars.length > 0 &&
+                        <div className="flex items-center gap-3 bg-[#FCC8002B] rounded-[14px] p-4">
+                            <svg className="w-8 h-8 max-md:w-6 max-md:h-6 fill-white"><use href="#svg-clan-war" /></svg>
+                            <div>
+                                <p className="font-semibold">You are participating in {activeWars.length} clan wars</p>
+                                <div className="flex gap-2">
+                                    {activeWars.map((war, i) =>
+                                        <Link key={i} href={`/clans/${clan?.clanId}/wars/${war._id}/feed`} className="text-sm text-[#D1D5DC] underline">View</Link>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    }
                     {currentLines.map(line =>
                         <div key={line._id} className={`grid grid-cols-[auto_400px] max-lg:grid-cols-1 gap-2 border border-[#1E2939] rounded-[14px] p-5 ${timeRemains.filter(v => v.id === line._id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-[#101828]"}`}>
                             <div className="flex flex-col justify-between gap-y-2 w-full">

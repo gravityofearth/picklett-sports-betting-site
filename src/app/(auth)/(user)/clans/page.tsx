@@ -13,10 +13,9 @@ export default function ClansPage() {
   const { clan: userClan } = useUser()
 
   const sortedClans = useMemo(() => {
-    if (!userClan) return []
-    const sort_clans = clans.sort((b, a) => a.wins - b.wins).map((v, i) => ({ ...v, rank: i + 1 }))
-    const myClan = sort_clans.find(v => v._id === userClan.clanId)
-    const otherClans = sort_clans.filter(v => v._id !== userClan.clanId)
+    const sort_clans = clans.map((v, i) => ({ ...v, rank: i + 1 }))
+    const myClan = sort_clans.find(v => v._id === userClan?.clanId)
+    const otherClans = sort_clans.filter(v => v._id !== userClan?.clanId)
     return myClan ?
       [myClan, ...otherClans] :
       otherClans
@@ -40,8 +39,8 @@ export default function ClansPage() {
             </div>
             <div className="leading-12 max-md:leading-5 max-md:text-sm">Join forces, challenge rivals, and dominate together</div>
           </div>
-          {!userClan?.clanId &&
-            <Link href={userClan?.clanId ? "#" : "/clans/new"} className={`flex gap-2 items-center mt-3 py-4 px-6 max-md:py-2 max-md:px-3 rounded-lg ${userClan?.clanId ? "bg-[#063e7e]" : "bg-[#1475E1]"} cursor-pointer hover:bg-[#5796dd] select-none`}>
+          {!userClan?.joined &&
+            <Link href={userClan?.joined ? "#" : "/clans/new"} className={`flex gap-2 items-center mt-3 py-4 px-6 max-md:py-2 max-md:px-3 rounded-lg ${userClan?.joined ? "bg-[#063e7e]" : "bg-[#1475E1]"} cursor-pointer hover:bg-[#5796dd] select-none`}>
               <svg className="w-6 h-6 max-md:w-4 max-md:h-4"><use href="#svg-clan" /></svg>
               <span className="text-nowrap max-md:text-sm">Create Clan</span>
             </Link>
@@ -70,7 +69,9 @@ export default function ClansPage() {
             {sortedClans.map((clan, i) =>
               <div key={i} className="relative p-6 max-md:p-4 rounded-2xl w-full bg-[#1475E1]/10 flex flex-col gap-4">
                 {userClan?.clanId === clan._id &&
-                  <div className="px-4 py-2 max-md:p-1 max-md:text-xs md:rounded-md bg-[#1475E1] absolute right-4 top-4 select-none">My Clan</div>
+                  <div className="px-4 py-2 max-md:p-1 max-md:text-xs md:rounded-md bg-[#1475E1] absolute right-4 top-4 select-none">
+                    {userClan?.joined ? "My Clan" : "Requested"}
+                  </div>
                 }
                 <div className="flex gap-4 items-center">
                   <div className="md:hidden flex gap-2 items-center">

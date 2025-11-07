@@ -1,5 +1,6 @@
 "use client"
 
+import { CircularIndeterminate } from "@/components/MUIs"
 import { showToast } from "@/utils"
 import axios from "axios"
 import { useState } from "react"
@@ -48,7 +49,9 @@ export default function ClanWarCreation() {
                 <input value={minMembers} onChange={(e) => setMinMembers(Number(e.target.value))} type="number" className="border border-white/20 p-2" />
             </div>
             <div className="flex justify-center">
-                <button onClick={createWar} disabled={sending} className="w-40 bg-[#1475E1] rounded-lg px-2 py-3 cursor-pointer hover:bg-[#448ee2] disabled:cursor-not-allowed">Create War</button>
+                {sending ? <CircularIndeterminate /> :
+                    <button onClick={createWar} disabled={sending} className="w-40 bg-[#1475E1] rounded-lg px-2 py-3 cursor-pointer hover:bg-[#448ee2] disabled:cursor-not-allowed">Create War</button>
+                }
             </div>
         </div>
     )

@@ -5,6 +5,7 @@ import clanWarModel from "@/model/clan/clanwar"
 import userModel from "@/model/user"
 import connectMongoDB from "@/utils/mongodb"
 import mongoose from "mongoose"
+import { findUserByUsername } from "./user"
 
 export async function createClan({ title, ownerUserName, description, icon }: { title: string, ownerUserName: string, description: string, icon: string }) {
     await connectMongoDB()
@@ -101,11 +102,26 @@ export async function getClanInfo(filter: any) {
                     as: "members",
                 }
             },
+            {
+                $sort: { wins: -1 }
+            }
         ])
         return clans
     } catch (error) {
         console.error('Error finding clans:', error)
         throw error
+    }
+}
+export async function getClanRank(wins: number) {
+    try {
+        const higherRankCount = await clanModel.countDocuments({
+            wins: { $gt: wins }
+        })
+        const rank = higherRankCount + 1
+        return rank
+    } catch (error) {
+        console.error('Error fetching user rank:', error);
+        throw error;
     }
 }
 export async function joinClan({ username, id }: { username: string, id: string }) {
@@ -141,6 +157,94 @@ export async function operateClanJoin({ username, id, isApproved }: { username: 
     } catch (error) {
         console.error('Error joining clan:', error)
         throw error
+    }
+}
+export async function promoteClanMember({ username, clanId, role }: { username: string, clanId: string, role: "elder" | "member" }) {
+    await connectMongoDB()
+    try {
+        await userModel.findOneAndUpdate(
+            { username, "clan.clanId": clanId },
+            { $set: { "clan.role": role } },
+            { new: true }
+        )
+    } catch (error) {
+        console.error('Error promoting clan member:', error)
+        throw error
+    }
+}
+export async function kickClanMember({ username, clanId }: { username: string, clanId: string }) {
+    await connectMongoDB()
+    try {
+        await userModel.findOneAndUpdate(
+            { username, "clan.clanId": clanId },
+            { $unset: { clan: "" } },
+            { new: true }
+        )
+    } catch (error) {
+        console.error('Error promoting clan member:', error)
+        throw error
+    }
+}
+export async function leaveClan({ clanId, username, role, usernameToTransfer }: { clanId: string, username: string, role: string, usernameToTransfer?: string }) {
+    await connectMongoDB()
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+        const clanwars = await clanWarModel.find({
+            startsAt: {
+                $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
+                // $lt: new Date().getTime(),
+            },
+            clans: {
+                $elemMatch: {
+                    clanId: new mongoose.Types.ObjectId(clanId),
+                    members: username,
+                }
+            }
+        })
+        if (clanwars.length > 0) throw new Error("You are participating in clan war now.")
+        const userClanUpdate: any[] = [{
+            updateOne: {
+                filter: { username },
+                update: {
+                    $unset: {
+                        clan: ''
+                    },
+                }
+            }
+        }]
+        if (role === "owner") {
+            if (usernameToTransfer) {
+                const targetUser = await findUserByUsername(usernameToTransfer)
+                if (!targetUser.clan || targetUser.clan.clanId.toString() !== clanId) throw new Error("Can't transfer ownership to who are not in the same clan")
+                userClanUpdate.push({
+                    updateOne: {
+                        filter: { username: usernameToTransfer },
+                        update: {
+                            $set: {
+                                clan: {
+                                    clanId,
+                                    joined: true,
+                                    role: "owner",
+                                    contribution: 0,
+                                    timestamp: new Date().getTime()
+                                },
+                            }
+                        }
+                    }
+                })
+            } else {
+                await clanModel.findByIdAndDelete(new mongoose.Types.ObjectId(clanId), { session });
+            }
+        }
+        await userModel.bulkWrite(userClanUpdate, { session })
+        await session.commitTransaction()
+    } catch (error) {
+        console.error('Error leaving clan:', error)
+        await session.abortTransaction()
+        throw error
+    } finally {
+        session.endSession()
     }
 }
 export async function depositClan({ id, username, amount }: { id: string, username: string, amount: number }) {
@@ -280,6 +384,7 @@ export async function createWar({ prize, stake, slots, minMembers }: { prize: nu
             type: "24h",
             clan: [],
             startsAt: 0,
+            rewarded: "unpaid",
         })
         const savedWar = await newWar.save()
         return savedWar
@@ -318,8 +423,20 @@ export async function findWars(filter: any) {
                                         $mergeObjects: [
                                             "$$clan",
                                             {
-                                                title: { $arrayElemAt: ["$clanInfo.title", "$$clanInfoIndex"] },
-                                                icon: { $arrayElemAt: ["$clanInfo.icon", "$$clanInfoIndex"] },
+                                                title: {
+                                                    $cond: {
+                                                        if: { $eq: ["$$clanInfoIndex", -1] },
+                                                        then: "Removed Clan",
+                                                        else: { $arrayElemAt: ["$clanInfo.title", "$$clanInfoIndex"] }
+                                                    }
+                                                },
+                                                icon: {
+                                                    $cond: {
+                                                        if: { $eq: ["$$clanInfoIndex", -1] },
+                                                        then: "placeholder",
+                                                        else: { $arrayElemAt: ["$clanInfo.icon", "$$clanInfoIndex"] }
+                                                    }
+                                                }
                                             }
                                         ]
                                     }
@@ -341,6 +458,64 @@ export async function findWars(filter: any) {
         throw error
     }
 }
+export async function getWarFeeds(warId: string) {
+    await connectMongoDB()
+    try {
+        const feeds = await clanWarModel.aggregate([
+            {
+                $match: { _id: new mongoose.Types.ObjectId(warId) }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "clans.members",
+                    foreignField: "username",
+                    as: "userInfo"
+                }
+            },
+            {
+                $lookup: {
+                    from: "bets",
+                    localField: "clans.betIds",
+                    foreignField: "_id",
+                    pipeline: [
+                        {
+                            $match: {
+                                status: { $ne: "pending" },
+                            },
+                        }
+                    ],
+                    as: "betInfo"
+                }
+            },
+            {
+                $lookup: {
+                    from: "lines",
+                    localField: "betInfo.lineId",
+                    foreignField: "_id",
+                    as: "lineInfo"
+                }
+            },
+            {
+                $project: {
+                    "userInfo.username": 1,
+                    "userInfo.avatar": 1,
+                    "betInfo.username": 1,
+                    "betInfo.lineId": 1,
+                    "betInfo.amount": 1,
+                    "betInfo.status": 1,
+                    "betInfo.createdAt": 1,
+                    "lineInfo._id": 1,
+                    "lineInfo.event": 1,
+                }
+            },
+        ])
+        return feeds[0]
+    } catch (error) {
+        console.error('Error finding feeds:', error)
+        throw error
+    }
+}
 export async function joinWar({ warId, clanId, members, startsAt, stake }: { warId: string, clanId: string, members: string[], startsAt: number, stake: number }) {
     await connectMongoDB()
     const session = await mongoose.startSession()
@@ -354,6 +529,7 @@ export async function joinWar({ warId, clanId, members, startsAt, stake }: { war
                         clanId: new mongoose.Types.ObjectId(clanId),
                         members,
                         wins: 0, bets: 0,
+                        betIds: [],
                     }
                 },
                 $set: {
@@ -389,12 +565,22 @@ export async function joinWar({ warId, clanId, members, startsAt, stake }: { war
         await newClanTx.save({ session })
 
         await session.commitTransaction()
-        // setTimeout(() => endWar(warId), 1 * 60 * 60 * 1000) //TODO:
+        // setTimeout(() => endWar(warId), 24 * 60 * 60 * 1000) //TODO:
     } catch (error) {
         console.error('Error joining war:', error)
         await session.abortTransaction()
         throw error
     } finally {
         session.endSession()
+    }
+}
+export async function getClanTxs({ clanId }: { clanId: string }) {
+    await connectMongoDB()
+    try {
+        const clanTxs = await clanTxModel.find({ clanId: new mongoose.Types.ObjectId(clanId) }).sort({ timestamp: -1 })
+        return clanTxs
+    } catch (error) {
+        console.error('Error finding clanTxs:', error)
+        throw error
     }
 }

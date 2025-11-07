@@ -1,12 +1,13 @@
 "use client"
 
+import { CircularIndeterminate } from "@/components/MUIs";
 import { useUser } from "@/store";
 import { ClanMemberType, ClanType, UserClanType } from "@/types";
 import { getWinRate, showToast } from "@/utils";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 const ClanContext = createContext<{ clan: ClanType | undefined, members: ClanMemberType[], pendingMembers: ClanMemberType[], fetchClan: () => void }>({ clan: undefined, members: [], pendingMembers: [], fetchClan: () => { } })
@@ -22,9 +23,11 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   const [clanRank, setClanRank] = useState(0)
   const params = useParams()
   const pathname = usePathname()
+  const router = useRouter()
   const [showLevelModal, setShowLevelModal] = useState(false)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const [showTransferOnwershipModal, setShowTransferOnwershipModal] = useState(false)
+  const [usernameToTransfer, setUsernameToTransfer] = useState("")
   const [showTransferOnwershipConfirmModal, setShowTransferOnwershipConfirmModal] = useState(false)
   const [isExpand, setIsExpand] = useState(false)
   const [sending, setSending] = useState(false)
@@ -35,27 +38,23 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   }) : [], [clan])
   const pendingMembers = useMemo(() => clan ? clan.members.filter((m: any) => !m.clan.joined).sort((b, a) => a.wins - b.wins) : [], [clan])
   const winRate = useMemo(() => clan ? getWinRate({ bets: clan.bets, wins: clan.wins }) : "", [clan])
-  const isMatchingClan = useMemo(() => (userClan && userClan.clanId === clan?._id), [clan, userClan])
-  const isJoined = useMemo(() => (userClan && userClan.clanId === clan?._id) && userClan.joined, [clan, userClan])
+  const isMatchingClan = useMemo(() => userClan ? userClan.clanId === clan?._id : false, [clan, userClan])
+  const isJoined = useMemo(() => userClan ? userClan.joined : false, [userClan])
+  const isOwnerAlone = useMemo(() => members.length === 1, [members])
   const fetchClan = () => {
     if (!pathname) return
     if (!localStorage.getItem("jwt")) return
-    axios.get(`/api/clan`, { headers: { token: localStorage.getItem("jwt") } })
-      .then(({ data: { token, clans } }: { data: { token: string, clans: ClanType[] } }) => {
+    axios.get(`/api/clan/${params.clanId}`, { headers: { token: localStorage.getItem("jwt") } })
+      .then(({ data: { token, clan, rank } }: { data: { token: string, clan: ClanType, rank: number } }) => {
         setToken(token)
-        setClan(clans.find(v => v._id === params.clanId))
-        const sort_clans = clans.sort((b, a) => a.wins - b.wins).map((v, i) => ({ id: v._id, rank: i + 1 }))
-        const rank = sort_clans.find(v => v.id === params.clanId)?.rank || 0
+        setClan(clan)
         setClanRank(rank)
       })
   }
   useEffect(fetchClan, [pathname])
   const handleClan = () => {
     if (!clan) return
-    if (isJoined) {
-      setShowLeaveModal(true)
-      //TODO:
-    } else {
+    if (!userClan || !userClan.joined) {
       setSending(true)
       axios.post(`/api/clan/join`, { id: clan._id }, { headers: { token: localStorage.getItem("jwt") } })
         .then(() => {
@@ -64,6 +63,9 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
         }).catch((e) => {
           showToast(e.response?.statusText || "Unknown Error", "error")
         }).finally(() => setSending(false))
+    }
+    if (isMatchingClan && isJoined) {
+      setShowLeaveModal(true)
     }
   }
   if (!clan) return null
@@ -78,7 +80,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                   <Image alt="avatar" src={`/api/profile/avatar/${clan.icon}`} width={104} height={104} className="rounded-3xl max-md:rounded-[10px] w-[104px] h-[104px] max-md:w-10 max-md:h-10" />
                   <JoinButton params={{
                     className: `md:hidden max-md:text-sm max-md:px-4 max-md:py-2`,
-                    clan, handleClan, isJoined, isMatchingClan, sending, userClan
+                    handleClan, isJoined, isMatchingClan, sending
                   }} />
                 </div>
                 <div className="w-full flex flex-col gap-2">
@@ -86,7 +88,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                     <div className="text-[40px] max-md:text-2xl">{clan.title}</div>
                     <JoinButton params={{
                       className: `max-md:hidden`,
-                      clan, handleClan, isJoined, isMatchingClan, sending, userClan
+                      handleClan, isJoined, isMatchingClan, sending
                     }} />
                   </div>
                   <div className="flex gap-4 items-center">
@@ -166,17 +168,64 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
           </div>
           {children}
         </div>
-        {showLevelModal && <LevelModal close={() => setShowLevelModal(false)} />}
-        {showLeaveModal && <LeaveModal close={() => setShowLeaveModal(false)} openNewModal={() => { setShowTransferOnwershipModal(true); setShowLeaveModal(false); }} />}
-        {showTransferOnwershipModal && <TransferOwnershipModal close={() => setShowTransferOnwershipModal(false)} openNewModal={() => setShowTransferOnwershipConfirmModal(true)} />}
-        {showTransferOnwershipConfirmModal && <TransferOwnershipConfirmModal close={() => setShowTransferOnwershipConfirmModal(false)} />}
+        {showLevelModal &&
+          <LevelModal close={() => setShowLevelModal(false)} />
+        }
+        {showLeaveModal &&
+          <LeaveModal close={() => setShowLeaveModal(false)} isOwnerAlone={isOwnerAlone} disabled={sending}
+            onConfirm={() => {
+              if (isOwnerAlone) {
+                setSending(true)
+                axios.post(`/api/clan/leave`, {}, { headers: { token: localStorage.getItem("jwt") } })
+                  .then(() => {
+                    showToast("You left from this clan", "success")
+                    router.push('/clans')
+                  }).catch((e) => {
+                    showToast(e.response?.statusText || "Unknown Error", "error")
+                  }).finally(() => {
+                    setSending(false)
+                    setShowLeaveModal(false)
+                  })
+              } else {
+                setShowLeaveModal(false)
+                setShowTransferOnwershipModal(true)
+              }
+            }} />
+        }
+        {showTransferOnwershipModal &&
+          <TransferOwnershipModal close={() => setShowTransferOnwershipModal(false)}
+            openConfirmModal={(username: string) => {
+              setShowTransferOnwershipConfirmModal(true)
+              setUsernameToTransfer(username)
+            }} />
+        }
+        {showTransferOnwershipConfirmModal &&
+          <TransferOwnershipConfirmModal disabled={sending} close={() => setShowTransferOnwershipConfirmModal(false)}
+            onConfirm={() => {
+              if (clan._id !== userClan?.clanId) return
+              setSending(true)
+              axios.post(`/api/clan/leave`, { usernameToTransfer }, { headers: { token: localStorage.getItem("jwt") } })
+                .then(() => {
+                  showToast("You left from this clan", "success")
+                  fetchClan()
+                  setShowTransferOnwershipModal(false)
+                }).catch((e) => {
+                  showToast(e.response?.statusText || "Unknown Error", "error")
+                }).finally(() => {
+                  setSending(false)
+                  setShowTransferOnwershipConfirmModal(false)
+                })
+            }} />
+        }
       </div>
     </ClanContext.Provider>
   )
 }
-const JoinButton = ({ params: { className, sending, userClan, clan, handleClan, isJoined, isMatchingClan } }: { params: { className: string, sending: boolean, userClan: UserClanType | undefined, clan: ClanType, handleClan: () => void, isJoined: boolean | undefined, isMatchingClan: boolean | undefined } }) => {
+const JoinButton = ({ params: { className, sending, handleClan, isJoined, isMatchingClan } }: { params: { className: string, sending: boolean, handleClan: () => void, isJoined: boolean, isMatchingClan: boolean } }) => {
   return (
-    <button onClick={handleClan} disabled={sending || (userClan && userClan.joined && userClan.clanId !== clan._id) || (isMatchingClan && !isJoined)} className={`${className} text-lg text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add] disabled:cursor-not-allowed disabled:bg-[#28425f]`}>{isMatchingClan ? (isJoined ? "Leave Clan" : "Waiting...") : "Apply to Join"}</button>
+    <button onClick={handleClan} disabled={sending || (isMatchingClan !== isJoined)} className={`${className} text-lg text-nowrap bg-[#1475E1] px-6 py-4 rounded-lg h-fit cursor-pointer hover:bg-[#428add] disabled:cursor-not-allowed disabled:bg-[#28425f]`}>
+      {isMatchingClan ? (isJoined ? "Leave Clan" : "Waiting...") : "Apply to Join"}
+    </button>
   )
 }
 const IntersectingAvatars = ({ urls }: { urls: string[] }) => {
@@ -256,23 +305,36 @@ const LevelModal = ({ close }: { close: () => void }) => {
     </div>
   )
 }
-const LeaveModal = ({ close, openNewModal }: { close: () => void, openNewModal: () => void }) => {
+const LeaveModal = ({ close, onConfirm, isOwnerAlone, disabled }: { close: () => void, onConfirm: () => void, isOwnerAlone: boolean, disabled?: boolean }) => {
   return (
     <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
       <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
       <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
         <svg className="w-10 h-10 stroke-[#F59E0B]"><use href="#svg-warning-new" /></svg>
-        <span className="text-2xl text-[#F59E0B]">Transfer Ownership</span>
-        <span className="text-white/80">Before you leave the clan, transfer ownership to other members.</span>
+        <span className="text-2xl text-[#F59E0B]">
+          {isOwnerAlone ? "Clan will be deleted" :
+            "Transfer Ownership"
+          }
+        </span>
+        <span className="text-white/80 text-center">
+          {isOwnerAlone ? "As you are owner of this clan and you are about to leave, it will be deleted after your leaving." :
+            "Before you leave the clan, transfer ownership to other members."
+          }
+        </span>
         <div className="flex gap-4">
-          <button onClick={openNewModal} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B]">Transfer Ownership</button>
+          {disabled ? <CircularIndeterminate /> :
+            <button onClick={onConfirm} disabled={disabled} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B] disabled:cursor-not-allowed">
+              {isOwnerAlone ? "Yes, delete" : "Transfer Ownership"}
+            </button>
+          }
           <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">Close</button>
         </div>
       </div>
     </div>
   )
 }
-const TransferOwnershipModal = ({ close, openNewModal }: { close: () => void, openNewModal: () => void }) => {
+const TransferOwnershipModal = ({ close, openConfirmModal }: { close: () => void, openConfirmModal: (_: string) => void }) => {
+  const { members } = useClan()
   return (
     <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
       <div className="fixed inset-0 bg-black/70 z-50"></div>
@@ -284,39 +346,39 @@ const TransferOwnershipModal = ({ close, openNewModal }: { close: () => void, op
           <svg onClick={close} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg>
         </div>
         <div className="flex flex-col gap-4 w-full">
-          <div className="p-6 rounded-2xl bg-[#263244]/60 flex justify-between items-center">
-            <div className="flex gap-4 items-center">
-              <div className="w-12 h-12 p-[1px] bg-white rounded-full flex justify-center items-center">
-                <div className="bg-red-500 w-[46px] h-[46px] rounded-full"></div>
+          {members.filter(m => m.clan.role !== "owner").map((member, i) =>
+            <div key={i} className="p-6 rounded-2xl bg-[#263244]/60 hover:bg-[#263244]/40 transition-[background] ease-in-out flex max-md:flex-col justify-between items-center cursor-pointer">
+              <div className="flex gap-4 items-center">
+                <Image alt="avatar" src={`/api/profile/avatar/${member.avatar}`} width={48} height={48} className="shrink-0 rounded-full w-12 h-12 max-md:w-[28px] max-md:h-[28px]" />
+                <div className="flex flex-col gap-2 w-[100px]">
+                  <span className="text-xl max-md:text-sm  font-medium">{member.username}</span>
+                  <div className="text-xs p-2 rounded-sm w-fit bg-[#F7931A]">{member.clan.role}</div>
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-xl font-medium">Smart Bet</span>
-                <div className="text-xs p-2 rounded-sm w-fit bg-[#F7931A]">Elder</div>
+              <div className="flex md:flex-col gap-2 items-center">
+                <span className="text-xl max-md:text-sm  text-white/80">Contribution</span>
+                <span className="text-2xl max-md:text-xs font-semibold">${member.clan.contribution}</span>
               </div>
+              <div className="flex md:flex-col gap-2 items-center">
+                <span className="text-xl max-md:text-sm  text-white/80">Win Rate</span>
+                <span className="text-2xl max-md:text-xs font-semibold">{getWinRate({ wins: member.wins, bets: member.bets })}</span>
+              </div>
+              <div className="flex md:flex-col gap-2 items-center">
+                <span className="text-xl max-md:text-sm  text-white/80">Total Won</span>
+                <span className="text-2xl max-md:text-xs font-semibold">{member.wins}</span>
+              </div>
+              <button onClick={() => openConfirmModal(member.username)} className="flex gap-2 bg-[#1475E1] hover:bg-[#1455e1] transition-[background] ease-in-out cursor-pointer py-2 px-6 rounded-lg">
+                <svg className="w-6 h-6 stroke-white"><use href="#svg-transferonwership" /></svg>
+                <span>TransferOwnership</span>
+              </button>
             </div>
-            <div className="flex flex-col gap-2 items-center">
-              <span className="text-xl text-white/80">Contribution</span>
-              <span className="text-2xl font-semibold">$5200</span>
-            </div>
-            <div className="flex flex-col gap-2 items-center">
-              <span className="text-xl text-white/80">Win Rate</span>
-              <span className="text-2xl font-semibold">64.2%</span>
-            </div>
-            <div className="flex flex-col gap-2 items-center">
-              <span className="text-xl text-white/80">Total Won</span>
-              <span className="text-2xl font-semibold">15</span>
-            </div>
-            <button onClick={openNewModal} className="flex gap-2 bg-[#1475E1] cursor-pointer py-2 px-6 rounded-lg">
-              <svg className="w-6 h-6 stroke-white"><use href="#svg-transferonwership" /></svg>
-              <span>TransferOwnership</span>
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
-const TransferOwnershipConfirmModal = ({ close }: { close: () => void }) => {
+const TransferOwnershipConfirmModal = ({ onConfirm, close, disabled }: { onConfirm: () => void, close: () => void, disabled?: boolean }) => {
   return (
     <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
       <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
@@ -326,10 +388,12 @@ const TransferOwnershipConfirmModal = ({ close }: { close: () => void }) => {
         <span className="text-white/80 text-center">Are you sure you want to transfer clan ownership to "username" You will become a regular member and will no longer have leader privileges. This action cannot be undone.</span>
         {/* <svg onClick={close} className="w-6 h-6 cursor-pointer"><use href="#svg-close-new" /></svg> */}
         <div className="flex gap-4">
-          <button className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B] flex gap-2">
-            <svg className="w-6 h-6 stroke-white"><use href="#svg-transferonwership" /></svg>
-            <span>Transfer Ownership</span>
-          </button>
+          {disabled ? <CircularIndeterminate /> :
+            <button disabled={disabled} onClick={onConfirm} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B] flex gap-2 disabled:cursor-not-allowed">
+              <svg className="w-6 h-6 stroke-white"><use href="#svg-transferonwership" /></svg>
+              <span>Transfer Ownership</span>
+            </button>
+          }
           <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">Close</button>
         </div>
       </div>

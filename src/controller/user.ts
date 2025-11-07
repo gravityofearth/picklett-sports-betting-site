@@ -1,4 +1,4 @@
-import userModel from "@/model/user";
+import userModel, { correctPassword } from "@/model/user";
 import bcrypt from "bcryptjs";
 import { generateReferralCode } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
@@ -124,7 +124,7 @@ export async function updatePassword({ username, currentPassword, newPassword }:
     await connectMongoDB()
     try {
         const user = await userModel.findOne({ username }).select('+password');
-        const isPasswordCorrect = await user.correctPassword(currentPassword, user.password);
+        const isPasswordCorrect = await correctPassword(currentPassword, user.password);
         if (!isPasswordCorrect) {
             throw new Error('Your credential is not correct');
         }
@@ -141,21 +141,25 @@ export async function updatePassword({ username, currentPassword, newPassword }:
 export async function authenticateUser(username: string, password: string) {
     await connectMongoDB()
     try {
-        const user = await userModel.findOne({ username }).select('+password');
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            { lastLogin: new Date() },
+            {
+                new: true,
+                runValidators: false,
+                select: '+password'
+            }
+        );
 
         if (!user) {
             throw new Error('Your credential is not correct');
         }
 
-        const isPasswordCorrect = await user.correctPassword(password, user.password);
+        const isPasswordCorrect = await correctPassword(password, user.password);
 
         if (!isPasswordCorrect) {
             throw new Error('Your credential is not correct');
         }
-
-        // Update last login
-        user.lastLogin = new Date();
-        await user.save({ validateBeforeSave: false });
 
         // Remove password from output
         user.password = undefined;
@@ -191,7 +195,7 @@ export async function increaseBalance(username: string, amount: number, session:
         throw error
     }
 }
-export async function increaseBalanceAndBets(username: string, amount: number, session: mongoose.mongo.ClientSession) {
+export async function trackBalanceAndBets({ username, betId, amount, session }: { username: string, betId: mongoose.Types.ObjectId, amount: number, session: mongoose.mongo.ClientSession }) {
     await connectMongoDB()
     try {
         const user = await userModel.findOneAndUpdate(
@@ -221,7 +225,7 @@ export async function increaseBalanceAndBets(username: string, amount: number, s
         await clanWarModel.updateMany(
             {
                 startsAt: {
-                    $gt: new Date().getTime() - 1 * 60 * 60 * 1000,
+                    $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
                     $lt: new Date().getTime(),
                 },
                 'clans.clanId': clanId,
@@ -230,6 +234,9 @@ export async function increaseBalanceAndBets(username: string, amount: number, s
                 $inc: {
                     'clans.$[clan].bets': 1,
                 },
+                $addToSet: {
+                    "clans.$[clan].betIds": betId
+                }
             },
             // Array Filters: Specify which elements in the 'clans' array to update
             {

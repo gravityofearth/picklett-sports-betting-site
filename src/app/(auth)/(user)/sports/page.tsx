@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils"
-import { LineType } from "@/types"
+import { LineType, WarType } from "@/types"
 import UserPage from './components/UserPage'
 import { redirect } from 'next/navigation'
 export default async function Page() {
@@ -13,10 +13,14 @@ export default async function Page() {
       headers: { token },
       cache: "no-store"
     })).json()
+    const { wars: activeWars }: { wars: WarType[] } = await (await fetch('http://localhost:3000/api/clan/war/active', {
+      headers: { token },
+      cache: "no-store"
+    })).json()
     return (
       <UserPage loggedIn
         params={{
-          balance, winstreak, oddstype, timeOffset: new Date().getTime() - basets,
+          activeWars, balance, winstreak, oddstype, timeOffset: new Date().getTime() - basets,
           lines: lines.map(v => ({
             ...v,
             amount: "",

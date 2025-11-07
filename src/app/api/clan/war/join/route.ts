@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
     const owner = await findUserByUsername(username)
-    const checkClanOwnership = owner.clan && owner.clan.joined && owner.clan.clanId.toString() === clanId && owner.clan.role === "owner"
+    const checkClanOwnership = owner.clan && owner.clan.joined && owner.clan.clanId.toString() === clanId && ["owner", "elder"].includes(owner.clan.role)
     if (!checkClanOwnership) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unable action" })
     const war = (await findWars({ _id: new mongoose.Types.ObjectId(warId as string) }))[0]
     const clan_length = war.clans ? war.clans.length : 0

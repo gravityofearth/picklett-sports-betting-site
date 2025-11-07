@@ -8,7 +8,10 @@ const clanSchema = new mongoose.Schema({
     coffer: Number,
     xp: Number,
     level: Number,
-    wins: Number,
+    wins: {
+        type: Number,
+        index: true,
+    },
     bets: Number,
 });
 

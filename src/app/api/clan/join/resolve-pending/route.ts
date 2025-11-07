@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get('token') || '';
     const { username: ownerUsername }: any = jwt.verify(token, JWT_SECRET)
     const owner = await findUserByUsername(ownerUsername)
-    const checkClanOwnership = owner.clan && owner.clan.joined && owner.clan.clanId.toString() === id && ["owner", "elder"].some(role => role === owner.clan.role)
+    const checkClanOwnership = owner.clan && owner.clan.joined && owner.clan.clanId.toString() === id && owner.clan.role === "owner"
     if (!checkClanOwnership) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Unable action" })
     await operateClanJoin({ username, id, isApproved: isApprove })
     return NextResponse.json("OK", { status: 200 })

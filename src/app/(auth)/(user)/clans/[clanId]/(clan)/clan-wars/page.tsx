@@ -10,12 +10,14 @@ import { useClan } from "../layout"
 import { getWinRate, showToast } from "@/utils"
 import { useUser } from "@/store"
 import { useParams } from "next/navigation"
+import { CircularIndeterminate } from "@/components/MUIs"
 export default function Page() {
+  const params = useParams()
   const [showModal, setShowModal] = useState(false)
   const [wars, setWars] = useState<WarType[]>([])
   const [selectedWar, setSelectedWar] = useState<WarType>()
   const fetchWars = () => {
-    axios.get(`/api/clan/war`, { headers: { token: localStorage.getItem("jwt") } })
+    axios.get(`/api/clan/war?clanId=${params.clanId}`, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { wars } }) => {
         setWars(wars)
       })
@@ -51,16 +53,16 @@ const ClanWar = ({ war, callback }: { war: WarType, callback: (war: WarType) => 
   const timing =
     war.startsAt === 0 ? "Unknown" :
       new Date().getTime() < war.startsAt ? `Starts at ${new Date(war.startsAt).toLocaleTimeString()}` :
-        new Date().getTime() < war.startsAt + 1 * 60 * 60 * 1000 ? `Ends at ${new Date(war.startsAt + 1 * 60 * 60 * 1000).toLocaleTimeString()}` :
+        new Date().getTime() < war.startsAt + 24 * 60 * 60 * 1000 ? `Ends at ${new Date(war.startsAt + 24 * 60 * 60 * 1000).toLocaleTimeString()}` :
           "Ended"
   const action =
     war.startsAt > new Date().getTime() ? "waiting" :
       war.startsAt === 0 && (war.clans ? war.clans.length : 0) < war.slots ?
-        war.clans?.filter(v => v.clanId === userClan?.clanId).length === 0 ?
-          userClan?.clanId === params.clanId ?
+        war.clans?.find(v => v.clanId === userClan?.clanId) ?
+          "waiting" :
+          userClan && userClan.clanId === params.clanId && ["owner", "elder"].includes(userClan.role) ?
             "joinable" :
             "" :
-          "waiting" :
         "view"
   return (
     <div className="w-full p-4 max-md:p-2 flex justify-between max-md:flex-col max-md:gap-2 items-center rounded-2xl bg-[#263244]/60">
@@ -241,7 +243,9 @@ const ParticipantSelectionModal = ({ selectedWar, close, fetchWars }: {
                   </div>
                 )}
           </div>
-          <button onClick={handleJoin} disabled={sending} className="w-full bg-[#1475E1] rounded-lg px-6 py-4 cursor-pointer hover:bg-[#428bdf] disabled:cursor-not-allowed disabled:bg-[#1b2d42]">Join War</button>
+          {sending ? <CircularIndeterminate /> :
+            <button onClick={handleJoin} disabled={sending} className="w-full bg-[#1475E1] rounded-lg px-6 py-4 cursor-pointer hover:bg-[#428bdf] disabled:cursor-not-allowed disabled:bg-[#1b2d42]">Join War</button>
+          }
         </div>
       </div>
     </div >

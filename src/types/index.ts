@@ -157,3 +157,18 @@ export type WarType = {
     startsAt: number,
     minMembers: number,
 }
+export type ClanTxType = {
+    username?: string,
+    warId?: string,
+    amount: number,
+    type: 'deposit' | 'tax' | 'distribute' | 'stake' | 'prize',
+    timestamp: number,
+}
+export type WarFeedType = {
+    username: string,
+    avatar: string,
+    event: string,
+    amount: number,
+    status: string,
+    createdAt: string,
+}

@@ -197,7 +197,7 @@ async function depositSuccess({ id, confirmations, depositAmount }: { id: string
 export async function findDeposit_no_initiated(username: string) {
     await connectMongoDB()
     const matchStage = username === "admin" ? { result: { $ne: "initiated" } } : { username, result: { $ne: "initiated" } }
-    const deposit = await depositModel.find(matchStage).sort({ expiresAt: -1 })
+    const deposit = await depositModel.find(matchStage).sort({ _id: -1 })
     return deposit
 }
 async function collectDepositBTC(deposit: any) {

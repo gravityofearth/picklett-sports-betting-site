@@ -21,7 +21,7 @@ export async function createRedemption(amount: number) {
 export async function findRedemptions() {
     await connectMongoDB()
     try {
-        const redemptions = await redemptionModel.find().sort({ createdAt: -1 })
+        const redemptions = await redemptionModel.find().sort({ _id: -1 })
         return redemptions;
     } catch (error) {
         console.error('Error finding redemption code:', error);

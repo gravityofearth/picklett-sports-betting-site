@@ -4,7 +4,7 @@ import lineModel from "@/model/line";
 import userModel from "@/model/user";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
-import { increaseBalanceAndBets } from "./user";
+import { trackBalanceAndBets } from "./user";
 import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
 import { decodeEntities } from "@/utils";
@@ -106,7 +106,7 @@ export async function placeBet({ username, lineId, side, amount }: { username: s
         const newBet = new betModel({ username, lineId: new mongoose.Types.ObjectId(lineId), side, amount, status: "pending" });
 
         const savedBet = await newBet.save({ session });
-        const updatedUser = await increaseBalanceAndBets(username, -amount, session);
+        const updatedUser = await trackBalanceAndBets({ username, betId: savedBet._id, amount: -amount, session });
         await createPlaceBetTransaction({
             username, amount,
             balanceBefore: user.balance,
@@ -196,7 +196,7 @@ export async function findBet(username: string) {
                     lineData: 1
                 }
             },
-            { $sort: { createdAt: -1 } }
+            { $sort: { _id: -1 } }
         ]);
 
         return bet;
@@ -501,7 +501,6 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             await userModel.bulkWrite(userUpdates, { session });
         }
         const wonUsersForClan = wonUsers.filter((wonUser) => wonUser.currentUser[0].clan)
-        console.log(JSON.stringify(wonUsersForClan, null, 2))
         const clanUpdates = wonUsersForClan.map(wonUser => ({
             updateOne: {
                 filter: { _id: new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string) },
@@ -519,14 +518,14 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             updateMany: {
                 filter: {
                     startsAt: {
-                        $gt: new Date().getTime() - 1 * 60 * 60 * 1000,
+                        $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
                         $lt: new Date().getTime(),
                     },
                     'clans.clanId': new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string),
                 },
                 update: {
                     $inc: {
-                        'clans.$[clan].wins': 1,
+                        'clans.$[clan].wins': wonUser.wins,
                     },
                 },
                 arrayFilters: [

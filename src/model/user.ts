@@ -132,8 +132,7 @@ userSchema.pre(['findOneAndUpdate', 'updateOne', 'updateMany'], async function (
     }
 });
 
-// Instance method to check password
-userSchema.methods.correctPassword = async function (candidatePassword: string, userPassword: string) {
+export const correctPassword = async function (candidatePassword: string, userPassword: string) {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 

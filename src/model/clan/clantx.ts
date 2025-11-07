@@ -12,7 +12,10 @@ const clanTxSchema = new mongoose.Schema({
         type: String,
         enum: ['deposit', 'tax', 'distribute', 'stake', 'prize'],
     },
-    timestamp: Number,
+    timestamp: {
+        type: Number,
+        index: true,
+    },
 });
 
 setSchemaLean(clanTxSchema)

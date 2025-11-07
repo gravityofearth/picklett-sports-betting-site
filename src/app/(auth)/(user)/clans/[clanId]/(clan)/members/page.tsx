@@ -2,8 +2,10 @@
 import Image from "next/image"
 import { useClan } from "../layout"
 import { useUser } from "@/store"
-import { useParams } from "next/navigation"
 import { useState } from "react"
+import axios from "axios"
+import { showToast } from "@/utils"
+import { CircularIndeterminate } from "@/components/MUIs"
 const RoleDict: { [K: string]: { title: string; color: string; } } = {
   "owner": {
     title: "Owner",
@@ -19,10 +21,11 @@ const RoleDict: { [K: string]: { title: string; color: string; } } = {
   },
 }
 export default function Page() {
-  const { members } = useClan()
-  const { clan } = useUser()
-  const params = useParams()
+  const [sending, setSending] = useState(false)
+  const { members, clan, fetchClan } = useClan()
+  const { clan: userClan } = useUser()
   const [showKickModal, setShowKickModal] = useState(false)
+  const [usernameToKick, setUsernameToKick] = useState("")
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -53,27 +56,61 @@ export default function Page() {
             </div>
           </div>
           <div className="flex md:flex-col w-30 shrink-0 max-md:w-full max-md:justify-between gap-2">
-            {member.clan.role !== "owner" && clan?.role === "owner" && clan.clanId === params.clanId && <>
-              <button className="h-full py-2 w-full text-sm rounded-lg cursor-pointer hover:bg-[#3b89e2] bg-[#1475E1]">Set to Elder</button>
-              <button onClick={() => setShowKickModal(true)} className="h-full py-2 w-full text-sm rounded-lg cursor-pointer hover:bg-[#e6baba] bg-[#FEE2E2] text-[#EF4444]">Kick</button>
+            {member.clan.role !== "owner" && userClan?.role === "owner" && userClan.clanId === clan?._id && <>
+              <button disabled={sending} className="h-full py-2 w-full text-sm rounded-lg cursor-pointer hover:bg-[#3b89e2] bg-[#1475E1] disabled:cursor-not-allowed"
+                onClick={() => {
+                  setSending(true)
+                  axios.post(`/api/clan/${clan._id}/members/promote`, {
+                    username: member.username,
+                    role: member.clan.role === "member" ? "elder" : "member",
+                  }, { headers: { token: localStorage.getItem("jwt") } })
+                    .then(() => {
+                      showToast("Changed user role", "success")
+                      fetchClan()
+                    }).catch((e) => {
+                      showToast(e.response?.statusText || "Unknown Error", "error")
+                    }).finally(() => setSending(false))
+                }}>Set to {member.clan.role === "member" ? "Elder" : "Member"}</button>
+              <button onClick={() => {
+                setUsernameToKick(member.username)
+                setShowKickModal(true)
+              }} className="h-full py-2 w-full text-sm rounded-lg cursor-pointer hover:bg-[#e6baba] bg-[#FEE2E2] text-[#EF4444]">Kick</button>
             </>}
           </div>
         </div>
       )}
-      {showKickModal && <KickModal close={() => setShowKickModal(false)} />}
+      {showKickModal &&
+        <KickModal username={usernameToKick} disabled={sending} close={() => setShowKickModal(false)}
+          onConfirm={() => {
+            if (!clan) return
+            if (!usernameToKick) return
+            setSending(true)
+            axios.post(`/api/clan/${clan._id}/members/kick`, { username: usernameToKick, }, { headers: { token: localStorage.getItem("jwt") } })
+              .then(() => {
+                showToast("Kicked user", "success")
+                fetchClan()
+              }).catch((e) => {
+                showToast(e.response?.statusText || "Unknown Error", "error")
+              }).finally(() => {
+                setSending(false)
+                setShowKickModal(false)
+              })
+          }} />}
     </div>
   )
 }
-const KickModal = ({ close }: { close: () => void }) => {
+const KickModal = ({ username, onConfirm, close, disabled }: { username: string, onConfirm: () => void, close: () => void, disabled?: boolean }) => {
   return (
     <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
       <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
       <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
         <svg className="w-10 h-10 stroke-[#EF4444]"><use href="#svg-warning-new" /></svg>
         <span className="text-2xl text-[#EF4444]">Are you sure you want to remove?</span>
-        <span className="text-white/80 text-center">Are you sure you want to remove "username" from the clan? This action cannot be undone.</span>
+        <span className="text-white/80 text-center">Are you sure you want to remove "{username}" from the clan? This action cannot be undone.</span>
         <div className="flex gap-4">
-          <button className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#EF4444]">Kick Member</button>
+          {disabled ? <CircularIndeterminate /> :
+            <button onClick={onConfirm} disabled={disabled} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#EF4444] disabled:cursor-not-allowed">Yes, kick</button>
+          }
           <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">Close</button>
         </div>
       </div>
