@@ -6,6 +6,8 @@ import userModel from "@/model/user"
 import connectMongoDB from "@/utils/mongodb"
 import mongoose from "mongoose"
 import { findUserByUsername } from "./user"
+import { sendEmail } from "@/utils/emailjs"
+import { scheduleJob } from "@/utils/scheduler"
 
 export async function createClan({ title, ownerUserName, description, icon }: { title: string, ownerUserName: string, description: string, icon: string }) {
     await connectMongoDB()
@@ -252,12 +254,12 @@ export async function depositClan({ id, username, amount }: { id: string, userna
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
-        await clanModel.findByIdAndUpdate(
+        const clan = await clanModel.findByIdAndUpdate(
             new mongoose.Types.ObjectId(id),
             {
                 $inc: { coffer: amount }
             },
-            { new: true, session }
+            { session }
         )
         const user = await userModel.findOneAndUpdate(
             { username },
@@ -276,6 +278,8 @@ export async function depositClan({ id, username, amount }: { id: string, userna
             clanId: id,
             type: "deposit",
             timestamp: new Date().getTime(),
+            cofferBefore: clan.coffer,
+            cofferAfter: clan.coffer + amount,
             username, amount,
         })
         await newClanTx.save({ session })
@@ -304,17 +308,19 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
-        await clanModel.findByIdAndUpdate(
+        const clan = await clanModel.findByIdAndUpdate(
             new mongoose.Types.ObjectId(id),
             {
                 $inc: { coffer: -amount }
             },
-            { new: true, session }
+            { session }
         )
         const newClanTx = new clanTxModel({
             clanId: id,
             type: "distribute",
             timestamp: new Date().getTime(),
+            cofferBefore: clan.coffer,
+            cofferAfter: clan.coffer - amount,
             username: selectedMember, amount,
         })
         await newClanTx.save({ session })
@@ -560,14 +566,62 @@ export async function joinWar({ warId, clanId, members, startsAt, stake }: { war
             clanId, warId,
             type: "stake",
             timestamp: new Date().getTime(),
+            cofferBefore: clan.coffer + stake,
+            cofferAfter: clan.coffer,
             amount: stake,
         })
         await newClanTx.save({ session })
 
         await session.commitTransaction()
-        // setTimeout(() => endWar(warId), 24 * 60 * 60 * 1000) //TODO:
+        if (startsAt > 0) await scheduleJob(startsAt + 24 * 60 * 60 * 1000, warId)
     } catch (error) {
         console.error('Error joining war:', error)
+        await session.abortTransaction()
+        throw error
+    } finally {
+        session.endSession()
+    }
+}
+export async function rewardPrizeForEndedWar(job: any) {
+    await connectMongoDB()
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+        const { warId }: { warId: string } = job
+        const { prize, clans } = await clanWarModel.findById(new mongoose.Types.ObjectId(warId)).session(session)
+        clans.sort((b: any, a: any) => a.wins - b.wins)
+        const wonClan = clans[0]
+        if (wonClan.wins === clans[1].wins) {
+            sendEmail(warId)
+            throw new Error("War drawn")
+        }
+        const clan = await clanModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(wonClan.clanId as string),
+            {
+                $inc: { coffer: prize }
+            },
+            { session }
+        )
+        const newClanTx = new clanTxModel({
+            clanId: wonClan.clanId,
+            warId,
+            type: "prize",
+            timestamp: new Date().getTime(),
+            cofferBefore: clan.coffer,
+            cofferAfter: clan.coffer + prize,
+            amount: prize,
+        })
+        const savedClanTx = await newClanTx.save({ session })
+        await clanWarModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(warId),
+            {
+                $set: { rewarded: savedClanTx._id.toString() }
+            },
+            { new: true, session }
+        )
+        await session.commitTransaction()
+    } catch (error) {
+        console.error('Error rewarding prize for war:', error)
         await session.abortTransaction()
         throw error
     } finally {

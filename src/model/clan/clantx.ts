@@ -16,6 +16,8 @@ const clanTxSchema = new mongoose.Schema({
         type: Number,
         index: true,
     },
+    cofferBefore: Number,
+    cofferAfter: Number,
 });
 
 setSchemaLean(clanTxSchema)

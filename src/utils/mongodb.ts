@@ -1,4 +1,7 @@
+'use server'
 import mongoose from 'mongoose';
+import { Scheduler } from 'job-stash';
+import { rewardPrizeForEndedWar } from '@/controller/clan';
 const MONGO_URI = process.env.MONGO_URI || "";
 
 if (!MONGO_URI) {
@@ -23,6 +26,8 @@ async function connectMongoDB() {
     }
 
     cached.conn = await cached.promise;
+    await Scheduler.init({ db: { address: MONGO_URI } }, { useLock: true });
+    await Scheduler.rescheduleJobs(rewardPrizeForEndedWar);
     return cached.conn;
 }
 
