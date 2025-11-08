@@ -47,3 +47,14 @@ server {
     # Redirect all HTTP traffic to HTTPS
     return 301 https://www.picklett.com$request_uri;
 }
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	server_name picklett.com;
+
+	ssl_certificate /etc/letsencrypt/live/picklett.com/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/picklett.com/privkey.pem;
+
+    # Redirect all HTTP traffic to HTTPS
+    return 301 https://www.picklett.com$request_uri;
+}
