@@ -21,13 +21,18 @@ export default function ClansPage() {
       otherClans
   }, [clans, userClan])
 
+  const [isClient, setIsClient] = useState(false);
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+  useEffect(() => {
+    if (!isClient) return
     if (!localStorage.getItem("jwt")) return
     axios.get(`/api/clan`, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { clans } }) => {
         setClans(clans)
       })
-  }, [])
+  }, [isClient])
   return (
     <div className="flex justify-center">
       <div className="w-full flex flex-col gap-8">

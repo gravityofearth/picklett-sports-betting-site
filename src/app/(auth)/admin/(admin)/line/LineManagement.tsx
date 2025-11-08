@@ -138,10 +138,15 @@ export default function LineManagement({ params: { username, role } }: { params:
                 showToast(e.response?.statusText || "Unknown Error", "error")
             }).finally(() => setSendingRequest(false))
     }
+    const [isClient, setIsClient] = useState(false);
     useEffect(() => {
+        setIsClient(true);
+    }, []);
+    useEffect(() => {
+        if (!isClient) return
         setLoading(true)
         fetchData()
-    }, [])
+    }, [isClient])
     useEffect(() => {
         const interval = setInterval(() => {
             const timesRemaining = lines.map(line => {

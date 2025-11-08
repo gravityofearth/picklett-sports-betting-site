@@ -41,8 +41,13 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   const isMatchingClan = useMemo(() => userClan ? userClan.clanId === clan?._id : false, [clan, userClan])
   const isJoined = useMemo(() => userClan ? userClan.joined : false, [userClan])
   const isOwnerAlone = useMemo(() => members.length === 1, [members])
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   const fetchClan = () => {
     if (!pathname) return
+    if (!isClient) return
     if (!localStorage.getItem("jwt")) return
     axios.get(`/api/clan/${params.clanId}`, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { token, clan, rank } }: { data: { token: string, clan: ClanType, rank: number } }) => {
@@ -51,7 +56,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
         setClanRank(rank)
       })
   }
-  useEffect(fetchClan, [pathname])
+  useEffect(fetchClan, [isClient, pathname])
   const handleClan = () => {
     if (!clan) return
     if (!userClan || !userClan.joined) {
