@@ -104,7 +104,7 @@ export default function ClansPage() {
                 </div>
                 <div className="flex flex-col gap-4">
                   <div className="text-white/70 ">{clan.description}</div>
-                  <div className="text-[#F59E0B] max-md:hidden">Requirements: 60%+ win rate, 100+ bets placed</div>
+                  {/* <div className="text-[#F59E0B] max-md:hidden">Requirements: 60%+ win rate, 100+ bets placed</div> */}
                   <div className="flex justify-between md:hidden">
                     <div className="text-sm flex gap-2"><span className="text-white/70">Members </span><span>{clan.members?.length}</span></div>
                     <div className="text-sm flex gap-2"><span className="text-white/70">Wins </span><span>{clan.wins}</span></div>
