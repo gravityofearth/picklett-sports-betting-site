@@ -17,7 +17,7 @@ export default function Page() {
   const isLeader = useMemo(() => userClan?.role === "owner" && userClan?.clanId === clan?._id, [userClan])
   const [modalMode, setModalMode] = useState<DepositDistributeModalType>(undefined)
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 text-center">
       <div className="md:text-2xl">Clan Coffer</div>
       <div className="w-full relative z-30">
         <div className="w-full grid grid-cols-4 max-md:hidden gap-4 justify-between">
@@ -31,7 +31,7 @@ export default function Page() {
         <div className="absolute z-10 translate-x-[-50%] max-sm:hidden"><Image alt="clan-balance-left-decoration" width={566} height={495} src="/clan_balance_left.png" className="shrink-0 w-[565px] h-[495px]" /></div>
         <div className="bg-[#33383F] rounded-full py-8 px-32 max-md:px-24 flex flex-col items-center">
           <div className="h-fit flex flex-col items-center z-30">
-            <div className="md:text-2xl leading-8">Total Balance</div>
+            <div className="text-2xl leading-8 text-center">Total Balance</div>
             <div className="flex gap-2 items-baseline">
               <div className="text-[#FFE720] text-7xl font-bold">{clan?.coffer}</div>
               <svg className="w-12 h-12"><use href="#svg-dollar-new" /></svg>
