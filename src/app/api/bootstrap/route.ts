@@ -1,9 +1,10 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { confirmDeposit, detectDeposit, getMonitoringDeposits } from "@/controller/deposit";
 import { WEBHOOK_SECRET } from "@/utils";
+import connectMongoDB from "@/utils/mongodb";
 
 export async function POST(request: NextRequest) {
+  await connectMongoDB()
   try {
     const token = request.headers.get('token') || ''
     if (token !== WEBHOOK_SECRET) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Forbidden" })

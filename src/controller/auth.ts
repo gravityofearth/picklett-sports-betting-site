@@ -10,6 +10,7 @@ export const signToken = (user: any) => {
         fullname: user.fullname,
         oddstype: user.oddstype,
         avatar: user.avatar,
+        clan: user.clan,
     }, JWT_SECRET, {
         expiresIn: "7d",
     });

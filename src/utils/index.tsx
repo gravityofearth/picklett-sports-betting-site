@@ -150,3 +150,15 @@ export function decodeEntities(encodedStr: string) {
         return String.fromCharCode(dec);
     });
 }
+export const getWinRate = ({ wins, bets }: { wins: number, bets: number }) => `${Math.round(wins * 100 / Math.max(1, bets) * 10) / 10}%`
+export const formatAgo = (ts: number) => {
+    const mins = Math.floor((new Date().getTime() - ts) / 1000 / 60)
+    if (mins === 0) return "Now"
+    if (mins < 60) return `${mins} mins ago`
+    const hs = Math.floor(mins / 60)
+    if (hs < 24) return `${hs} ${hs > 1 ? "hours" : "hour"} ago`
+    const days = Math.floor(hs / 24)
+    if (days < 30) return `${days} ${days > 1 ? "days" : "day"} ago`
+    const months = Math.floor(days / 30)
+    return `${months} ${months > 1 ? "months" : "month"} ago`
+}

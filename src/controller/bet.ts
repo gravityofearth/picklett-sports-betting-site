@@ -4,10 +4,12 @@ import lineModel from "@/model/line";
 import userModel from "@/model/user";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
-import { increaseBalance } from "./user";
+import { trackBalanceAndBets } from "./user";
 import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
 import { decodeEntities } from "@/utils";
+import clanModel from "@/model/clan/clan";
+import clanWarModel from "@/model/clan/clanwar";
 export async function createLine({ eventId, oddsId, question, event, league, sports, yes, no, endsAt, result, openedBy }: { eventId?: string, oddsId?: string, question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
     await connectMongoDB()
     try {
@@ -104,7 +106,7 @@ export async function placeBet({ username, lineId, side, amount }: { username: s
         const newBet = new betModel({ username, lineId: new mongoose.Types.ObjectId(lineId), side, amount, status: "pending" });
 
         const savedBet = await newBet.save({ session });
-        const updatedUser = await increaseBalance(username, -amount, session);
+        const updatedUser = await trackBalanceAndBets({ username, betId: savedBet._id, amount: -amount, session });
         await createPlaceBetTransaction({
             username, amount,
             balanceBefore: user.balance,
@@ -194,7 +196,7 @@ export async function findBet(username: string) {
                     lineData: 1
                 }
             },
-            { $sort: { createdAt: -1 } }
+            { $sort: { _id: -1 } }
         ]);
 
         return bet;
@@ -212,7 +214,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         const result = await lineModel.findOneAndUpdate({
             _id: new mongoose.Types.ObjectId(lineId),
             result: "pending"
-        }, { result: winningSide }, { new: true }).session(session)
+        }, { result: winningSide }, { new: true, session })
         if (!result) {
             throw new Error("Not found pending line")
         }
@@ -258,7 +260,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         // ]);
         // console.log(groupedWinners)
 
-        const winningBetsData = await betModel.aggregate([
+        const wonUsers = await betModel.aggregate([
             // Match winning bets for the line
             {
                 $match: {
@@ -270,12 +272,14 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             {
                 $group: {
                     _id: "$username",
-                    totalAmount: { $sum: "$amount" }
+                    totalAmount: { $sum: "$amount" },
+                    wins: { $sum: 1 }
                 }
             },
             {
                 $addFields: {
                     totalWinnings: { $multiply: ["$totalAmount", odd] },
+                    earns: { $multiply: ["$totalAmount", odd - 1] },
                     username: "$_id"
                 }
             },
@@ -343,12 +347,12 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             // }
         ]).session(session)
         // Create transaction records
-        const transactions = winningBetsData.map(bet => ({
-            username: bet.username,
+        const transactions = wonUsers.map(wonUser => ({
+            username: wonUser.username,
             type: "bet_win",
-            amount: bet.totalWinnings,
-            balanceBefore: bet.balanceBefore,
-            balanceAfter: bet.balanceAfter,
+            amount: wonUser.totalWinnings,
+            balanceBefore: wonUser.balanceBefore,
+            balanceAfter: wonUser.balanceAfter,
             timestamp: new Date(),
             lineId: new mongoose.Types.ObjectId(lineId),
             description: `Bet win: on ${winningSide}`
@@ -358,26 +362,33 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             await balanceTransactionModel.insertMany(transactions, { session });
         }
         // Update user balances
-        const balanceUpdates = winningBetsData.map(bet => ({
+        const balanceUpdates = wonUsers.map(wonUser => ({
             updateOne: {
-                filter: { username: bet.username },
+                filter: { username: wonUser.username },
                 update: {
-                    $inc: { balance: bet.totalWinnings },
+                    $inc: {
+                        balance: wonUser.totalWinnings,
+                        wins: wonUser.wins,
+                        earns: wonUser.earns
+                    },
                     $set: { lastUpdated: new Date() }
                 }
             }
         }));
 
         const winstreaks = await betModel.aggregate([
-            // Stage 1: Sort by username and time to ensure proper ordering
-            {
-                $sort: {
-                    username: 1,
-                    createdAt: 1
+            { //NOTE: remove this to rollback
+                $match: {
+                    lineId: new mongoose.Types.ObjectId(lineId),
                 }
             },
+            // {
+            //     $sort: {
+            //         username: 1,
+            //         createdAt: 1
+            //     }
+            // },
 
-            // Stage 2: Group by username to collect all bets per user
             {
                 $group: {
                     _id: "$username",
@@ -429,22 +440,24 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                                     $filter: {
                                         input: "$bets",
                                         cond: {
-                                            $and: [
-                                                { $eq: ["$$this.status", "win"] },
-                                                { $gt: ["$$this.time", "$latestLoseTime"] }
-                                            ]
+                                            $gt: ["$$this.time", "$latestLoseTime"], // Or below $and
+                                            // $and: [ 
+                                            //     { $eq: ["$$this.status", "win"] },
+                                            //     { $gt: ["$$this.time", "$latestLoseTime"] },
+                                            // ]
                                         }
                                     }
                                 }
                             },
                             else: {
                                 // If no lose found, count all wins
-                                $size: {
-                                    $filter: {
-                                        input: "$bets",
-                                        cond: { $eq: ["$$this.status", "win"] }
-                                    }
-                                }
+                                $size: "$bets"
+                                // $size: {
+                                //     $filter: {
+                                //         input: "$bets",
+                                //         cond: { $eq: ["$$this.status", "win"] }
+                                //     }
+                                // }
                             }
                         }
                     }
@@ -460,25 +473,70 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                     _id: 0
                 }
             },
-
-            // Stage 7: Sort by username for consistent output
-            {
-                $sort: {
-                    username: 1
-                }
-            }
+            // {
+            //     $sort: {
+            //         username: 1
+            //     }
+            // }
         ]).session(session)
         const winstreakUpdates = winstreaks.map(winstreak => ({
             updateOne: {
                 filter: { username: winstreak.username },
-                update: {
-                    $set: { winstreak: winstreak.winsAfterLatestLose }
-                }
+                update:
+                    // { // NOTE: recover this to rollback
+                    //     $set: { winstreak: winstreak.winsAfterLatestLose }
+                    // }
+                    winstreak.latestLoseTime ?
+                        {
+                            $set: { winstreak: winstreak.winsAfterLatestLose }
+                        }
+                        :
+                        {
+                            $inc: { winstreak: winstreak.winsAfterLatestLose }
+                        }
             }
         }));
         const userUpdates = [...balanceUpdates, ...winstreakUpdates]
         if (userUpdates.length > 0) {
             await userModel.bulkWrite(userUpdates, { session });
+        }
+        const wonUsersForClan = wonUsers.filter((wonUser) => wonUser.currentUser[0].clan)
+        const clanUpdates = wonUsersForClan.map(wonUser => ({
+            updateOne: {
+                filter: { _id: new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string) },
+                update: {
+                    $inc: {
+                        wins: wonUser.wins,
+                    },
+                }
+            }
+        }))
+        if (clanUpdates.length > 0) {
+            await clanModel.bulkWrite(clanUpdates, { session });
+        }
+        const warUpdates = wonUsersForClan.map(wonUser => ({
+            updateMany: {
+                filter: {
+                    startsAt: {
+                        $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
+                        $lt: new Date().getTime(),
+                    },
+                    'clans.clanId': new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string),
+                },
+                update: {
+                    $inc: {
+                        'clans.$[clan].wins': wonUser.wins,
+                    },
+                },
+                arrayFilters: [
+                    {
+                        'clan.clanId': new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string),
+                    },
+                ],
+            }
+        }))
+        if (warUpdates.length > 0) {
+            await clanWarModel.bulkWrite(warUpdates, { session });
         }
         await session.commitTransaction();
         return result

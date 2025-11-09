@@ -1,10 +1,20 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
+import { useClan } from "../layout"
+import { useUser } from "@/store"
+import axios from "axios"
+import { formatAgo, showToast } from "@/utils"
+import { CircularIndeterminate } from "@/components/MUIs"
+import { ClanTxType } from "@/types"
+import { useParams } from "next/navigation"
+import Link from "next/link"
 type DepositDistributeModalType = "deposit" | "distribute" | undefined
 export default function Page() {
-  const isLeader = true
+  const { clan } = useClan()
+  const { clan: userClan } = useUser()
+  const isLeader = useMemo(() => userClan?.role === "owner" && userClan?.clanId === clan?._id, [userClan])
   const [modalMode, setModalMode] = useState<DepositDistributeModalType>(undefined)
   return (
     <div className="flex flex-col gap-4">
@@ -23,14 +33,16 @@ export default function Page() {
           <div className="h-fit flex flex-col items-center z-30">
             <div className="md:text-2xl leading-8">Total Balance</div>
             <div className="flex gap-2 items-baseline">
-              <div className="text-[#FFE720] text-7xl font-bold">125400</div>
+              <div className="text-[#FFE720] text-7xl font-bold">{clan?.coffer}</div>
               <svg className="w-12 h-12"><use href="#svg-dollar-new" /></svg>
             </div>
             <div className="pt-6 flex gap-2 max-lg:hidden">
-              <div onClick={() => setModalMode("deposit")} className="w-[140px] py-2 px-6 rounded-lg border border-white bg-[#1475E1]/10 flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#1475E1]/30">
-                <svg className="w-5 h-5"><use href="#svg-clan-deposit" /></svg>
-                <span className="text-sm ">Deposit</span>
-              </div>
+              {userClan?.clanId === clan?._id && userClan?.joined === true &&
+                <div onClick={() => setModalMode("deposit")} className="w-[140px] py-2 px-6 rounded-lg border border-white bg-[#1475E1]/10 flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#1475E1]/30">
+                  <svg className="w-5 h-5"><use href="#svg-clan-deposit" /></svg>
+                  <span className="text-sm ">Deposit</span>
+                </div>
+              }
               {
                 isLeader && <div onClick={() => setModalMode("distribute")} className="w-[140px] py-2 px-2 rounded-lg bg-[#1475E1] flex justify-center items-center gap-1 select-none cursor-pointer hover:bg-[#3384e0]">
                   <svg className="w-5 h-5"><use href="#svg-clan-distribute-fund" /></svg>
@@ -42,11 +54,13 @@ export default function Page() {
         </div>
         <div className="absolute z-10 translate-x-[50%] max-sm:hidden"><Image alt="clan-balance-right-decoration" width={566} height={495} src="/clan_balance_right.png" className="shrink-0 w-[565px] h-[495px]" /></div>
       </div>
-      <div className="pt-6 px-4 flex gap-2 w-full lg:hidden z-50">
-        <div onClick={() => setModalMode("deposit")} className="w-full py-2 px-2 rounded-lg border border-white bg-[#1475E1]/10 flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#1475E1]/30">
-          <svg className="w-5 h-5"><use href="#svg-clan-deposit" /></svg>
-          <span className="text-sm ">Deposit</span>
-        </div>
+      <div className="pt-6 px-4 flex gap-2 w-full lg:hidden z-30">
+        {userClan?.clanId === clan?._id && userClan?.joined === true &&
+          <div onClick={() => setModalMode("deposit")} className="w-full py-2 px-2 rounded-lg border border-white bg-[#1475E1]/10 flex justify-center items-center gap-2 select-none cursor-pointer hover:bg-[#1475E1]/30">
+            <svg className="w-5 h-5"><use href="#svg-clan-deposit" /></svg>
+            <span className="text-sm ">Deposit</span>
+          </div>
+        }
         {
           isLeader && <div onClick={() => setModalMode("distribute")} className="w-full py-2 px-2 rounded-lg bg-[#1475E1] flex justify-center items-center gap-1 select-none cursor-pointer hover:bg-[#3384e0]">
             <svg className="w-5 h-5"><use href="#svg-clan-distribute-fund" /></svg>
@@ -63,16 +77,48 @@ export default function Page() {
       <div className="h-2"></div>
       <div className="flex flex-col gap-6 max-md:gap-3">
         <span className="md:text-2xl leading-[42px]">Recent Transactions</span>
-        <div className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl max-md:rounded-lg px-8 py-4 max-md:px-4 max-md:py-2">
-          <div className="flex flex-col gap-2">
-            <span className="md:text-2xl leading-6">Deposit by BetKing</span>
-            <span className="max-md:text-xs">2 hours ago</span>
-          </div>
-          <span className="text-[32px] max-md:text-[18px] font-bold">$45000</span>
-        </div>
+        <ClanTxTable />
       </div>
       {modalMode && <DepositDistributeModal isLeader={isLeader} modalMode={modalMode} setModalMode={setModalMode} />}
-    </div>
+    </div >
+  )
+}
+const ClanTxTable = () => {
+  const { clan } = useClan()
+  const params = useParams()
+  const [clanTxs, setClanTxs] = useState<ClanTxType[]>([])
+  useEffect(() => {
+    axios.get(`/api/clan/${params.clanId}/clantx`, { headers: { token: localStorage.getItem("jwt") } })
+      .then(({ data: { clanTxs } }: { data: { clanTxs: ClanTxType[] } }) => {
+        setClanTxs(clanTxs)
+      })
+  }, [])
+  return (
+    <>
+      {clanTxs.map((clanTx, i) =>
+        <div key={i} className="w-full flex justify-between items-center bg-[#263244]/60 rounded-2xl max-md:rounded-lg px-8 py-4 max-md:px-4 max-md:py-2">
+          <div className="flex flex-col gap-2">
+            <span className="md:text-2xl leading-6">
+              {
+                clanTx.type === "deposit" ? `Deposit by ${clanTx.username}` :
+                  clanTx.type === "tax" ? `Deposit(auto) by ${clanTx.username}` :
+                    clanTx.type === "distribute" ? `Distribute to ${clanTx.username || "all members"}` :
+                      clanTx.type === "stake" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Stake to clan war</LinkToWar> :
+                        clanTx.type === "prize" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Prize for win of war</LinkToWar> :
+                          ""
+              }
+            </span>
+            <span className="max-md:text-xs">{formatAgo(clanTx.timestamp)}</span>
+          </div>
+          <span className="text-[32px] max-md:text-[18px] font-bold">${clanTx.amount.toFixed(2)}</span>
+        </div>
+      )}
+    </>
+  )
+}
+const LinkToWar = ({ children, clanId, warId }: { children: ReactNode, clanId: string, warId: string }) => {
+  return (
+    <Link className="flex gap-2" href={`/clans/${clanId}/wars/${warId}/feed`}>{children} <svg className="w-4 h-4 fill-white"><use href="#svg-new-tab" /></svg></Link>
   )
 }
 const CofferStep = ({ number, content, description }: { number: number, content: string, description: string }) => {
@@ -88,7 +134,7 @@ const CofferStep = ({ number, content, description }: { number: number, content:
         <div className="font-semibold">Step {number}</div>
         <div className="text-xs ">{content}</div>
       </div>
-      <div className="text-xs text-white/80">{description}</div>
+      <div className="text-xs text-white/80 text-center">{description}</div>
     </div>
   )
 }
@@ -121,6 +167,22 @@ const AmountButton = ({ displayAmount, amount, setAmount }: { displayAmount: num
 }
 const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction<DepositDistributeModalType>> }) => {
   const [amount, setAmount] = useState(0)
+  const { balance } = useUser()
+  const { clan, fetchClan } = useClan()
+  const [sending, setSending] = useState(false)
+  const handleDeposit = () => {
+    if (!clan) return
+    if (amount < 0 || amount > balance) return
+    setSending(true)
+    axios.post(`/api/clan/deposit`, { id: clan._id, amount }, { headers: { token: localStorage.getItem("jwt") } })
+      .then(() => {
+        showToast("Deposit succeeded", "success")
+        setView(undefined)
+        fetchClan()
+      }).catch((e) => {
+        showToast(e.response?.statusText || "Unknown Error", "error")
+      }).finally(() => setSending(false))
+  }
   return (
     <>
       <div className="w-full flex justify-between items-center">
@@ -137,7 +199,7 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
             <span className="">My Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
-              <span className="font-bold text-[#FFE720]">125000</span>
+              <span className="font-bold text-[#FFE720]">{balance.toFixed(2)}</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -147,21 +209,49 @@ const DepositPart = ({ setView }: { setView: React.Dispatch<React.SetStateAction
                 <svg className="w-4 h-4"><use href="#svg-dollar-stroke" /></svg>
                 <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="Enter Amount" className="text-sm" />
               </div>
-              <button className="text-xs  p-2 bg-white/30 rounded-sm cursor-pointer">Max</button>
+              <button onClick={() => setAmount(balance)} className="text-xs  p-2 bg-white/30 rounded-sm cursor-pointer">Max</button>
             </div>
             <div className="w-full flex justify-between gap-2">
               {[100, 250, 500, 1000].map((displayAmount, i) => <AmountButton key={i} displayAmount={displayAmount} amount={amount} setAmount={setAmount} />)}
             </div>
           </div>
         </div>
-        <button className="p-4 max-md:p-2 w-full bg-[#1475E1] text-lg max-md:text-sm rounded-lg ">Deposit from Balance</button>
+        {sending ? <CircularIndeterminate /> :
+          <button onClick={handleDeposit} disabled={sending} className="p-4 max-md:p-2 w-full bg-[#1475E1] hover:bg-[#147ee1] text-lg max-md:text-sm rounded-lg cursor-pointer disabled:bg-[#1d3063] disabled:cursor-not-allowed">Deposit from Balance</button>
+        }
       </div>
     </>
   )
 }
 const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAction<DepositDistributeModalType>> }) => {
   const [amount, setAmount] = useState(0)
+  const { members, clan, fetchClan } = useClan()
+  const [sending, setSending] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(members[0].username)
   const [distributeMode, setDistributeMode] = useState<"single" | "all">("single")
+  useEffect(() => {
+    if (distributeMode === "all") {
+      setSelectedMember("")
+    } else {
+      setSelectedMember(members[0].username)
+    }
+  }, [distributeMode])
+  const handleDistribute = () => {
+    if (!clan) return
+    if (amount < 0 || amount > clan.coffer) {
+      showToast("Insufficient balance", "error")
+      return
+    }
+    setSending(true)
+    axios.post(`/api/clan/distribute`, { id: clan._id, selectedMember, amount }, { headers: { token: localStorage.getItem("jwt") } })
+      .then(() => {
+        showToast("Distribute succeeded", "success")
+        setView(undefined)
+        fetchClan()
+      }).catch((e) => {
+        showToast(e.response?.statusText || "Unknown Error", "error")
+      }).finally(() => setSending(false))
+  }
   return (
     <>
       <div className="w-full flex justify-between items-center">
@@ -178,7 +268,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             <span className="">Coffer Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
-              <span className="font-bold text-[#FFE720]">125000</span>
+              <span className="font-bold text-[#FFE720]">{clan?.coffer}</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -203,13 +293,15 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
           {distributeMode === "single" &&
             <div className="flex flex-col gap-2">
               <span className="text-sm ">Select Members</span>
-              <select name="distribute members" id="" className="bg-[#0D111B] border border-white/20 p-2 rounded-lg">
-                <option value="bettor">Bettor</option>
+              <select value={selectedMember} onChange={(e) => { setSelectedMember(e.target.value) }} className="bg-[#0D111B] border border-white/20 p-2 rounded-lg">
+                {members.map((member, i) =>
+                  <option key={i} value={member.username}>{member.username}</option>
+                )}
               </select>
             </div>
           }
           <div className="flex flex-col gap-2">
-            <span className="text-sm ">Amount</span>
+            <span className="text-sm ">Total Distributing Amount</span>
             <div className="bg-[#0D111B] flex justify-between items-center rounded-lg border border-white/20 pl-2 p-1">
               <div className="flex gap-2 items-center">
                 <svg className="w-4 h-4"><use href="#svg-dollar-stroke" /></svg>
@@ -222,7 +314,9 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             </div>
           </div>
         </div>
-        <button className="p-4 max-md:p-2 w-full bg-[#1475E1] text-lg max-md:text-sm rounded-lg">Distribute</button>
+        {sending ? <CircularIndeterminate /> :
+          <button onClick={handleDistribute} disabled={sending} className="p-4 max-md:p-2 w-full bg-[#1475E1] hover:bg-[#147ee1] disabled:bg-[#1d3063] text-lg max-md:text-sm rounded-lg cursor-pointer">Distribute</button>
+        }
       </div>
     </>
   )

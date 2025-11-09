@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import fs from "fs";
 import path from "path";
 export async function GET(request: NextRequest, { params }: { params: any }) {
     const { avatar } = await params;
-    const filePath = path.resolve("avatars", avatar);
+    let filePath = path.resolve("avatars", avatar);
 
     if (!fs.existsSync(filePath)) {
-        return new Response("File not found", { status: 404 });
+        filePath = path.resolve("avatars", "avatar-placeholder.png");
     }
     const fileStream = fs.createReadStream(filePath);
     const webStream = streamToWebReadable(fileStream);

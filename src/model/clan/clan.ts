@@ -1,0 +1,20 @@
+import mongoose from "mongoose";
+import { setSchemaLean } from "..";
+const clanSchema = new mongoose.Schema({
+    title: String,
+    ownerUserName: String,
+    description: String,
+    icon: String,
+    coffer: Number,
+    xp: Number,
+    level: Number,
+    wins: {
+        type: Number,
+        index: true,
+    },
+    bets: Number,
+});
+
+setSchemaLean(clanSchema)
+const clanModel = mongoose.models.Clan || mongoose.model("Clan", clanSchema);
+export default clanModel;

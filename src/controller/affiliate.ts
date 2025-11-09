@@ -6,10 +6,10 @@ import mongoose from "mongoose";
 export async function getAffiliates({ role, referrer }: { role: string, referrer: string }) {
     await connectMongoDB()
     try {
-        const deposit = await affiliateRewardModel.find(role === "admin" ? {} : { referrer }).sort({ startsAt: -1 })
-        return deposit
+        const affRewards = await affiliateRewardModel.find(role === "admin" ? {} : { referrer }).sort({ startsAt: -1 })
+        return affRewards
     } catch (error) {
-        console.error('Error fetching deposit:', error);
+        console.error('Error fetching affiliate rewards:', error);
         throw error
     }
 }

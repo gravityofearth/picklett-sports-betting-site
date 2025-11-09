@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from ".";
 const lineSchema = new mongoose.Schema({
     question: {
         type: String,
@@ -38,6 +39,7 @@ const lineSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['pending', 'yes', 'no'],
+        index: true,
     },
     openedBy: {
         type: String,
@@ -47,5 +49,6 @@ const lineSchema = new mongoose.Schema({
     timestamps: true, // Adds createdAt and updatedAt
 });
 
+setSchemaLean(lineSchema)
 const lineModel = mongoose.models.Line || mongoose.model("Line", lineSchema);
 export default lineModel;

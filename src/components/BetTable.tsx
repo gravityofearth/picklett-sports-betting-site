@@ -1,7 +1,7 @@
 "use client"
 
 import { BetType } from "@/types"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Pagination from "./Pagination"
 
 const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], username: string, adminPage?: boolean }) => {
@@ -9,7 +9,9 @@ const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], user
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(10)
     const [filter, setFilter] = useState<"active" | "settled">("active")
-    const filteredUserBets = userBets.filter(v => (adminPage || v.username === username) && (filter === "active" ? v.status === "pending" : (v.status === "win" || v.status === "lose")))
+    const activeBets = userBets.filter(v => (adminPage || v.username === username) && v.status === "pending")
+    const settledBets = userBets.filter(v => (adminPage || v.username === username) && v.status !== "pending")
+    const filteredUserBets = useMemo(() => filter === "active" ? activeBets : settledBets, [filter])
     const totalPages = Math.ceil(filteredUserBets.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
@@ -20,8 +22,8 @@ const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], user
     return (
         <>
             <div className="flex gap-2 max-md:flex-col">
-                <button onClick={() => setFilter("active")} className={`p-2 w-40 rounded-lg border cursor-pointer select-none ${filter === "active" ? "bg-[#1475E1] border-[#1475E1]" : "bg-white/10 border-white"}`}>Active Bets</button>
-                <button onClick={() => setFilter("settled")} className={`p-2 w-40 rounded-lg border cursor-pointer select-none ${filter === "settled" ? "bg-[#1475E1] border-[#1475E1]" : "bg-white/10 border-white"}`}>Settled Bets</button>
+                <button onClick={() => setFilter("active")} className={`p-2 w-40 rounded-lg border cursor-pointer select-none ${filter === "active" ? "bg-[#1475E1] border-[#1475E1]" : "bg-white/10 border-white"}`}>Active Bets ({activeBets.length})</button>
+                <button onClick={() => setFilter("settled")} className={`p-2 w-40 rounded-lg border cursor-pointer select-none ${filter === "settled" ? "bg-[#1475E1] border-[#1475E1]" : "bg-white/10 border-white"}`}>Settled Bets ({settledBets.length})</button>
             </div>
             <div className="p-4 rounded-3xl bg-[#0E1B2F]">
                 <div className="flex flex-col gap-6">

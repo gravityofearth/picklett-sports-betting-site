@@ -174,7 +174,7 @@ async function transferSOL({ address, amount_lamp }: { address: string, amount_l
 export async function findWithdraw(username: string) {
     await connectMongoDB()
     const matchStage = username === "admin" ? {} : { username }
-    const withdraw = await withdrawModel.find(matchStage).sort({ createdAt: -1 })
+    const withdraw = await withdrawModel.find(matchStage).sort({ _id: -1 })
     return withdraw
 }
 export async function getWithdrawById(id: string) {
@@ -223,7 +223,16 @@ export async function postprocessWithdraw({ id, tx, network }: { id: string, tx:
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const withdraw = await withdrawModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { result: "success", tx } }, { new: true }).session(session)
+        const withdraw = await withdrawModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(id),
+            {
+                $set: {
+                    result: "success",
+                    tx
+                }
+            },
+            { new: true, session }
+        )
         const user = await userModel.findOne({ username: withdraw.username }).session(session);
         const updatedUser = await increaseBalance(withdraw.username, -withdraw.amount, session);
         const newBalance = new balanceTransactionModel({

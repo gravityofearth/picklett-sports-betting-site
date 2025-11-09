@@ -70,7 +70,7 @@ function useDebounceEffect(fn: () => void, waitTime: number, deps: DependencyLis
         }
     }, deps)
 }
-export default function AvatarCrop({ params: { avatarFile, closeModal } }: { params: { avatarFile: File, closeModal: () => void } }) {
+export default function AvatarCrop({ params: { avatarFile, closeModal, callback, api } }: { params: { avatarFile: File, closeModal: () => void, callback: (data: any) => void, api: string } }) {
     const [step, setStep] = useState(1)
     const { setToken } = useUser()
     const [sendingRequest, setSendingRequest] = useState(false)
@@ -128,7 +128,7 @@ export default function AvatarCrop({ params: { avatarFile, closeModal } }: { par
         const formData = new FormData()
         formData.append('file', blob, "file.jpg");
         setSendingRequest(true)
-        axios.post("/api/profile/avatar", formData, {
+        axios.post(api, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 token: localStorage.getItem("jwt")
@@ -140,8 +140,8 @@ export default function AvatarCrop({ params: { avatarFile, closeModal } }: { par
                 setUploadProgress(percentCompleted)
                 console.log(`Upload progress: ${percentCompleted}% (${loaded} bytes of ${total} bytes)`);
             }
-        }).then(({ data: { token } }) => {
-            setToken(token)
+        }).then(({ data }) => {
+            callback(data)
             closeModal()
         }).catch((e: AxiosError) => {
             showToast(e.response?.statusText || "Unknown Error", "error")

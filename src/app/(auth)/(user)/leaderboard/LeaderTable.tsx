@@ -1,7 +1,7 @@
 "use client"
 
 import { LeaderType } from "@/types"
-import { useState } from "react" 
+import { useState } from "react"
 import Image from "next/image"
 import Pagination from "@/components/Pagination"
 
@@ -58,8 +58,8 @@ const LeaderTable = ({ leaders, adminPage }: { leaders: LeaderType[], adminPage?
                                     <svg className="w-4 h-4"><use href="#svg-fire" /></svg>
                                     {leader.winstreak}
                                 </td>
-                                <td className="py-6 px-2">{leader.totalWins}</td>
-                                <td className="pl-1 py-5 pr-5 text-[#05DF72]">-</td>
+                                <td className="py-6 px-2">{leader.wins}</td>
+                                <td className="pl-1 py-5 pr-5 text-[#05DF72]">${Math.round(leader.earns * 100) / 100}</td>
                             </tr>
                         ))}
                     </tbody>

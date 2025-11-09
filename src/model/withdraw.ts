@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { setSchemaLean } from ".";
 const withdrawSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -37,5 +38,6 @@ const withdrawSchema = new mongoose.Schema({
     timestamps: true, // Adds createdAt and updatedAt
 });
 
+setSchemaLean(withdrawSchema)
 const withdrawModel = mongoose.models.Withdraw || mongoose.model("Withdraw", withdrawSchema);
 export default withdrawModel;

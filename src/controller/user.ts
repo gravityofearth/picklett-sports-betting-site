@@ -1,8 +1,10 @@
-import userModel from "@/model/user";
+import userModel, { correctPassword } from "@/model/user";
 import bcrypt from "bcryptjs";
 import { generateReferralCode } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
+import clanWarModel from "@/model/clan/clanwar";
+import clanModel from "@/model/clan/clan";
 
 export async function createUser({ username, password, refby }: { username: string, password: string, refby: string }) {
     await connectMongoDB()
@@ -122,7 +124,7 @@ export async function updatePassword({ username, currentPassword, newPassword }:
     await connectMongoDB()
     try {
         const user = await userModel.findOne({ username }).select('+password');
-        const isPasswordCorrect = await user.correctPassword(currentPassword, user.password);
+        const isPasswordCorrect = await correctPassword(currentPassword, user.password);
         if (!isPasswordCorrect) {
             throw new Error('Your credential is not correct');
         }
@@ -139,21 +141,25 @@ export async function updatePassword({ username, currentPassword, newPassword }:
 export async function authenticateUser(username: string, password: string) {
     await connectMongoDB()
     try {
-        const user = await userModel.findOne({ username }).select('+password');
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            { lastLogin: new Date() },
+            {
+                new: true,
+                runValidators: false,
+                select: '+password'
+            }
+        );
 
         if (!user) {
             throw new Error('Your credential is not correct');
         }
 
-        const isPasswordCorrect = await user.correctPassword(password, user.password);
+        const isPasswordCorrect = await correctPassword(password, user.password);
 
         if (!isPasswordCorrect) {
             throw new Error('Your credential is not correct');
         }
-
-        // Update last login
-        user.lastLogin = new Date();
-        await user.save({ validateBeforeSave: false });
 
         // Remove password from output
         user.password = undefined;
@@ -189,61 +195,73 @@ export async function increaseBalance(username: string, amount: number, session:
         throw error
     }
 }
+export async function trackBalanceAndBets({ username, betId, amount, session }: { username: string, betId: mongoose.Types.ObjectId, amount: number, session: mongoose.mongo.ClientSession }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            {
+                $inc: {
+                    balance: amount,
+                    bets: 1,
+                }
+            },
+            {
+                new: true, // Return updated document
+                session,
+            }
+        )
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const clanId: string = user.clan.clanId
+        await clanModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(clanId),
+            {
+                $inc: { bets: 1 }
+            },
+            { new: true, session }
+        )
+        await clanWarModel.updateMany(
+            {
+                startsAt: {
+                    $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
+                    $lt: new Date().getTime(),
+                },
+                'clans.clanId': clanId,
+            },
+            {
+                $inc: {
+                    'clans.$[clan].bets': 1,
+                },
+                $addToSet: {
+                    "clans.$[clan].betIds": betId
+                }
+            },
+            // Array Filters: Specify which elements in the 'clans' array to update
+            {
+                arrayFilters: [
+                    {
+                        'clan.clanId': clanId,
+                    },
+                ],
+                session
+            }
+        )
+
+        return user;
+    } catch (error) {
+        console.error('Error updating bets&balance:', error);
+        throw error
+    }
+}
 export async function genLeaders() {
     await connectMongoDB()
-    const session = await mongoose.startSession();
-    session.startTransaction();
     try {
-        const leaders = await userModel.aggregate([
-            { $match: { winstreak: { $gte: 2 } } },
-            {
-                $lookup: {
-                    from: "bets",
-                    let: {
-                        localUsername: "$username"
-                    },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$username", "$$localUsername"] },
-                                        { $eq: ["$status", "win"] }
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    as: "betData"
-                }
-            },
-            {
-                $addFields: {
-                    totalWins: { $size: "$betData" }
-                }
-            },
-            {
-                $sort: {
-                    winstreak: -1
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    totalWins: 1,
-                    username: 1,
-                    winstreak: 1,
-                    avatar: 1,
-                }
-            }
-        ]).session(session);
-        await session.commitTransaction();
+        const leaders = await userModel.find({ winstreak: { $gte: 2 } }).select("username winstreak avatar wins earns");
         return leaders
     } catch (error) {
         console.error('Error creating line:', error);
-        await session.abortTransaction();
         throw error
-    } finally {
-        session.endSession();
     }
 }
