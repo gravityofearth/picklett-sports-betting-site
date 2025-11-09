@@ -79,8 +79,8 @@ export default function Page() {
           </div>
           {userClan && userClan.joined && userClan.role === "owner" && clan?._id === userClan.clanId &&
             <div className="flex gap-2 w-full">
-              <button className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#1475E1] rounded-lg w-full cursor-pointer hover:bg-[#3e87da]">Approve</button>
-              <button className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#FEE2E2] rounded-lg w-full cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444]">Reject</button>
+              <button disabled={sending} onClick={() => handleRequest(member.username, true)} className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#1475E1] rounded-lg w-full cursor-pointer hover:bg-[#3e87da] disabled:cursor-not-allowed">Approve</button>
+              <button disabled={sending} onClick={() => handleRequest(member.username, false)} className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#FEE2E2] rounded-lg w-full cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444] disabled:cursor-not-allowed">Reject</button>
             </div>
           }
         </div>
