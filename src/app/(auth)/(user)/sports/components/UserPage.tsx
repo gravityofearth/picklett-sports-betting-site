@@ -113,7 +113,7 @@ export default function UserPage({ params: { activeWars, balance, winstreak, odd
                     </div>
                 </div>
                 <div className="w-full flex flex-col gap-5">
-                    <div className="w-full overflow-x-auto flex gap-2 flex-wrap">
+                    <div className="w-full overflow-x-auto flex gap-2">
                         <SportsTab selected={sportsFilter === ""} onClick={() => { setSportsFilter(""), goToPage(1) }} icon="all-sports" category="All Sports" count={lines.length} />
                         <SportsTab selected={sportsFilter === "Basketball"} onClick={() => { setSportsFilter("Basketball"), goToPage(1) }} icon="basketball" category="Basketball" count={lines.filter(v => v.sports === "Basketball").length} />
                         <SportsTab selected={sportsFilter === "Soccer"} onClick={() => { setSportsFilter("Soccer"), goToPage(1) }} icon="soccer" category="Soccer" count={lines.filter(v => v.sports === "Soccer").length} />

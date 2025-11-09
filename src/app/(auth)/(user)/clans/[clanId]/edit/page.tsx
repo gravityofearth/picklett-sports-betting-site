@@ -1,23 +1,35 @@
 "use client"
 
 import AvatarCrop from "@/components/AvatarCrop"
-import { useUser } from "@/store"
+import { ClanType } from "@/types"
 import { showToast } from "@/utils"
 import axios from "axios"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Dispatch, SetStateAction, useRef, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 
 export default function Home() {
+  const params = useParams()
   const router = useRouter()
-  const { balance } = useUser()
   const [sending, setSending] = useState(false)
   const [isError, setError] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File>()
-  const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [icon, setIcon] = useState("")
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  useEffect(() => {
+    if (!isClient) return
+    if (!localStorage.getItem("jwt")) return
+    axios.get(`/api/clan/${params.clanId}`, { headers: { token: localStorage.getItem("jwt") } })
+      .then(({ data: { clan: { icon, description } } }: { data: { clan: ClanType } }) => {
+        setIcon(icon)
+        setDescription(description)
+      })
+  }, [isClient])
   const file_ref = useRef<HTMLInputElement>(null)
   const handleAvatarClick = () => {
     setError(false)
@@ -31,11 +43,7 @@ export default function Home() {
     setAvatarFile(files[0])
     event.target.value = ""
   }
-  const handleCreate = () => {
-    if (title.trim() === "") {
-      showToast("Enter clan name", "warn")
-      return
-    }
+  const handleEdit = () => {
     if (description.trim() === "") {
       showToast("Enter clan description", "warn")
       return
@@ -45,9 +53,9 @@ export default function Home() {
       return
     }
     setSending(true)
-    axios.post(`/api/clan/create`, { title, description, icon }, { headers: { token: localStorage.getItem("jwt") } })
+    axios.put(`/api/clan/${params.clanId}/edit`, { description, icon }, { headers: { token: localStorage.getItem("jwt") } })
       .then(() => {
-        showToast("Created clan successfully!", "success")
+        showToast("Edit clan info successfully!", "success")
         router.push("/clans")
       }).catch((e) => {
         showToast(e.response?.statusText || "Unknown Error", "error")
@@ -69,17 +77,12 @@ export default function Home() {
       }
       <div className="w-full max-w-3xl flex flex-col gap-6 max-md:text-xs">
         <div className="flex flex-col">
-          <div className="text-xl ">Create Your Clan</div>
-          <div className="text-white/80">Build your team and start competing</div>
+          <div className="text-xl ">Edit Clan Info</div>
         </div>
-        <div className="rounded-xl border border-white/20 p-3 flex justify-between gap-4 bg-[#1C2534]">
-          <div className="flex flex-col gap-2">
-            <div className="">Clan Creation Fee: $50</div>
-            <div className="text-sm text-white/80">As the clan leader, you'll be able to invite members, manage the coffer, and challenge other clans to wars.</div>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="text-sm text-nowrap">Your Balance</div>
-            <div className="text font-bold">$ {balance.toFixed(2)}</div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-2 col-span-2">
+            <div>Clan Name </div>
+            <span className="w-full px-4 py-3 border border-white/20 rounded-lg" >sdgsdg </span>
           </div>
         </div>
         <div className="flex flex-col gap-2">
@@ -100,49 +103,14 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col gap-2 col-span-2">
-            <div>Clan Name <span className="text-red-500">*</span></div>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Enter clan name (3-20 characters)" />
-            <div className="text-sm text-white/70">0/20 characters</div>
-          </div>
-        </div>
         <div className="flex flex-col gap-2">
           <div>Clan Description <span className="text-red-500">*</span></div>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Describe your clan’s goals, requirements, and playstyle..." />
           <div className="text-sm text-white/70">0/200 characters</div>
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-start">
-            <div>Social Links</div>
-            <div className="flex gap-2 items-center rounded-lg border border-[#F59E0B] bg-[#F59E0B]/8 p-2">
-              <svg className="w-4 h-4"><use href="#svg-lock-new"></use></svg>
-              <span className="text-[#F59E0B]">Unload at Level 5</span>
-            </div>
-          </div>
-          <div className="p-4 border border-white/20 rounded-2xl text-white/80 bg-[#1C2534]">Social links will be available once your clan reachesRank 5. Earn XP through wars and member activity to unlock this feature!</div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex gap-2 items-center">
-              <svg className="w-[30px] h-6"><use href="#svg-discord"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
-            </div>
-            <div className="flex gap-2 items-center">
-              <svg className="w-[30px] h-6"><use href="#svg-x"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
-            </div>
-            <div className="flex gap-2 items-center">
-              <svg className="w-[30px] h-6"><use href="#svg-twitch"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
-            </div>
-            <div className="flex gap-2 items-center">
-              <svg className="w-[30px] h-6"><use href="#svg-youtube"></use></svg>
-              <input type="text" className="w-full p-4 rounded-lg border border-white/20 text-sm" disabled />
-            </div>
-          </div>
-        </div>
         <div className="grid grid-cols-2 gap-4">
-          <Link href="." className="w-full bg-[#0D111B] py-4 max-md:py-3 rounded-lg border border-white/20 cursor-pointer hover:bg-white/40 text-center">Cancel</Link>
-          <button onClick={handleCreate} disabled={sending || balance < 50} className="w-full bg-[#1475E1] py-4 max-md:py-3 rounded-lg border border-[#1475E1] cursor-pointer hover:bg-[#5999e2] disabled:cursor-not-allowed disabled:bg-gray-800">Create Clan ($50)</button>
+          <Link href="./members" className="w-full bg-[#0D111B] py-4 max-md:py-3 rounded-lg border border-white/20 cursor-pointer hover:bg-white/40 text-center">Cancel</Link>
+          <button onClick={handleEdit} disabled={sending} className="w-full bg-[#1475E1] py-4 max-md:py-3 rounded-lg border border-[#1475E1] cursor-pointer hover:bg-[#5999e2] disabled:cursor-not-allowed disabled:bg-gray-800">Edit Clan</button>
         </div>
       </div>
     </div>

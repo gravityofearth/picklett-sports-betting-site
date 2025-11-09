@@ -66,19 +66,25 @@ export default function Page() {
           </tbody>
         </table>
       </div>
-      <div className="md:hidden p-6 max-md:p-3 rounded-2xl max-md:rounded-lg w-full bg-[#1475E1]/10 flex flex-col gap-4">
-        <div className="text-[32px] leading-12 max-md:text-[18px] max-md:leading-4">Elite Bettors</div>
-        <div className="flex justify-between">
-          <div className="text-sm flex gap-1"><span className="text-white/70">Total Bets </span><span>245</span></div>
-          <div className="text-sm flex gap-1"><span className="text-white/70">Earning </span><span>$1,850</span></div>
-          <div className="text-sm flex gap-1"><span className="text-white/70">Win rate </span><span>64.2%</span></div>
+      {pendingMembers.map((member, i) =>
+        <div key={i} className="md:hidden p-6 max-md:p-3 rounded-2xl max-md:rounded-lg w-full bg-[#1475E1]/10 flex flex-col gap-4">
+          <div className="text-[32px] leading-12 max-md:text-[18px] max-md:leading-4">{member.username}</div>
+          <div className="flex justify-between gap-4">
+            <div className="text-sm flex gap-1 items-center"><span className="text-white/70">Total Bets </span><span>{member.bets}</span></div>
+            <div className="text-sm flex gap-1 items-center"><span className="text-white/70">Earning </span><span>${member.earns}</span></div>
+            <div className="text-sm flex gap-1 items-center"><span className="text-white/70">Win rate </span><span>{getWinRate({ wins: member.wins, bets: member.bets })}</span></div>
+          </div>
+          <div className="text-sm text-center w-full"><span className="text-white/70">Requested Time </span>
+            <span>{new Date(member.clan.timestamp).toLocaleString("en-US", { year: "numeric", month: "numeric", day: "numeric", hour: 'numeric', minute: 'numeric', hour12: true })}</span>
+          </div>
+          {userClan && userClan.joined && userClan.role === "owner" && clan?._id === userClan.clanId &&
+            <div className="flex gap-2 w-full">
+              <button className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#1475E1] rounded-lg w-full cursor-pointer hover:bg-[#3e87da]">Approve</button>
+              <button className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#FEE2E2] rounded-lg w-full cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444]">Reject</button>
+            </div>
+          }
         </div>
-        <div className="text-sm text-center w-full"><span className="text-white/70">Requested Time </span><span>2025-10-20 10:30</span></div>
-        <div className="flex gap-2 w-full">
-          <button className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#1475E1] rounded-lg w-full cursor-pointer hover:bg-[#3e87da]">Approve</button>
-          <button className="py-3 px-6 max-md:p-2 max-md:text-sm bg-[#FEE2E2] rounded-lg w-full cursor-pointer hover:bg-[#f8c7c7] text-[#EF4444]">Reject</button>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

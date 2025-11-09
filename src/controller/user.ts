@@ -19,30 +19,7 @@ export async function createUser({ username, password, refby }: { username: stri
             role: "user",
             ref: generateReferralCode(),
             refby,
-            // firstName: 'John',
-            // lastName: 'Doe',
-            // email: 'john.doe@example.com',
-            // bio: 'Software developer passionate about web technologies',
-            // dateOfBirth: new Date('1990-05-15'),
-            // gender: 'male',
-            // phoneNumber: '+1-555-0123',
-            // address: {
-            //     street: '123 Main St',
-            //     city: 'New York',
-            //     state: 'NY',
-            //     country: 'USA',
-            //     zipCode: '10001'
-            // },
-            // socialLinks: {
-            //     website: 'https://johndoe.dev',
-            //     github: 'johndoe123',
-            //     linkedin: 'john-doe-dev'
-            // },
-            // preferences: {
-            //     theme: 'dark',
-            //     language: 'en',
-            //     emailNotifications: true
-            // }
+            bets: 0, wins: 0, earns: 0,
         });
 
         const savedUser = await newUser.save();

@@ -91,10 +91,15 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                 <div className="w-full flex flex-col gap-2">
                   <div className="w-full flex justify-between items-center">
                     <div className="text-[40px] max-md:text-2xl">{clan.title}</div>
-                    <JoinButton params={{
-                      className: `max-md:hidden`,
-                      handleClan, isJoined, isMatchingClan, sending
-                    }} />
+                    <div className="flex items-center gap-2">
+                      {isMatchingClan === isJoined && userClan?.role === "owner" &&
+                        <Link href="./edit" className="bg-[#1475E1] px-6 py-4 max-md:px-4 max-md:py-2 max-md:text-[14px] rounded-lg text-[18px]">Edit Clan</Link>
+                      }
+                      <JoinButton params={{
+                        className: `max-md:hidden`,
+                        handleClan, isJoined, isMatchingClan, sending
+                      }} />
+                    </div>
                   </div>
                   <div className="flex gap-4 items-center">
                     <div className="flex gap-2 items-center">

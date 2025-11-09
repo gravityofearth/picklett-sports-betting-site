@@ -7,7 +7,8 @@ export async function POST(request: NextRequest) {
   try {
     const { title, description, icon } = await request.json()
     const token = request.headers.get('token') || '';
-    const { username: ownerUserName }: any = jwt.verify(token, JWT_SECRET)
+    const { username: ownerUserName, clan }: any = jwt.verify(token, JWT_SECRET)
+    if (clan) return NextResponse.json({ error: "You are in a clan now" }, { status: 400, statusText: "You are in a clan now" })
     await createClan({ title, description, icon, ownerUserName })
     return NextResponse.json("OK", { status: 201 })
   } catch (error: any) {

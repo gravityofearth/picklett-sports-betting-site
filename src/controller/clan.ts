@@ -61,6 +61,23 @@ export async function createClan({ title, ownerUserName, description, icon }: { 
         session.endSession()
     }
 }
+export async function editClan({ description, icon, clanId }: { description: string, icon: string, clanId: string }) {
+    await connectMongoDB()
+    try {
+        const clans = await clanModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(clanId),
+            {
+                $set: {
+                    description, icon
+                }
+            }
+        )
+        return clans
+    } catch (error) {
+        console.error('Error finding clans:', error)
+        throw error
+    }
+}
 export async function findClans(filter: any) {
     await connectMongoDB()
     try {
