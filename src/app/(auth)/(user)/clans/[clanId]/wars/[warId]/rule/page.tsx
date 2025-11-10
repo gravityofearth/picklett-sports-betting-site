@@ -14,7 +14,7 @@ export default function Page() {
     </div>
   )
 }
-const RuleCard = ({ title, description, img }: { title: string, description: string, img: string }) => {
+export const RuleCard = ({ title, description, img }: { title: string, description: string, img: string }) => {
   return (
     <div className="relative w-full h-[200px] rounded-2xl bg-linear-to-b from-[#1475E1] to-[#1475E1]/40 overflow-hidden" >
       <Image alt="clan-war-rule-banner" width={185} height={185} src={img} className="absolute -right-10 -top-10" />
