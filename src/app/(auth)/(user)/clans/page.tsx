@@ -46,10 +46,10 @@ export default function ClansPage() {
             <div className="text-sm max-md:text-xs text-[#F59E0B]">
               <p>
                 <span className="font-bold">Join or build your own clan</span> to unlock shared
-                <Link href={""} className="italic underline"> global perks</Link>,
+                <Link href="/clans/info" className="italic underline"> global perks</Link>,
                 boosted odds, and exclusive tournaments.
               </p>
-              <p>Each time you win a bet, <span className="font-bold">0.1% of your winnings goes to your clan’s coffer</span> — fueling bigger rewards for everyone.</p>
+              <p>Each time you win a bet, <span className="font-bold">0.1% of your winnings goes to your clan's coffer</span> — fueling bigger rewards for everyone.</p>
               <p><span className="font-bold">Level up together</span> and enter epic Clan Wars — from 24-hour skirmishes to week-long battles for massive prize pools.</p>
             </div>
           </div>
