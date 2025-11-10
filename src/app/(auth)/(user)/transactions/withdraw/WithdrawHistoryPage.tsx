@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils"
 import WithdrawTable from "@/components/WithdrawTable"
 import { WithdrawType } from "@/types"
-import SumCard from "@/components/SumCard"
 import { redirect } from "next/navigation"
+import { SumCard } from "@/components/Cards"
 
 export default async function WithdrawHistoryPage() {
   const cookieStore = await cookies()

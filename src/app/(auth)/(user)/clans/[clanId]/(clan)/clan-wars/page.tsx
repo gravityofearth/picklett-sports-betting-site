@@ -11,7 +11,7 @@ import { getWinRate, showToast } from "@/utils"
 import { useUser } from "@/store"
 import { useParams } from "next/navigation"
 import { CircularIndeterminate } from "@/components/MUIs"
-import { RuleCard } from "../../wars/[warId]/rule/page"
+import { RuleCard } from "@/components/Cards"
 export default function Page() {
   const params = useParams()
   const [showModal, setShowModal] = useState(false)

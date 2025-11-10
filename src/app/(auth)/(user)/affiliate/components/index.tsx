@@ -1,9 +1,9 @@
 "use client"
-import SumCard from "@/components/SumCard"
 import { svgCopy, svgCopyOk } from "@/components/SVG"
 import { AffiliateRewardType } from "@/types"
 import { useState } from "react"
 import AffiliateRewardTable from "./table"
+import { SumCard } from "@/components/Cards"
 export default function AffiliatePage({ params: { rewards, ref, role } }: {
     params: { rewards: AffiliateRewardType[], ref: string, role: string }
 }) {

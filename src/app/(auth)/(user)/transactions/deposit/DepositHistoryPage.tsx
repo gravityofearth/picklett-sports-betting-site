@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@/utils"
 import { DepositType } from "@/types"
 import DepositTable from "@/components/DepositTable"
-import SumCard from "@/components/SumCard"
 import { redirect } from "next/navigation"
+import { SumCard } from "@/components/Cards"
 
 export default async function DepositHistoryPage() {
   const cookieStore = await cookies()
