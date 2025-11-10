@@ -97,6 +97,10 @@ export default function ClansPage() {
                         <svg className="w-6 h-6"><use href="#svg-clan-war" /></svg>
                         <span className=" text-white/80"> {clan.wins} wins</span>
                       </div>
+                      <div className="flex gap-2 items-center">
+                        <svg className="w-6 h-6"><use href="#svg-clan-level" /></svg>
+                        <span className=" text-white/80">{clan.level} Level</span>
+                      </div>
                     </div>
                   </div>
                 </div>

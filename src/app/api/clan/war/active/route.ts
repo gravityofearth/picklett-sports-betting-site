@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
     try {
         const token = request.headers.get('token') || '';
-        const { clan }: any = jwt.verify(token, JWT_SECRET)
+        const { username, clan }: any = jwt.verify(token, JWT_SECRET)
 
         const wars = clan?.joined ?
             await findWars({
@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
                     $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
                     $lt: new Date().getTime()
                 },
-                "clans.clanId": new mongoose.Types.ObjectId(clan.clanId as string)
+                "clans.clanId": new mongoose.Types.ObjectId(clan.clanId as string),
+                "clans.members": username,
             }) :
             []
         return NextResponse.json({ wars }, { status: 200 });

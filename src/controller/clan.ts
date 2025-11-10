@@ -166,13 +166,21 @@ export async function operateClanJoin({ username, id, isApproved }: { username: 
     await connectMongoDB()
     try {
         await userModel.findOneAndUpdate(
-            { username, "clan.clanId": id }, // Find by username and matching clanId
+            { username, "clan.clanId": id },
             isApproved ?
                 { $set: { "clan.joined": true } }
                 :
                 { $unset: { clan: "" } },
             { new: true }
         )
+        if (isApproved) {
+            await clanModel.findByIdAndUpdate(
+                new mongoose.Types.ObjectId(id),
+                {
+                    $set: { level: 2 }
+                }
+            )
+        }
     } catch (error) {
         console.error('Error joining clan:', error)
         throw error
@@ -590,7 +598,7 @@ export async function joinWar({ warId, clanId, members, startsAt, stake }: { war
         await newClanTx.save({ session })
 
         await session.commitTransaction()
-        if (startsAt > 0) await scheduleJob(startsAt + 24 * 60 * 60 * 1000, warId)
+        if (startsAt > 0) await scheduleJob(startsAt + 24 * 60 * 60 * 1000 + 60 * 1000, { warId })
     } catch (error) {
         console.error('Error joining war:', error)
         await session.abortTransaction()
@@ -605,7 +613,8 @@ export async function rewardPrizeForEndedWar(job: any) {
     session.startTransaction()
     try {
         const { warId }: { warId: string } = job
-        const { prize, clans } = await clanWarModel.findById(new mongoose.Types.ObjectId(warId)).session(session)
+        const { prize, clans, startsAt } = await clanWarModel.findById(new mongoose.Types.ObjectId(warId)).session(session)
+        if (new Date().getTime() < startsAt + 24 * 60 * 60 * 1000) throw new Error("Clan War Not Ended")
         clans.sort((b: any, a: any) => a.wins - b.wins)
         const wonClan = clans[0]
         if (wonClan.wins === clans[1].wins) {

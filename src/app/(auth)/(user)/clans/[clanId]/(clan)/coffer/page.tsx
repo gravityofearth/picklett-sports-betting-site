@@ -75,7 +75,7 @@ export default function Page() {
         <CofferStep number={4} content="Share Rewards" description="Leaders distribute winnings to members" />
       </div>
       <div className="h-2"></div>
-      <div className="flex flex-col gap-6 max-md:gap-3">
+      <div className="flex flex-col gap-6 max-md:gap-3 text-left">
         <span className="md:text-2xl leading-[42px]">Recent Transactions</span>
         <ClanTxTable />
       </div>
@@ -101,7 +101,7 @@ const ClanTxTable = () => {
             <span className="md:text-2xl leading-6">
               {
                 clanTx.type === "deposit" ? `Deposit by ${clanTx.username}` :
-                  clanTx.type === "tax" ? `Deposit(auto) by ${clanTx.username}` :
+                  clanTx.type === "tax" ? `Deposit(tax) by ${clanTx.username}` :
                     clanTx.type === "distribute" ? `Distribute to ${clanTx.username || "all members"}` :
                       clanTx.type === "stake" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Stake to clan war</LinkToWar> :
                         clanTx.type === "prize" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Prize for win of war</LinkToWar> :
@@ -110,7 +110,7 @@ const ClanTxTable = () => {
             </span>
             <span className="max-md:text-xs">{formatAgo(clanTx.timestamp)}</span>
           </div>
-          <span className="text-[32px] max-md:text-[18px] font-bold">${clanTx.amount.toFixed(2)}</span>
+          <span className="text-[32px] max-md:text-[18px] font-bold">${clanTx.amount.toFixed(3)}</span>
         </div>
       )}
     </>

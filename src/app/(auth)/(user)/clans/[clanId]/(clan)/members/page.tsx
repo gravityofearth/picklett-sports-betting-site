@@ -105,7 +105,7 @@ const KickModal = ({ username, onConfirm, close, disabled }: { username: string,
       <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
       <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
         <svg className="w-10 h-10 stroke-[#EF4444]"><use href="#svg-warning-new" /></svg>
-        <span className="text-2xl text-[#EF4444]">Are you sure you want to remove?</span>
+        <span className="text-2xl text-[#EF4444] text-center">Are you sure you want to remove?</span>
         <span className="text-white/80 text-center">Are you sure you want to remove "{username}" from the clan? This action cannot be undone.</span>
         <div className="flex gap-4">
           {disabled ? <CircularIndeterminate /> :

@@ -28,6 +28,7 @@ async function connectMongoDB() {
     cached.conn = await cached.promise;
     await Scheduler.init({ db: { address: MONGO_URI } }, { useLock: true });
     await Scheduler.rescheduleJobs(rewardPrizeForEndedWar);
+    console.log("Scheduler.rescheduleJobs")
     return cached.conn;
 }
 

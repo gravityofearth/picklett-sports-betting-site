@@ -10,6 +10,7 @@ import balanceTransactionModel from "@/model/balanceTransaction";
 import { decodeEntities } from "@/utils";
 import clanModel from "@/model/clan/clan";
 import clanWarModel from "@/model/clan/clanwar";
+import clanTxModel from "@/model/clan/clantx";
 export async function createLine({ eventId, oddsId, question, event, league, sports, yes, no, endsAt, result, openedBy }: { eventId?: string, oddsId?: string, question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
     await connectMongoDB()
     try {
@@ -241,25 +242,6 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
             { session }
         );
 
-        // const winners = await betModel.find({ lineId: new mongoose.Types.ObjectId(lineId), status: "win" })
-        // const groupedWinners = await betModel.aggregate([
-        //     {
-        //         $match: {
-        //             lineId: new mongoose.Types.ObjectId(lineId),
-        //             status: "win"
-        //         }
-        //     },
-        //     {
-        //         $group: {
-        //             _id: "$username",
-        //             bets: { $push: "$$ROOT" },
-        //             totalAmount: { $sum: "$amount" },
-        //             betCount: { $sum: 1 }
-        //         }
-        //     }
-        // ]);
-        // console.log(groupedWinners)
-
         const wonUsers = await betModel.aggregate([
             // Match winning bets for the line
             {
@@ -283,7 +265,6 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                     username: "$_id"
                 }
             },
-            // Lookup current balance before update
             {
                 $lookup: {
                     from: "users",
@@ -293,66 +274,45 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                 }
             },
             {
+                $unwind: {
+                    path: "$currentUser",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
                 $addFields: {
-                    balanceBefore: { $arrayElemAt: ["$currentUser.balance", 0] },
+                    balanceBefore: "$currentUser.balance",
                     balanceAfter: {
                         $add: [
-                            { $arrayElemAt: ["$currentUser.balance", 0] },
+                            "$currentUser.balance",
                             "$totalWinnings"
                         ]
                     }
                 }
-            }
-            // // Create transaction record
-            // {
-            //     $addFields: {
-            //         transaction: {
-            //             username: "$username",
-            //             type: "bet_win",
-            //             amount: "$totalWinnings",
-            //             balanceBefore: { $arrayElemAt: ["$currentUser.balance", 0] },
-            //             balanceAfter: {
-            //                 $add: [
-            //                     { $arrayElemAt: ["$currentUser.balance", 0] },
-            //                     "$totalWinnings"
-            //                 ]
-            //             },
-            //             timestamp: new Date(),
-            //             lineId: lineId
-            //         }
-            //     }
-            // },
-            // // Save transaction log
-            // {
-            //     $merge: {
-            //         into: "balance_transactions",
-            //         whenMatched: "replace",
-            //         whenNotMatched: "insert"
-            //     }
-            // },
-            // // Merge into users collection to update balances
-            // {
-            //     $merge: {
-            //         into: "users", // Your users collection name
-            //         on: "username",
-            //         whenMatched: [
-            //             {
-            //                 $set: {
-            //                     balance: { $add: ["$balance", "$$new.totalWinnings"] }
-            //                 }
-            //             }
-            //         ],
-            //         whenNotMatched: "discard" // Don't create new users
-            //     }
-            // }
+            },
+            {
+                $lookup: {
+                    from: "clans",
+                    localField: "currentUser.clan.clanId",
+                    foreignField: "_id",
+                    as: "currentClan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$currentClan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
         ]).session(session)
         // Create transaction records
+        const getTax = (wonUser: any) => wonUser.currentClan?.level && wonUser.currentClan.level > 1 ? wonUser.earns * 0.001 : 0
         const transactions = wonUsers.map(wonUser => ({
             username: wonUser.username,
             type: "bet_win",
-            amount: wonUser.totalWinnings,
+            amount: wonUser.totalWinnings - getTax(wonUser),
             balanceBefore: wonUser.balanceBefore,
-            balanceAfter: wonUser.balanceAfter,
+            balanceAfter: wonUser.balanceAfter - getTax(wonUser),
             timestamp: new Date(),
             lineId: new mongoose.Types.ObjectId(lineId),
             description: `Bet win: on ${winningSide}`
@@ -367,9 +327,10 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                 filter: { username: wonUser.username },
                 update: {
                     $inc: {
-                        balance: wonUser.totalWinnings,
+                        balance: wonUser.totalWinnings - getTax(wonUser),
                         wins: wonUser.wins,
-                        earns: wonUser.earns
+                        earns: wonUser.earns,
+                        "clan.contribution": getTax(wonUser),
                     },
                     $set: { lastUpdated: new Date() }
                 }
@@ -500,13 +461,14 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         if (userUpdates.length > 0) {
             await userModel.bulkWrite(userUpdates, { session });
         }
-        const wonUsersForClan = wonUsers.filter((wonUser) => wonUser.currentUser[0].clan)
+        const wonUsersForClan = wonUsers.filter((wonUser) => wonUser.currentUser.clan)
         const clanUpdates = wonUsersForClan.map(wonUser => ({
             updateOne: {
-                filter: { _id: new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string) },
+                filter: { _id: new mongoose.Types.ObjectId(wonUser.currentUser.clan.clanId as string) },
                 update: {
                     $inc: {
                         wins: wonUser.wins,
+                        coffer: getTax(wonUser),
                     },
                 }
             }
@@ -514,6 +476,16 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
         if (clanUpdates.length > 0) {
             await clanModel.bulkWrite(clanUpdates, { session });
         }
+        const clTxs = wonUsersForClan.filter(wonUser => wonUser.currentClan?.level && wonUser.currentClan.level > 1).map(wonUser => ({
+            clanId: wonUser.currentUser.clan.clanId,
+            type: "tax",
+            timestamp: new Date().getTime(),
+            cofferBefore: wonUser.currentClan.coffer,
+            // cofferAfter,
+            username: wonUser.username,
+            amount: wonUser.earns * 0.001,
+        }));
+        await clanTxModel.insertMany(clTxs, { session });
         const warUpdates = wonUsersForClan.map(wonUser => ({
             updateMany: {
                 filter: {
@@ -521,7 +493,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                         $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
                         $lt: new Date().getTime(),
                     },
-                    'clans.clanId': new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string),
+                    'clans.clanId': new mongoose.Types.ObjectId(wonUser.currentUser.clan.clanId as string),
                 },
                 update: {
                     $inc: {
@@ -530,7 +502,7 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                 },
                 arrayFilters: [
                     {
-                        'clan.clanId': new mongoose.Types.ObjectId(wonUser.currentUser[0].clan.clanId as string),
+                        'clan.clanId': new mongoose.Types.ObjectId(wonUser.currentUser.clan.clanId as string),
                     },
                 ],
             }
