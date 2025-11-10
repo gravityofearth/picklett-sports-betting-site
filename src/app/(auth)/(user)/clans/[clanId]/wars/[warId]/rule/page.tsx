@@ -1,15 +1,10 @@
-import { RuleCard } from "@/components/Cards"
+import { RuleInfoSection } from "@/components/Cards"
 export default function Page() {
   return (
     <div>
       <div className="w-full flex flex-col gap-4 px-6 py-4 max-md:p-2 rounded-2xl max-md:rounded-lg bg-[#1475E1]/10">
         <span className="md:text-2xl ">War Rules & Conditions</span>
-        <div className="grid grid-cols-4 max-2xl:grid-cols-2 max-md:grid-cols-1 gap-6">
-          <RuleCard title="Objective" description="The clan with the most wins at the end of the war period claims the entire prize pool." img="/dartboard.png" />
-          <RuleCard title="Participation" description="Every bet placed by a clan member during the war counts toward the clan's total. There is no minimum number of bets required to participate." img="/sword.png" />
-          <RuleCard title="Duration" description="The war runs for 24 hours, followed by an additional 1-hour strategy period once the minimum team requirement has been met." img="/clock.png" />
-          <RuleCard title="Winning Criteria" description="Victory in the war is determined by the total number of wins accumulated by each clan during the battle period. The clan with the higher number of wins at the end of the 24-hour war will be declared the winner and claim the entire prize pool." img="/cup.png" />
-        </div>
+        <RuleInfoSection />
       </div>
     </div>
   )

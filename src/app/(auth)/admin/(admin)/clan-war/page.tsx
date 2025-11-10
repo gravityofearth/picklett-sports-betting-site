@@ -45,7 +45,7 @@ export default function ClanWarCreation() {
                 <input value={slots} onChange={(e) => setSlots(Number(e.target.value))} type="number" className="border border-white/20 p-2" />
             </div>
             <div className="flex flex-col gap-2">
-                <span>Minimum number of members per clan</span>
+                <span>Exact number of members per clan</span>
                 <input value={minMembers} onChange={(e) => setMinMembers(Number(e.target.value))} type="number" className="border border-white/20 p-2" />
             </div>
             <div className="flex justify-center">

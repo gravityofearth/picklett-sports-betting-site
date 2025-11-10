@@ -25,6 +25,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   const pathname = usePathname()
   const router = useRouter()
   const [showLevelModal, setShowLevelModal] = useState(false)
+  const [showJoinConfirmModal, setShowJoinConfirmModal] = useState(false)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const [showTransferOnwershipModal, setShowTransferOnwershipModal] = useState(false)
   const [usernameToTransfer, setUsernameToTransfer] = useState("")
@@ -60,14 +61,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
   const handleClan = () => {
     if (!clan) return
     if (!userClan || !userClan.joined) {
-      setSending(true)
-      axios.post(`/api/clan/join`, { id: clan._id }, { headers: { token: localStorage.getItem("jwt") } })
-        .then(() => {
-          showToast("Sent join request to clan owner", "success")
-          fetchClan()
-        }).catch((e) => {
-          showToast(e.response?.statusText || "Unknown Error", "error")
-        }).finally(() => setSending(false))
+      setShowJoinConfirmModal(true)
     }
     if (isMatchingClan && isJoined) {
       setShowLeaveModal(true)
@@ -180,6 +174,20 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
         </div>
         {showLevelModal &&
           <LevelModal close={() => setShowLevelModal(false)} />
+        }
+        {showJoinConfirmModal &&
+          <JoinConfirmModal disabled={sending}
+            onConfirm={() => {
+              setSending(true)
+              axios.post(`/api/clan/join`, { id: clan._id }, { headers: { token: localStorage.getItem("jwt") } })
+                .then(() => {
+                  showToast("Sent join request to clan owner", "success")
+                  setShowJoinConfirmModal(false)
+                  fetchClan()
+                }).catch((e) => {
+                  showToast(e.response?.statusText || "Unknown Error", "error")
+                }).finally(() => setSending(false))
+            }} close={() => { setShowJoinConfirmModal(false) }} />
         }
         {showLeaveModal &&
           <LeaveModal close={() => setShowLeaveModal(false)} isOwnerAlone={isOwnerAlone} disabled={sending}
@@ -338,6 +346,34 @@ const LeaveModal = ({ close, onConfirm, isOwnerAlone, disabled }: { close: () =>
             </button>
           }
           <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">Close</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+const JoinConfirmModal = ({ close, onConfirm, disabled }: { close: () => void, onConfirm: () => void, disabled?: boolean }) => {
+  return (
+    <div className="fixed flex justify-center-safe items-center-safe z-50 inset-0 overflow-y-auto">
+      <div onClick={close} className="fixed inset-0 bg-black/70 z-50"></div>
+      <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
+        <svg className="w-10 h-10 stroke-[#F59E0B]"><use href="#svg-warning-new" /></svg>
+        <span className="text-2xl text-[#F59E0B]">Did you notice?</span>
+        <div className="text-sm max-md:text-xs">
+          <p>
+            <span className="font-bold">Join or build your own clan</span> to unlock shared
+            <Link href="/clans/info" target="_blank" className="italic underline"> global perks</Link>,
+            boosted odds, and exclusive tournaments.
+          </p>
+          <p>Each time you win a bet, <span className="font-bold">0.1% of your winnings goes to your clan's coffer</span> — fueling bigger rewards for everyone.</p>
+          <p><span className="font-bold">Level up together</span> and enter epic Clan Wars — from 24-hour skirmishes to week-long battles for massive prize pools.</p>
+        </div>
+        <div className="flex gap-4">
+          {disabled ? <CircularIndeterminate /> :
+            <button onClick={onConfirm} disabled={disabled} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#F59E0B] disabled:cursor-not-allowed">
+              Yes, acknowledge
+            </button>
+          }
+          <button onClick={close} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30">No</button>
         </div>
       </div>
     </div>
