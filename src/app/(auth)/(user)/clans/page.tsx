@@ -36,7 +36,7 @@ export default function ClansPage() {
   return (
     <div className="flex justify-center">
       <div className="w-full flex flex-col gap-8">
-        <div className="flex justify-between items-start">
+        <div className="flex max-md:flex-col justify-between items-start">
           <div className="flex flex-col">
             <div className="flex gap-3 py-3">
               <svg className="w-6 h-6"><use href="#svg-clan" /></svg>
@@ -105,7 +105,7 @@ export default function ClansPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-4">
-                  <div className="text-white/70 ">{clan.description}</div>
+                  <div className="text-white/70 wrap-break-word">{clan.description}</div>
                   {/* <div className="text-[#F59E0B] max-md:hidden">Requirements: 60%+ win rate, 100+ bets placed</div> */}
                   <div className="flex justify-between md:hidden">
                     <div className="text-sm flex gap-2"><span className="text-white/70">Members </span><span>{clan.members?.filter((m: any) => m.clan.joined)?.length}</span></div>

@@ -109,7 +109,9 @@ export default function Home() {
         </div>
         <div className="flex flex-col gap-2">
           <div>Clan Description <span className="text-red-500">*</span></div>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Describe your clan’s goals, requirements, and playstyle..." />
+          <textarea value={description} onChange={(e) => {
+            if (e.target.value.length <= 200) setDescription(e.target.value)
+          }} className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Describe your clan’s goals, requirements, and playstyle..." />
           <div className="text-sm text-white/70">{description.length}/200 characters</div>
         </div>
         <div className="flex flex-col gap-2">

@@ -111,7 +111,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                       <span className=" text-white/80">{members.length}/50</span>
                     </div>
                   </div>
-                  <div className="text-sm max-w-3xl">
+                  <div className="text-sm max-w-3xl wrap-break-word">
                     {clan.description}
                   </div>
                 </div>
