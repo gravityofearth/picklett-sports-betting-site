@@ -15,6 +15,7 @@ export default function Home() {
   const [sending, setSending] = useState(false)
   const [isError, setError] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File>()
+  const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [icon, setIcon] = useState("")
   const [isClient, setIsClient] = useState(false);
@@ -25,8 +26,9 @@ export default function Home() {
     if (!isClient) return
     if (!localStorage.getItem("jwt")) return
     axios.get(`/api/clan/${params.clanId}`, { headers: { token: localStorage.getItem("jwt") } })
-      .then(({ data: { clan: { icon, description } } }: { data: { clan: ClanType } }) => {
+      .then(({ data: { clan: { title, icon, description } } }: { data: { clan: ClanType } }) => {
         setIcon(icon)
+        setTitle(title)
         setDescription(description)
       })
   }, [isClient])
@@ -82,7 +84,7 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-2 col-span-2">
             <div>Clan Name </div>
-            <span className="w-full px-4 py-3 border border-white/20 rounded-lg" >sdgsdg </span>
+            <span className="w-full px-4 py-3 border border-white/20 rounded-lg" >{title}</span>
           </div>
         </div>
         <div className="flex flex-col gap-2">
@@ -106,7 +108,7 @@ export default function Home() {
         <div className="flex flex-col gap-2">
           <div>Clan Description <span className="text-red-500">*</span></div>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Describe your clan’s goals, requirements, and playstyle..." />
-          <div className="text-sm text-white/70">0/200 characters</div>
+          <div className="text-sm text-white/70">{description.length}/200 characters</div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Link href="./members" className="w-full bg-[#0D111B] py-4 max-md:py-3 rounded-lg border border-white/20 cursor-pointer hover:bg-white/40 text-center">Cancel</Link>
