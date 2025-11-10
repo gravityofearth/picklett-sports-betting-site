@@ -7,7 +7,7 @@ import axios from "axios"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Dispatch, SetStateAction, useRef, useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 
 export default function Home() {
   const router = useRouter()
@@ -104,23 +104,23 @@ export default function Home() {
           <div className="flex flex-col gap-2 col-span-2">
             <div>Clan Name <span className="text-red-500">*</span></div>
             <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Enter clan name (3-20 characters)" />
-            <div className="text-sm text-white/70">0/20 characters</div>
+            <div className="text-sm text-white/70">{title.length}/20 characters</div>
           </div>
         </div>
         <div className="flex flex-col gap-2">
           <div>Clan Description <span className="text-red-500">*</span></div>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 border border-white/20 rounded-lg" placeholder="Describe your clan’s goals, requirements, and playstyle..." />
-          <div className="text-sm text-white/70">0/200 characters</div>
+          <div className="text-sm text-white/70">{description.length}/200 characters</div>
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-start">
             <div>Social Links</div>
             <div className="flex gap-2 items-center rounded-lg border border-[#F59E0B] bg-[#F59E0B]/8 p-2">
               <svg className="w-4 h-4"><use href="#svg-lock-new"></use></svg>
-              <span className="text-[#F59E0B]">Unload at Level 5</span>
+              <span className="text-[#F59E0B]">Unlock at Level 5</span>
             </div>
           </div>
-          <div className="p-4 border border-white/20 rounded-2xl text-white/80 bg-[#1C2534]">Social links will be available once your clan reachesRank 5. Earn XP through wars and member activity to unlock this feature!</div>
+          <div className="p-4 border border-white/20 rounded-2xl text-white/80 bg-[#1C2534]">Social links will be available once your clan reachesRank 5. Earn XP through wars and member activity to unlock this feature!</div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex gap-2 items-center">
               <svg className="w-[30px] h-6"><use href="#svg-discord"></use></svg>
