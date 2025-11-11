@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleTagManager } from '@next/third-parties/google';
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,6 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleTagManager gtmId="GTM-PGCC8HSF" />
       <head><link href="https://fonts.cdnfonts.com/css/euclid-circular-b" rel="stylesheet"></link></head>
       <body
         className={`antialiased`} style={{ fontFamily: "Euclid Circular B, Segoe UI" }}
