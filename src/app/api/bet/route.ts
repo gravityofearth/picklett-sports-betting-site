@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     if (endsAt < new Date().getTime())
       return NextResponse.json({ error: "Bet already ended" }, { status: 400, statusText: "Bet already ended" });
     // calc amount in user profile
-    const { bet, user } = await placeBet({ lineId, username, amount, side })
+    const { user } = await placeBet({ lineId, username, amount, side })
     const new_token = signToken(user)
     return getCookieResponse({
-      response: NextResponse.json({ bet, token: new_token }, { status: 201 }),
+      response: NextResponse.json({ token: new_token }, { status: 201 }),
       token: new_token
     })
   } catch (error: any) {

@@ -179,7 +179,7 @@ export async function trackBalanceAndBets({ username, betId, amount, session }: 
             { username },
             {
                 $inc: {
-                    balance: amount,
+                    balance: -amount,
                     bets: 1,
                 }
             },
@@ -195,7 +195,10 @@ export async function trackBalanceAndBets({ username, betId, amount, session }: 
         await clanModel.findByIdAndUpdate(
             new mongoose.Types.ObjectId(clanId),
             {
-                $inc: { bets: 1 }
+                $inc: {
+                    bets: 1,
+                    xp: amount,
+                }
             },
             { new: true, session }
         )

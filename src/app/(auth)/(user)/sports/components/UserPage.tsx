@@ -27,7 +27,12 @@ export default function UserPage({ params: { activeWars, balance, winstreak, odd
     const endIndex = startIndex + itemsPerPage
     const currentLines = filteredLines.slice(startIndex, endIndex)
     const goToPage = (page: number) => {
+        if (page === currentPage) return
         setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     }
     const [timeRemains, setTimeRemains] = useState<{ id: string, text: string }[]>([])
     const [sendingBetRequest, setSendingBetRequest] = useState(false)
@@ -81,7 +86,7 @@ export default function UserPage({ params: { activeWars, balance, winstreak, odd
             side: selectedLine.side,
             amount: amountInNumber
         }, { headers: { token: localStorage.getItem("jwt") } })
-            .then(({ status, data: { bet, token } }) => {
+            .then(({ status, data: { token } }) => {
                 if (status === 201) {
                     showToast("Successfully placed your bet", "success")
                 }

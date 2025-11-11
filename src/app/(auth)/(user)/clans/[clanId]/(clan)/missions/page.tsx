@@ -9,7 +9,7 @@ export default function Page() {
         <div className="md:text-2xl">Clan Missions</div>
         <div className="px-4 py-2 rounded-lg border border-white/10 bg-[#1C2534] max-md:text-sm max-md:px-2 max-md:py-1">Complete objectives to earn clan rewards</div>
       </div>
-      <div className="w-full px-8 py-6 max-md:p-4 flex flex-col gap-4 rounded-2xl bg-[#1475E1]/10">
+      {/* <div className="w-full px-8 py-6 max-md:p-4 flex flex-col gap-4 rounded-2xl bg-[#1475E1]/10">
         <div className="flex justify-between items-start">
           <div className="w-full flex flex-col">
             <span className="text-3xl font-semibold leading-12 max-md:text-xl max-md:leading-8">Reach 50 Members</span>
@@ -24,7 +24,7 @@ export default function Page() {
             <div className="rounded-full bg-[#1475E1] h-[10px]" style={{width:`${clan?.xp}%`}}></div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

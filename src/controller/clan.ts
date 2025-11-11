@@ -174,12 +174,20 @@ export async function operateClanJoin({ username, id, isApproved }: { username: 
             { new: true }
         )
         if (isApproved) {
-            await clanModel.findByIdAndUpdate(
-                new mongoose.Types.ObjectId(id),
-                {
-                    $set: { level: 2 }
-                }
-            )
+            const clan = await clanModel.findById(new mongoose.Types.ObjectId(id))
+            if (clan.level === 1) {
+                await clanModel.findByIdAndUpdate(
+                    new mongoose.Types.ObjectId(id),
+                    {
+                        $set: {
+                            level: 2,
+                        },
+                        $inc: {
+                            xp: 10000,
+                        }
+                    }
+                )
+            }
         }
     } catch (error) {
         console.error('Error joining clan:', error)

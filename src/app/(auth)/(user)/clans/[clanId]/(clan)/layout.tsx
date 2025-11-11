@@ -3,7 +3,7 @@
 import { CircularIndeterminate } from "@/components/MUIs";
 import { useUser } from "@/store";
 import { ClanMemberType, ClanType, UserClanType } from "@/types";
-import { getWinRate, showToast } from "@/utils";
+import { getWinRate, showToast, xpStep } from "@/utils";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -116,10 +116,10 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex justify-between w-full">
                     <div className="text-white/70 ">XP Progress</div>
-                    <div className="text-[#1475E1] font-semibold">{clan.xp}%</div>
+                    <div className="text-[#1475E1] font-semibold">{Math.floor(clan.xp)}/{xpStep(clan.xp)}</div>
                   </div>
                   <div className="w-full h-2 bg-[#1475E1]/20 rounded-full">
-                    <div className="bg-[#1475E1] h-full rounded-full" style={{ width: `${clan.xp}%` }}></div>
+                    <div className="bg-[#1475E1] h-full rounded-full" style={{ width: `${clan.xp * 100 / xpStep(clan.xp)}%` }}></div>
                   </div>
                   {/* <div className="flex gap-2 items-center">
                     <span onClick={() => setShowLevelModal(true)} className="text-sm  cursor-pointer hover:underline">See what's on Level 9</span>

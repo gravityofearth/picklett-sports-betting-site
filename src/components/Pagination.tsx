@@ -36,8 +36,7 @@ export default function Pagination({ params: {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => goToPage(1)}
-                                disabled={currentPage === 1}
-                                className="px-2 py-1 rounded-full border border-[#6E7076] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#01A3DB] cursor-pointer"
+                                className={`px-2 py-1 rounded-full border border-[#6E7076] ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} hover:bg-[#01A3DB]`}
                             >
                                 <svg className="w-4 h-4 stroke-white"><use href="#svg-first" /></svg>
                             </button>
@@ -57,8 +56,7 @@ export default function Pagination({ params: {
                             {currentPage < totalPages - 1 && <span>...</span>}
                             <button
                                 onClick={() => goToPage(totalPages)}
-                                disabled={currentPage === totalPages}
-                                className="px-2 py-1 rounded-full border border-[#6E7076] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#01A3DB] cursor-pointer"
+                                className={`px-2 py-1 rounded-full border border-[#6E7076] ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} hover:bg-[#01A3DB]`}
                             >
                                 <svg className="w-4 h-4 stroke-white rotate-180"><use href="#svg-first" /></svg>
                             </button>

@@ -162,3 +162,9 @@ export const formatAgo = (ts: number) => {
     const months = Math.floor(days / 30)
     return `${months} ${months > 1 ? "months" : "month"} ago`
 }
+export const xpStep = (xp: number) => {
+    for (let step of [10000, 100000, 500000, 2000000]) {
+        if (xp < step) return step
+    }
+    return 1
+}

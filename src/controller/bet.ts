@@ -107,7 +107,7 @@ export async function placeBet({ username, lineId, side, amount }: { username: s
         const newBet = new betModel({ username, lineId: new mongoose.Types.ObjectId(lineId), side, amount, status: "pending" });
 
         const savedBet = await newBet.save({ session });
-        const updatedUser = await trackBalanceAndBets({ username, betId: savedBet._id, amount: -amount, session });
+        const updatedUser = await trackBalanceAndBets({ username, betId: savedBet._id, amount, session });
         await createPlaceBetTransaction({
             username, amount,
             balanceBefore: user.balance,
@@ -117,44 +117,13 @@ export async function placeBet({ username, lineId, side, amount }: { username: s
             lineId: new mongoose.Types.ObjectId(lineId),
             session
         })
-        const completeBet = await betModel.aggregate([
-            { $match: { _id: savedBet._id } },
-            {
-                $lookup: {
-                    from: "lines",
-                    localField: "lineId",
-                    foreignField: "_id",
-                    as: "lineData"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$lineData",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $project: {
-                    username: 1,
-                    amount: 1,
-                    createdAt: 1,
-                    lineId: 1,
-                    side: 1,
-                    status: 1,
-                    question: "$lineData.question",
-                    result: "$lineData.result",
-                    lineData: 1
-                }
-            }
-        ]).session(session);
         await session.commitTransaction();
 
         return {
-            bet: completeBet[0],
             user: updatedUser
         }
     } catch (error) {
-        console.error('Error creating line:', error);
+        console.error('Error placing bet:', error);
         await session.abortTransaction();
         throw error
     } finally {
