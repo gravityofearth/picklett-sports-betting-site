@@ -74,9 +74,7 @@ const WithdrawTable = ({ withdraws, username, adminPage }: { withdraws: Withdraw
                                                 withdraw.network === "Solana" ? "solscan.io" :
                                                     ""
                                                 }/tx/${withdraw.tx}`} className="text-[#01A3DB] flex gap-2 items-center">Link<svg className="w-4 h-4"><use href="#svg-export" /></svg></a> :
-                                            !withdraw.tx ?
-                                                <p className="text-xs">Gamecurrency</p> :
-                                                <span className="text-sm">{withdraw.reason}</span>
+                                            <span className="text-sm">Pending</span>
                                     }
                                 </td>
                                 <td className="pl-2 py-5 pr-6 flex flex-col justify-center items-start">
