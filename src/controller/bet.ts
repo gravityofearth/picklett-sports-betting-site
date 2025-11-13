@@ -379,16 +379,8 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                                     }
                                 }
                             },
-                            else: {
-                                // If no lose found, count all wins
-                                $size: "$bets"
-                                // $size: {
-                                //     $filter: {
-                                //         input: "$bets",
-                                //         cond: { $eq: ["$$this.status", "win"] }
-                                //     }
-                                // }
-                            }
+                            // else: { $size: "$bets" }
+                            else: 1
                         }
                     }
                 }
@@ -418,11 +410,11 @@ export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
                     // }
                     winstreak.latestLoseTime ?
                         {
-                            $set: { winstreak: winstreak.winsAfterLatestLose }
+                            $set: { winstreak: Math.min(winstreak.winsAfterLatestLose, 1) }
                         }
                         :
                         {
-                            $inc: { winstreak: winstreak.winsAfterLatestLose }
+                            $inc: { winstreak: 1 }
                         }
             }
         }));
