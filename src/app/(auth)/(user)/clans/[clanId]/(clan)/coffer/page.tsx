@@ -17,7 +17,7 @@ export default function Page() {
   const isLeader = useMemo(() => userClan?.role === "owner" && userClan?.clanId === clan?._id, [userClan])
   const [modalMode, setModalMode] = useState<DepositDistributeModalType>(undefined)
   return (
-    <div className="flex flex-col gap-4 text-center">
+    <div className="flex flex-col gap-4">
       <div className="md:text-2xl">Clan Coffer</div>
       <div className="w-full relative z-30">
         <div className="w-full grid grid-cols-4 max-md:hidden gap-4 justify-between">
@@ -29,11 +29,11 @@ export default function Page() {
       </div>
       <div className="relative flex py-6 justify-center items-center max-xl:scale-80 max-xl:my-[-40px] max-lg:scale-60 max-sm:scale-70 max-sm:my-[-80px]">
         <div className="absolute z-10 translate-x-[-50%] max-sm:hidden"><Image alt="clan-balance-left-decoration" width={566} height={495} src="/clan_balance_left.png" className="shrink-0 w-[565px] h-[495px]" /></div>
-        <div className="bg-[#33383F] rounded-full py-8 px-32 max-md:px-24 flex flex-col items-center">
+        <div className="bg-[#33383F] rounded-full py-8 px-32 max-md:px-4 max-md:rounded-2xl flex flex-col items-center">
           <div className="h-fit flex flex-col items-center z-30">
             <div className="text-2xl leading-8 text-center">Total Balance</div>
             <div className="flex gap-2 items-baseline">
-              <div className="text-[#FFE720] text-7xl font-bold">{clan?.coffer.toFixed(4)}</div>
+              <div className="text-[#FFE720] text-7xl font-bold">{clan?.coffer.toFixed(2)}</div>
               <svg className="w-12 h-12"><use href="#svg-dollar-new" /></svg>
             </div>
             <div className="pt-6 flex gap-2 max-lg:hidden">
@@ -132,7 +132,7 @@ const CofferStep = ({ number, content, description }: { number: number, content:
       </div>
       <div className="flex flex-col items-center">
         <div className="font-semibold">Step {number}</div>
-        <div className="text-xs ">{content}</div>
+        <div className="text-xs text-center">{content}</div>
       </div>
       <div className="text-xs text-white/80 text-center">{description}</div>
     </div>
@@ -268,7 +268,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             <span className="">Coffer Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
-              <span className="font-bold text-[#FFE720]">{clan?.coffer.toFixed(4)}</span>
+              <span className="font-bold text-[#FFE720]">{clan?.coffer.toFixed(2)}</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
