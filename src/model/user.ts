@@ -84,9 +84,7 @@ const userSchema = new mongoose.Schema({
     emailVerificationExpires: Date
 
 }, {
-    timestamps: true, // Adds createdAt and updatedAt
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    timestamps: true,
 });
 userSchema.index({ "clan.clanId": 1 })
 

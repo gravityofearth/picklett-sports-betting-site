@@ -33,7 +33,7 @@ export default function Page() {
           <div className="h-fit flex flex-col items-center z-30">
             <div className="text-2xl leading-8 text-center">Total Balance</div>
             <div className="flex gap-2 items-baseline">
-              <div className="text-[#FFE720] text-7xl font-bold">{clan?.coffer}</div>
+              <div className="text-[#FFE720] text-7xl font-bold">{clan?.coffer.toFixed(4)}</div>
               <svg className="w-12 h-12"><use href="#svg-dollar-new" /></svg>
             </div>
             <div className="pt-6 flex gap-2 max-lg:hidden">
@@ -268,7 +268,7 @@ const DistributePart = ({ setView }: { setView: React.Dispatch<React.SetStateAct
             <span className="">Coffer Balance</span>
             <div className="flex gap-2 items-center p-2 bg-[#1C2433] rounded-lg border border-white/20">
               <svg className="w-5 h-5"><use href="#svg-dollar-new" /></svg>
-              <span className="font-bold text-[#FFE720]">{clan?.coffer}</span>
+              <span className="font-bold text-[#FFE720]">{clan?.coffer.toFixed(4)}</span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
