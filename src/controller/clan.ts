@@ -540,7 +540,7 @@ export async function getWarFeeds(warId: string) {
                     "betInfo.lineId": 1,
                     "betInfo.amount": 1,
                     "betInfo.status": 1,
-                    "betInfo.createdAt": 1,
+                    "betInfo.updatedAt": 1,
                     "lineInfo._id": 1,
                     "lineInfo.event": 1,
                 }
