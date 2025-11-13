@@ -80,7 +80,7 @@ export default function Page({
             <span className="text-white/70 max-md:text-xs">{timing}</span>
           </div>
           <div className="w-full h-[30px] max-md:h-4 flex relative overflow-hidden">
-            <div className="absolute inset-0 z-50" style={{ translate: `${percent}% 0` }}>
+            <div className="absolute inset-0 z-10" style={{ translate: `${percent}% 0` }}>
               <p className="w-fit h-full text-[18px] max-md:text-[10px] -translate-x-[50%] bg-linear-to-r from-[#2665c6] to-[#bb3a06]">{percentReal}% {100 - percentReal}%</p>
             </div>
             <div className="h-full bg-[#1475E1] rounded-l-full" style={{ width: `${percent}%` }}>
