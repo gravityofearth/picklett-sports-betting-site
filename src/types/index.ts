@@ -170,5 +170,5 @@ export type WarFeedType = {
     event: string,
     amount: number,
     status: string,
-    createdAt: string,
+    updatedAt: string,
 }

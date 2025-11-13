@@ -6,10 +6,10 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
         const { warId } = await params;
         const { userInfo, betInfo, lineInfo } = await getWarFeeds(warId)
         const feeds = betInfo.map((bet: any) => {
-            const { username, lineId, amount, status, createdAt } = bet
+            const { username, lineId, amount, status, updatedAt } = bet
             const avatar = userInfo.find((user: any) => user.username === username).avatar
             const event = lineInfo.find((line: any) => line._id.toString() === lineId.toString()).event
-            return { username, avatar, event, amount, status, createdAt }
+            return { username, avatar, event, amount, status, updatedAt }
         })
         return NextResponse.json({ feeds }, { status: 200 });
     } catch (error: any) {

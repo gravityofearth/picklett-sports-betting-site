@@ -518,11 +518,8 @@ export async function getWarFeeds(warId: string) {
                     localField: "clans.betIds",
                     foreignField: "_id",
                     pipeline: [
-                        {
-                            $match: {
-                                status: { $ne: "pending" },
-                            },
-                        }
+                        { $match: { status: { $ne: "pending" } } },
+                        { $sort: { updatedAt: -1 } },
                     ],
                     as: "betInfo"
                 }

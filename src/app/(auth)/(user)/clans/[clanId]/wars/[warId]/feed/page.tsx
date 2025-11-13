@@ -30,7 +30,7 @@ const WarFeed = ({ feed }: { feed: WarFeedType }) => {
       </div>
       <div className="flex gap-2 items-center">
         <div className={`text-lg rounded-lg max-md:text-sm py-1 px-2 ${feed.status === "win" ? "bg-[#22C55E]/20 text-[#22C55E]" : "bg-[#EF4444]/20 text-[#EF4444]"}`}>{feed.status}</div>
-        <p className="w-[120px] text-xl max-md:text-xs text-white/70 font-mediums">{formatAgo(new Date(feed.createdAt).getTime())}</p>
+        <p className="w-[120px] text-xl max-md:text-xs text-white/70 font-mediums">{formatAgo(new Date(feed.updatedAt).getTime())}</p>
       </div>
     </div>
   )
