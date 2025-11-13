@@ -127,7 +127,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                   </div> */}
                 </div>
               </ClanCard>
-              <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value={`$${clan.coffer}`}>
+              <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value={`$${clan.coffer.toFixed(2)}`}>
                 <div className="flex gap-2 h-full items-end">
                   <div className="flex gap-1 items-center">
                     <svg className="w-6 h-6"><use href="#svg-chart-new" /></svg>

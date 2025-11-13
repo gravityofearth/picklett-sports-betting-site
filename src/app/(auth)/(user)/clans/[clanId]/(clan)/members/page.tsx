@@ -50,7 +50,7 @@ export default function Page() {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <div className="text-3xl leading-10 font-bold max-md:text-[16px] max-md:leading-4">${member.clan.contribution}</div>
+              <div className="text-3xl leading-10 font-bold max-md:text-[16px] max-md:leading-4">${member.clan.contribution.toFixed(2)}</div>
               <div className="text-lg leading-6 text-white/80 max-md:hidden">Contribution</div>
               <div className="md:hidden text-sm text-nowrap">{member.wins} Wins</div>
             </div>

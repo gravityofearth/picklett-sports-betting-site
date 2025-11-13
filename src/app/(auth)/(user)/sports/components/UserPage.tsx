@@ -114,7 +114,7 @@ export default function UserPage({ params: { activeWars, balance, winstreak, odd
                             </div>
                         </div>
                         <div className="text-2xl font-bold">Welcome to Picklett!</div>
-                        <div className="font-normal leading-6 text-[#D1D5DC]">Wage small, win bigger, and receive bonus payouts on winstreaks!</div>
+                        <div className="font-normal leading-6 text-[#D1D5DC]">The only unique <span className="font-bold">sports dueling experience</span> where you wage with your <span className="font-bold">clan</span>, win bigger and receive bonus payouts on winstreaks.</div>
                     </div>
                 </div>
                 <div className="w-full flex flex-col gap-5">
