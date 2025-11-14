@@ -11,7 +11,9 @@ export async function GET(request: NextRequest) {
                 {
                     startsAt: {
                         $gt: new Date().getTime() - 24 * 60 * 60 * 1000
-                    },
+                    }
+                },
+                {
                     "clans.clanId": new mongoose.Types.ObjectId(clanId as string)
                 },
                 {
