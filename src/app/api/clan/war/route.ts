@@ -9,17 +9,13 @@ export async function GET(request: NextRequest) {
         const wars = await findWars({
             $or: [
                 {
-                    startsAt: {
-                        $gt: new Date().getTime() - 24 * 60 * 60 * 1000
-                    }
+                    $or: [
+                        { startsAt: { $gt: new Date().getTime() - 24 * 60 * 60 * 1000 } },
+                        { startsAt: 0 }
+                    ]
                 },
                 {
                     "clans.clanId": new mongoose.Types.ObjectId(clanId as string)
-                },
-                {
-                    $expr: {
-                        $ne: ["$slots", { $size: "$clans" }]
-                    }
                 }
             ]
         })
