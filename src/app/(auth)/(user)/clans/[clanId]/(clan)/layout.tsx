@@ -127,15 +127,7 @@ export default function Page({ children, }: Readonly<{ children: React.ReactNode
                   </div> */}
                 </div>
               </ClanCard>
-              <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value={`$${clan.coffer.toFixed(2)}`}>
-                <div className="flex gap-2 h-full items-end">
-                  <div className="flex gap-1 items-center">
-                    <svg className="w-6 h-6"><use href="#svg-chart-new" /></svg>
-                    <span className="text-sm text-[#22C55E] ">+12.5%</span>
-                  </div>
-                  <div className="text-sm text-white/70">vs last week</div>
-                </div>
-              </ClanCard>
+              <ClanCard icon="#svg-clan-coffer" title="Coffer Balance" value={`$${clan.coffer.toFixed(2)}`} />
               <ClanCard icon="#svg-member" title="Active Members" value={`${members.length}/50`}>
                 <div className="flex flex-col gap-2 justify-end h-full">
                   <div className="flex justify-between">
@@ -268,7 +260,7 @@ const BreadcrumbButton = ({ title, svg, href }: { title: string, svg?: string, h
     </Link>
   )
 }
-const ClanCard = ({ icon, title, value, children }: { icon: string, title: string, value: string, children: ReactNode }) => {
+const ClanCard = ({ icon, title, value, children }: { icon: string, title: string, value: string, children?: ReactNode }) => {
   return (
     <div className="w-full bg-[#0D111B] p-4 flex flex-col gap-4 rounded-2xl">
       <div className="flex gap-4 items-center">

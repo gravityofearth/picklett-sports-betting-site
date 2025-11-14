@@ -36,9 +36,9 @@ export default function AuthUserLayout({
     if (expandSidebar === undefined) return <>Loading...</>
     return (
         <div className="flex">
-            <div className={expandSidebar ? "max-md:fixed max-md:inset-0 max-md:flex max-md:z-40" : undefined}>
+            <div className={expandSidebar ? "max-md:fixed max-md:inset-0 max-md:flex max-md:z-100" : undefined}>
                 {expandSidebar && <div onClick={() => setExpandSidebar(false)} className="md:hidden max-md:w-full backdrop-blur-[2px]"></div>}
-                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-40 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
+                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-100 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
                     <div className={`flex flex-col ${!expandSidebar && "items-center"} gap-4`}>
                         <div className="w-full flex items-center justify-between px-2 py-4 pb-1">
                             <div onClick={() => { setExpandSidebar(prev => !prev) }} className="p-2 max-md:p-1 rounded-full hover:bg-white/10">
@@ -90,7 +90,7 @@ export default function AuthUserLayout({
                 </div>
             </div>
             <div className={`${expandSidebar ? "pl-52" : "pl-20"} max-md:pl-14 w-full flex flex-col items-center relative transition-[padding] ease-in-out`}>
-                <div className={`fixed left-0 ${expandSidebar ? "pl-60" : "pl-28"} max-md:pl-18 w-full flex justify-between items-center pr-8 py-6 max-md:px-4 max-md:py-3 bg-linear-to-b from-[#0e111b] via-80% via-[#0e111b] to-transparent z-20`}>
+                <div className={`fixed left-0 ${expandSidebar ? "pl-60" : "pl-28"} max-md:pl-18 w-full flex justify-between items-center pr-8 py-6 max-md:px-4 max-md:py-3 bg-linear-to-b from-[#0e111b] via-80% via-[#0e111b] to-transparent z-99`}>
                     <Link className="gap-2 flex items-center cursor-pointer max-md:gap-1" href="/">
                         <div className="w-fit shrink-0 rounded-full flex justify-center bg-white">
                             <Image src="/favicon.ico" width={24} height={24} alt="logo" className="shrink-0" />
