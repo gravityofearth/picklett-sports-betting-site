@@ -486,8 +486,21 @@ export async function findWars(filter: any) {
                 }
             },
             {
+                $lookup: {
+                    from: "bets",
+                    localField: "clans.betIds",
+                    foreignField: "_id",
+                    pipeline: [
+                        { $match: { status: "pending" } },
+                        { $project: { username: 1, _id: 0 } }
+                    ],
+                    as: "pendingBets"
+                }
+            },
+            {
                 $project: {
-                    clanInfo: 0 // Remove the temporary array
+                    clanInfo: 0,
+                    "clans.betIds": 0,
                 }
             }
         ])
@@ -500,6 +513,9 @@ export async function findWars(filter: any) {
 export async function getWarFeeds(warId: string) {
     await connectMongoDB()
     try {
+        const { startsAt } = await clanWarModel.findById(new mongoose.Types.ObjectId(warId))
+        const startDate = new Date(startsAt);
+        const endDate = new Date(startsAt + 24 * 60 * 60 * 1000);
         const feeds = await clanWarModel.aggregate([
             {
                 $match: { _id: new mongoose.Types.ObjectId(warId) }
@@ -518,7 +534,12 @@ export async function getWarFeeds(warId: string) {
                     localField: "clans.betIds",
                     foreignField: "_id",
                     pipeline: [
-                        { $match: { status: { $ne: "pending" } } },
+                        {
+                            $match: {
+                                status: { $ne: "pending" },
+                                updatedAt: { $gt: startDate, $lt: endDate },
+                            }
+                        },
                         { $sort: { updatedAt: -1 } },
                     ],
                     as: "betInfo"

@@ -1,6 +1,6 @@
 "use client"
 
-import { ClanType, WarType } from "@/types";
+import { ClansInWarType, PendingBetsType, WarType } from "@/types";
 import axios from "axios";
 import Image from "next/image"
 import Link from "next/link"
@@ -61,7 +61,7 @@ export default function Page({
           </div>
           {new Date(war.startsAt).toLocaleDateString()} - {new Date(war.startsAt + 24 * 60 * 60 * 1000).toLocaleDateString()}
           <div className="w-full px-6 max-md:p-0 flex max-md:flex-col justify-between items-center">
-            <ClanItem clan={war.clans?.[0]} />
+            <ClanItem clan={war.clans?.[0]} pendingBets={war.pendingBets} />
             <div className="flex flex-col items-center gap-2">
               <Image alt="vs" src="/vs.png" width={80} height={80} className="shrink-0 rounded-full w-[80px] h-[80px] max-md:w-6 max-md:h-6" />
               <div className="max-md:hidden flex gap-2 items-center py-1 px-2 bg-[#1475E1]/20 rounded-lg">
@@ -73,7 +73,7 @@ export default function Page({
                 <div className="md:text-xl text-white text-nowrap"><span className="text-white/70 max-md:hidden">Winner takes: </span>${war.prize}</div>
               </div>
             </div>
-            <ClanItem clan={war.clans?.[1]} />
+            <ClanItem clan={war.clans?.[1]} pendingBets={war.pendingBets} />
           </div>
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4"><use href="#svg-clock" /></svg>
@@ -107,13 +107,15 @@ export default function Page({
     </div>
   )
 }
-const ClanItem = ({ clan }: { clan?: { title: string; icon: string; wins: number; } }) => {
+const ClanItem = ({ clan, pendingBets }: { clan?: ClansInWarType, pendingBets: PendingBetsType }) => {
   if (!clan) return null
+  const inPlays = pendingBets.filter(b => clan.members.includes(b.username)).length
   return (
     <div className="flex flex-col items-center gap-2 w-[300px]">
       <Image alt="avatar" src={`/api/profile/avatar/${clan.icon}`} width={64} height={64} className="shrink-0 rounded-full max-md:rounded-lg w-[64px] max-md:w-10 h-[64px] max-md:h-10" />
       <span className="md:text-2xl leading-6 text-nowrap">{clan.title}</span>
-      <span className="text-[20px] font-semibold leading-12 max-md:leading-6">{clan.wins} Wins</span>
+      <span className="text-[20px] font-semibold max-md:leading-6">{clan.wins} Wins</span>
+      <span className="text-[16px] font-semibold max-md:leading-6">({inPlays} In Play)</span>
     </div>
   )
 }

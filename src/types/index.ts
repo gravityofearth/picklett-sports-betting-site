@@ -140,20 +140,23 @@ export type UserClanType = {
     contribution: number,
     timestamp: number,
 }
+export type ClansInWarType = {
+    clanId: string,
+    members: string[],
+    wins: number,
+    bets: number,
+    title: string,
+    icon: string,
+}
+export type PendingBetsType = { username: string }[]
 export type WarType = {
     _id: string,
     type: string,
     prize: number,
     stake: number,
     slots: number,
-    clans?: {
-        clanId: string,
-        members: string[],
-        wins: number,
-        bets: number,
-        title: string, // $lookup
-        icon: string,
-    }[],
+    clans?: ClansInWarType[],
+    pendingBets: PendingBetsType,
     startsAt: number,
     minMembers: number,
 }
