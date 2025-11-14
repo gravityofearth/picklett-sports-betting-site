@@ -11,6 +11,7 @@ const balanceTransactionSchema = new mongoose.Schema({
     balanceBefore: { type: Number, required: true },
     balanceAfter: { type: Number, required: true },
     clanId: { type: mongoose.Schema.Types.ObjectId, ref: 'Clan' },
+    clantxId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClanTx' },
     betId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bet' },
     depositId: { type: mongoose.Schema.Types.ObjectId, ref: 'Deposit' },
     withdrawId: { type: mongoose.Schema.Types.ObjectId, ref: 'Withdraw' },

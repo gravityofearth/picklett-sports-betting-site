@@ -373,7 +373,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
                 amount,
                 balanceBefore: user.balance,
                 balanceAfter: user.balance + amount,
-                clanId: id,
+                clantxId: new mongoose.Types.ObjectId(newClanTx._id as string),
                 timestamp: new Date(),
                 description: `Distribute $${amount} from Clan`
             })
@@ -399,7 +399,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
                 amount: amount_per_member,
                 balanceBefore: member.balance,
                 balanceAfter: member.balance + amount_per_member,
-                clanId: id,
+                clantxId: new mongoose.Types.ObjectId(newClanTx._id as string),
                 timestamp: new Date(),
                 description: `Distribute $${amount}/${memberCount}=$${amount_per_member} from Clan: To all members`
             }));
