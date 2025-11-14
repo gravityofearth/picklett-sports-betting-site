@@ -196,7 +196,7 @@ export async function processWithdraw({ withdraw, type }: { withdraw: any, type:
         const newBalance = new balanceTransactionModel({
             username: withdraw.username,
             type,
-            amount: withdraw.amount,
+            amount: coeff * withdraw.amount,
             balanceBefore: user.balance,
             balanceAfter: updatedUser.balance,
             withdrawId: new mongoose.Types.ObjectId(withdraw.id as string),

@@ -53,7 +53,9 @@ export default function Withdraw({ params: { dpVsBt } }: {
         }, { headers: { token: localStorage.getItem("jwt") } }).then(({ status, data: { withdraw } }) => {
             if (status === 201) {
                 showToast("Withdrawal request submitted successfully", "success")
-                router.push(`/transactions/withdraw`)
+                setTimeout(() => {
+                    router.push(`/transactions/withdraw`)
+                }, 1000);
             }
         }).catch((e: AxiosError) => {
             showToast(e.response?.statusText || "Unknown Error", "error")

@@ -88,7 +88,7 @@ export default function AdminWithdrawId({ params: { withdraw, vaultBalance } }: 
                             <div className="pt-4">
                                 <div className="mb-4">
                                     <label className="block mb-2 text-sm">
-                                        Enter why you rejected this withdrawal request
+                                        Enter why you rejected this withdrawal request (*This will be shown to user)
                                     </label>
                                     <input
                                         type="text"
