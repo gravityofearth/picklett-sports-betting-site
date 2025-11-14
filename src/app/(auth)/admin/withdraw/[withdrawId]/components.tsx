@@ -14,10 +14,6 @@ export default function AdminWithdrawId({ params: { withdraw, vaultBalance } }: 
     const router = useRouter()
     const submitApprove = () => {
         if (!withdraw) return
-        if (!withdraw.userbalance || withdraw.amount > withdraw.userbalance) {
-            showToast("Insufficient user balance for withdrawal", "error")
-            return
-        }
         setSendingRequest(true)
         axios.post("/api/withdraw/approve", { id: withdraw._id }, { headers: { token: localStorage.getItem("jwt") } })
             .then(() => {
@@ -60,7 +56,6 @@ export default function AdminWithdrawId({ params: { withdraw, vaultBalance } }: 
                         <div className="flex flex-col gap-2 text-sm mb-4">
                             <span className="text-lg">Current Vault Balance: ${vaultBalance}</span>
                             <span className="text-lg">Username: {withdraw.username}</span>
-                            {withdraw.result === "pending" && withdraw.userbalance && withdraw.userbalance > 0 ? <span className="text-lg">User account balance: ${withdraw.userbalance.toFixed(2)}</span> : <></>}
                             <span className="text-lg">Withdraw Currency: {withdraw.currency}</span>
                             <span className="text-lg">Withdraw Network: {withdraw.network}</span>
                             <span className="text-lg">Withdraw Amount: ${withdraw.amount}</span>

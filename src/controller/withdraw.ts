@@ -85,9 +85,7 @@ export async function createWithdraw({ username, currency, network, address, amo
         });
 
         const savedWithdraw = await newWithdraw.save();
-        if (result === "success") {
-            postprocessWithdraw({ id: savedWithdraw._id, tx, network })
-        }
+        processWithdraw({ withdraw: savedWithdraw, type: "withdraw" })
         return savedWithdraw;
     } catch (error) {
         console.error('Error creating withdraw:', error);
@@ -180,76 +178,34 @@ export async function findWithdraw(username: string) {
 export async function getWithdrawById(id: string) {
     await connectMongoDB()
     try {
-        const withdraw = await withdrawModel.aggregate([
-            { $match: { _id: new mongoose.Types.ObjectId(id) } },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "username",
-                    foreignField: "username",
-                    as: "userData"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$userData",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $project: {
-                    username: 1,
-                    createdAt: 1,
-                    reason: 1,
-                    amount: 1,
-                    result: 1,
-                    tx: 1,
-                    address: 1,
-                    currency: 1,
-                    network: 1,
-                    lockedPrice: 1,
-                    userbalance: "$userData.balance",
-                }
-            }
-        ])
-        return withdraw[0]
+        const withdraw = await withdrawModel.findById(new mongoose.Types.ObjectId(id))
+        return withdraw
     } catch (error) {
         console.error('Error fetching deposit:', error);
         throw error
     }
 }
-export async function postprocessWithdraw({ id, tx, network }: { id: string, tx: string, network: string }) {
+export async function processWithdraw({ withdraw, type }: { withdraw: any, type: "withdraw" | "withdraw_reject" }) {
     await connectMongoDB()
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const withdraw = await withdrawModel.findByIdAndUpdate(
-            new mongoose.Types.ObjectId(id),
-            {
-                $set: {
-                    result: "success",
-                    tx
-                }
-            },
-            { new: true, session }
-        )
+        const coeff = type === "withdraw" ? -1 : 1
         const user = await userModel.findOne({ username: withdraw.username }).session(session);
-        const updatedUser = await increaseBalance(withdraw.username, -withdraw.amount, session);
+        const updatedUser = await increaseBalance(withdraw.username, coeff * withdraw.amount, session);
         const newBalance = new balanceTransactionModel({
             username: withdraw.username,
-            type: "withdraw",
+            type,
             amount: withdraw.amount,
             balanceBefore: user.balance,
             balanceAfter: updatedUser.balance,
-            withdrawId: new mongoose.Types.ObjectId(id),
+            withdrawId: new mongoose.Types.ObjectId(withdraw.id as string),
             timestamp: new Date(),
-            description: tx ? `withdrawal: $${withdraw.amount} through ${tx} on ${network}` : `Withdrawed through gamecurrency`
+            description: type === "withdraw" ? `withdrawal requested` : `withdrawal rejected`
         })
 
         const savedBalance = await newBalance.save({ session });
         await session.commitTransaction();
-        return withdraw
-
     } catch (error) {
         console.error('Error processing succeeded withdraw:', error);
         await session.abortTransaction();
@@ -300,21 +256,27 @@ export async function sweepCoin({ network }: { network: string }) {
 }
 export async function approveWithdraw({ id }: { id: string }) {
     try {
-        const withdraw = await getWithdrawById(id)
-        if (withdraw.amount > withdraw.userbalance) {
-            throw new Error("Insufficient balance for withdrawal")
-        }
-
-        const address = withdraw.address
-        const amount_satlamp = Math.floor(withdraw.amount * 0.99 * (
-            withdraw.network === "Bitcoin" ? 10 ** 8 :
-                withdraw.network === "Solana" ? LAMPORTS_PER_SOL :
+        const { amount, address, network, lockedPrice, result } = await getWithdrawById(id)
+        if (result !== "pending") throw new Error("Not a pending withdraw")
+        const amount_satlamp = Math.floor(amount * 0.99 * (
+            network === "Bitcoin" ? 10 ** 8 :
+                network === "Solana" ? LAMPORTS_PER_SOL :
                     0
-        ) / withdraw.lockedPrice)
-        const tx = withdraw.network === "Bitcoin" ? await transferBTC({ address, amount_satoshi: amount_satlamp }) :
-            withdraw.network === "Solana" ? await transferSOL({ address, amount_lamp: amount_satlamp }) :
+        ) / lockedPrice)
+        const tx = network === "Bitcoin" ? await transferBTC({ address, amount_satoshi: amount_satlamp }) :
+            network === "Solana" ? await transferSOL({ address, amount_lamp: amount_satlamp }) :
                 ""
-        return await postprocessWithdraw({ id, tx, network: withdraw.network })
+        const withdraw = await withdrawModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(id),
+            {
+                $set: {
+                    result: "success",
+                    tx
+                }
+            },
+            { new: true }
+        )
+        return withdraw
     } catch (error) {
         console.error('Error in approving withdraw:', error);
         throw error
@@ -324,6 +286,7 @@ export async function rejectWithdraw({ id, reason }: { id: string, reason: strin
     await connectMongoDB()
     try {
         const withdraw = await withdrawModel.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: { result: "failed", reason } }, { new: true })
+        processWithdraw({ withdraw, type: "withdraw_reject" })
         return withdraw
     } catch (error) {
         console.error('Error processing reject withdraw:', error);
