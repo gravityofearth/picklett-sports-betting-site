@@ -349,7 +349,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
             { session }
         )
         const newClanTx = new clanTxModel({
-            clanId: id,
+            clanId: new mongoose.Types.ObjectId(id),
             type: "distribute",
             timestamp: new Date().getTime(),
             cofferBefore: clan.coffer,
@@ -373,6 +373,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
                 amount,
                 balanceBefore: user.balance,
                 balanceAfter: user.balance + amount,
+                clanId: new mongoose.Types.ObjectId(id),
                 clantxId: new mongoose.Types.ObjectId(savedClanTx._id as string),
                 timestamp: new Date(),
                 description: `Distribute $${amount} from Clan`
