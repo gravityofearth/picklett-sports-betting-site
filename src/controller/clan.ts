@@ -356,7 +356,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
             cofferAfter: clan.coffer - amount,
             username: selectedMember, amount,
         })
-        await newClanTx.save({ session })
+        const savedClanTx = await newClanTx.save({ session })
         if (selectedMember) {
             const user = await userModel.findOneAndUpdate(
                 { username: selectedMember },
@@ -373,7 +373,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
                 amount,
                 balanceBefore: user.balance,
                 balanceAfter: user.balance + amount,
-                clantxId: new mongoose.Types.ObjectId(newClanTx._id as string),
+                clantxId: new mongoose.Types.ObjectId(savedClanTx._id as string),
                 timestamp: new Date(),
                 description: `Distribute $${amount} from Clan`
             })
@@ -399,7 +399,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
                 amount: amount_per_member,
                 balanceBefore: member.balance,
                 balanceAfter: member.balance + amount_per_member,
-                clantxId: new mongoose.Types.ObjectId(newClanTx._id as string),
+                clantxId: new mongoose.Types.ObjectId(savedClanTx._id as string),
                 timestamp: new Date(),
                 description: `Distribute $${amount}/${memberCount}=$${amount_per_member} from Clan: To all members`
             }));
