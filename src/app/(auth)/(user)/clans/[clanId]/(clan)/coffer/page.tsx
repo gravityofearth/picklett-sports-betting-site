@@ -101,16 +101,16 @@ const ClanTxTable = () => {
             <span className="md:text-2xl leading-6">
               {
                 clanTx.type === "deposit" ? `Deposit by ${clanTx.username}` :
-                  clanTx.type === "tax" ? `Deposit(tax) by ${clanTx.username}` :
-                    clanTx.type === "distribute" ? `Distribute to ${clanTx.username || "all members"}` :
+                  clanTx.type === "tax" ? `Contribution by ${clanTx.username}` :
+                    clanTx.type === "distribute" ? `Distribution to ${clanTx.username || "all clan members"}` :
                       clanTx.type === "stake" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Stake to clan war</LinkToWar> :
-                        clanTx.type === "prize" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Prize for win of war</LinkToWar> :
+                        clanTx.type === "prize" ? <LinkToWar clanId={clan?._id!} warId={clanTx.warId!}>Clan War Winnings</LinkToWar> :
                           ""
               }
             </span>
             <span className="max-md:text-xs">{formatAgo(clanTx.timestamp)}</span>
           </div>
-          <span className="text-[32px] max-md:text-[18px] font-bold">${clanTx.amount.toFixed(3)}</span>
+          <span className={`text-[32px] max-md:text-[18px] font-bold ${(clanTx.type === "deposit" || clanTx.type === "tax" || clanTx.type === "prize") ? `text-[#22C55E]` : "text-[#EF4444]"}`}>{(clanTx.type === "deposit" || clanTx.type === "tax" || clanTx.type === "prize") ? `` : "-"}${clanTx.amount.toFixed(3)}</span>
         </div>
       )}
     </>
