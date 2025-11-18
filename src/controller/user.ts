@@ -50,12 +50,12 @@ export async function findUserByRef(ref: string) {
         console.error('Error finding user:', error);
     }
 }
-export async function findUserByEmailVerificationToken(token: string) {
+export async function verifyEmailByVerificationToken(token: string) {
     await connectMongoDB()
     try {
         const user = await userModel.findOneAndUpdate(
             { emailVerificationToken: token },
-            { emailVerified: true },
+            { $set: { emailVerified: true } },
             { new: true }
         )
         return user;
@@ -69,8 +69,10 @@ export async function changeUserEmail({ username, email, emailVerificationToken 
         const user = await userModel.findOneAndUpdate(
             { username },
             {
-                email, emailVerificationToken,
-                emailVerified: false
+                $set: {
+                    email, emailVerificationToken,
+                    emailVerified: false
+                }
             },
             { new: true }
         )

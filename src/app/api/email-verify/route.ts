@@ -1,4 +1,4 @@
-import { findUserByEmailVerificationToken } from "@/controller/user";
+import { verifyEmailByVerificationToken } from "@/controller/user";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams;
         const code = searchParams.get('code');
         if (!code) throw new Error()
-        const user = await findUserByEmailVerificationToken(code)
+        const user = await verifyEmailByVerificationToken(code)
         if (!user) throw new Error()
         return NextResponse.redirect('https://www.picklett.com/email-verify/success');
     } catch (error: any) {
