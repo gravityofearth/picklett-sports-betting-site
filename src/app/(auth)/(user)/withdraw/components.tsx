@@ -18,7 +18,7 @@ export default function Withdraw({ params: { dpVsBt } }: {
         }
     }
 }) {
-    const { balance } = useUser()
+    const { balance, emailVerified } = useUser()
     const [currency, setCurrency] = useState("BTC")
     const [network, setNetwork] = useState("Bitcoin")
     const [amount, setAmount] = useState("")
@@ -129,6 +129,15 @@ export default function Withdraw({ params: { dpVsBt } }: {
             <p className="text-sm">Request through gamecurrency</p>
           </div> */}
                             <div className="flex flex-col gap-3">
+                                {!emailVerified &&
+                                    <div className="flex gap-2 items-start w-full p-3 border border-white/20 bg-[#0D111B]/60 rounded-xl">
+                                        <svg className="w-4 h-4"><use href="#svg-i" /></svg>
+                                        <div className="w-full text-xs text-amber-600">
+                                            <p>Your email is not verified yet.</p>
+                                            <p>You should <Link href="/settings" className="underline">verify email address</Link> before withdrawal.</p>
+                                        </div>
+                                    </div>
+                                }
                                 <div className="flex flex-col gap-2">
                                     <div className="block text-sm">Currency</div>
                                     <FilteringSelect value={<CoinDisplay coin={currency} src={CurrencyDict[currency].url} />}>
@@ -228,7 +237,7 @@ export default function Withdraw({ params: { dpVsBt } }: {
                             }
                             {sendingRequest ?
                                 <div className="w-full flex justify-center"><CircularIndeterminate /></div> :
-                                <button onClick={handleWithdraw} className="w-full p-4 bg-[#1475E1] hover:bg-[#3384e0] cursor-pointer disabled:cursor-not-allowed disabled:bg-[#01A3DB44] border border-[#364153] rounded-[10px] text-sm font-semibold" disabled={sendingRequest || (dpVsBt.bet < dpVsBt.deposit)}>
+                                <button onClick={handleWithdraw} className="w-full p-4 bg-[#1475E1] hover:bg-[#3384e0] cursor-pointer disabled:cursor-not-allowed disabled:bg-[#01A3DB44] border border-[#364153] rounded-[10px] text-sm font-semibold" disabled={!emailVerified || sendingRequest || (dpVsBt.bet < dpVsBt.deposit)}>
                                     Request Withdrawal
                                 </button>
                             }

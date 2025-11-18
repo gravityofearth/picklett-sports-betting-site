@@ -15,12 +15,16 @@ type StoreType = {
     oddstype: "decimal" | "american",
     avatar: string,
     clan: UserClanType | undefined,
+    email: string,
+    emailVerified: boolean
 }
-const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "", clan: undefined })
+const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "", clan: undefined, email: "", emailVerified: false })
 export const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [username, setUsername] = useState<string | null>(null)
     const [fullname, setFullname] = useState<string>("")
+    const [email, setEmail] = useState<string>("")
+    const [emailVerified, setEmailVerified] = useState<boolean>(false)
     const [avatar, setAvatar] = useState<string>("")
     const [clan, setClan] = useState<UserClanType>()
     const [role, setRole] = useState<string | null>(null)
@@ -51,10 +55,11 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
         setOddstype(decodedToken?.oddstype)
         setAvatar(decodedToken?.avatar)
         setClan(decodedToken?.clan)
-
+        setEmail(decodedToken?.email)
+        setEmailVerified(decodedToken?.emailVerified)
     }, [token, pathname])
     return (
-        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar, clan }}>
+        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar, clan, email, emailVerified }}>
             {children}
         </GlobalContext.Provider>
     )
@@ -71,6 +76,8 @@ export const useUser = () => ({
     oddstype: useContext(GlobalContext).oddstype,
     avatar: useContext(GlobalContext).avatar,
     clan: useContext(GlobalContext).clan,
+    email: useContext(GlobalContext).email,
+    emailVerified: useContext(GlobalContext).emailVerified,
 })
 
 const SportsFilterContext = createContext<{ sportsFilter: SportsType | "", setSportsFilter: Dispatch<SetStateAction<"" | SportsType>> }>({ sportsFilter: "", setSportsFilter: () => { } })

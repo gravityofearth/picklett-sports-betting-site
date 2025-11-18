@@ -1,21 +1,22 @@
 import { signToken } from "@/controller/auth";
-import { createUser, findUserByRef } from "@/controller/user";
-import { generateVerificationToken, getCookieResponse } from "@/utils";
+import jwt from "jsonwebtoken"
+import { generateVerificationToken, getCookieResponse, JWT_SECRET } from "@/utils";
 import { sendVerifyEmail } from "@/utils/emailjs";
 import { NextRequest, NextResponse } from "next/server";
+import { changeUserEmail } from "@/controller/user";
 
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const { username, email, password, ref } = await request.json()
-    if (!username || !password) return NextResponse.json({ error: "Invalid username/password" }, { status: 400, statusText: "Invalid username/password" })
+    const { email } = await request.json()
+    const token = request.headers.get('token') || '';
+    const { username }: any = jwt.verify(token, JWT_SECRET)
     if (!email || !/^.+@.+\..+$/.test(email)) return NextResponse.json({ error: "Invalid email" }, { status: 400, statusText: "Invalid username/password" })
-    const referrer = await findUserByRef(ref.trim())
     const emailVerificationToken = generateVerificationToken()
-    const user = await createUser({ username, email, emailVerificationToken, password, refby: referrer?.username })
+    const user = await changeUserEmail({ username, email, emailVerificationToken })
     sendVerifyEmail({ email: email.trim(), link: `https://www.picklett.com/api/email-verify?code=${emailVerificationToken}` })
-    const token = signToken(user)
+    const new_token = signToken(user)
     return getCookieResponse({
-      response: NextResponse.json({ token }, { status: 201 }),
+      response: NextResponse.json({ token: new_token }, { status: 201 }),
       token,
     })
   } catch (error: any) {

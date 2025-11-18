@@ -6,12 +6,15 @@ import mongoose from "mongoose";
 import clanWarModel from "@/model/clan/clanwar";
 import clanModel from "@/model/clan/clan";
 
-export async function createUser({ username, password, refby }: { username: string, password: string, refby: string }) {
+export async function createUser({ username, email, emailVerificationToken, password, refby }: { username: string, email: string, emailVerificationToken: string, password: string, refby: string }) {
     await connectMongoDB()
     try {
         const newUser = new userModel({
             username,
             fullname: "",
+            email,
+            emailVerified: false,
+            emailVerificationToken,
             oddstype: "decimal",
             password,
             balance: 0,
@@ -32,7 +35,6 @@ export async function createUser({ username, password, refby }: { username: stri
 export async function findUserByUsername(username: string) {
     await connectMongoDB()
     try {
-        // Include password for login verification
         const user = await userModel.findOne({ username })
         return user;
     } catch (error) {
@@ -42,11 +44,39 @@ export async function findUserByUsername(username: string) {
 export async function findUserByRef(ref: string) {
     await connectMongoDB()
     try {
-        // Include password for login verification
         const user = await userModel.findOne({ ref })
         return user;
     } catch (error) {
         console.error('Error finding user:', error);
+    }
+}
+export async function findUserByEmailVerificationToken(token: string) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { emailVerificationToken: token },
+            { emailVerified: true },
+            { new: true }
+        )
+        return user;
+    } catch (error) {
+        console.error('Error verifying email:', error);
+    }
+}
+export async function changeUserEmail({ username, email, emailVerificationToken }: { username: string, email: string, emailVerificationToken: string }) {
+    await connectMongoDB()
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { username },
+            {
+                email, emailVerificationToken,
+                emailVerified: false
+            },
+            { new: true }
+        )
+        return user;
+    } catch (error) {
+        console.error('Error changing email:', error);
     }
 }
 export async function updateUsername({ currentUsername, newUsername }: { currentUsername: string, newUsername: string }) {

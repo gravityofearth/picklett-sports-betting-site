@@ -2,6 +2,7 @@ import {  /*Bounce, */ ToastOptions, toast, Flip, ToastContent, } from "react-to
 import * as bitcoin from "bitcoinjs-lib"
 import { NextResponse } from "next/server";
 import { Connection, PublicKey } from "@solana/web3.js";
+import crypto from 'crypto';
 
 const config: ToastOptions = {
     position: "top-center",
@@ -108,6 +109,10 @@ export function generateReferralCode(): string {
     }
     return result;
 }
+export const generateVerificationToken = () => {
+    const token = crypto.randomBytes(32).toString('hex');
+    return token
+};
 export const validateCurrency = (val: string) => /^$|^-$|^-?(0|[1-9][0-9]*)(\.[0-9]{0,2})?$/.test(val)
 export const validateEthAddress = (val: string) => /^0x[0-9a-fA-F]{40}$/.test(val)
 export const validateEthTx = (val: string) => /^0x[0-9a-fA-F]{64}$/.test(val)

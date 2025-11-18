@@ -6,7 +6,7 @@ import userModel from "@/model/user"
 import connectMongoDB from "@/utils/mongodb"
 import mongoose from "mongoose"
 import { findUserByUsername } from "./user"
-import { sendEmail } from "@/utils/emailjs"
+import { sendWarDrawnEmail } from "@/utils/emailjs"
 import { scheduleJob } from "@/utils/scheduler"
 
 export async function createClan({ title, ownerUserName, description, icon }: { title: string, ownerUserName: string, description: string, icon: string }) {
@@ -645,7 +645,7 @@ export async function rewardPrizeForEndedWar(job: any) {
         clans.sort((b: any, a: any) => a.wins - b.wins)
         const wonClan = clans[0]
         if (wonClan.wins === clans[1].wins) {
-            sendEmail(warId)
+            sendWarDrawnEmail(warId)
             throw new Error("War drawn")
         }
         const clan = await clanModel.findByIdAndUpdate(

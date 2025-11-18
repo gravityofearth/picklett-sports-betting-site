@@ -12,6 +12,18 @@ const userSchema = new mongoose.Schema({
         maxlength: [30, 'Username cannot exceed 30 characters'],
         match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores']
     },
+    email: {
+        type: String,
+        required: [true, 'Email is required.'],
+        unique: [true, 'Email already exists.'],
+        trim: true,
+        match: [/^.+@.+\..+$/, 'Please enter a valid email address.']
+    },
+    emailVerified: Boolean,
+    emailVerificationToken: {
+        type: String,
+        unique: true,
+    },
     fullname: {
         type: String,
         trim: true,
@@ -77,12 +89,6 @@ const userSchema = new mongoose.Schema({
 
     lastLogin: Date,
     passwordChangedAt: Date,
-
-    passwordResetToken: String,
-    passwordResetExpires: Date,
-    emailVerificationToken: String,
-    emailVerificationExpires: Date
-
 }, {
     timestamps: true,
 });

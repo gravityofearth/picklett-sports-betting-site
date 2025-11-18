@@ -8,6 +8,7 @@ import Link from "next/link"
 
 export default function RegisterPage({ params: { ref } }: { params: { ref: string } }) {
   const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const { setToken } = useUser()
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -21,6 +22,10 @@ export default function RegisterPage({ params: { ref } }: { params: { ref: strin
       showToast("Invalid username", "warn")
       return
     }
+    if (!/^.+@.+\..+$/.test(email)) {
+      showToast("Invalid username", "warn")
+      return
+    }
     if (password?.trim() === "") {
       showToast("Invalid password", "warn")
       return
@@ -30,12 +35,12 @@ export default function RegisterPage({ params: { ref } }: { params: { ref: strin
       return
     }
     setSendingBetRequest(true)
-    axios.post("/api/register", { username, password, ref: ref.trim() })
+    axios.post("/api/register", { username, email, password, ref: ref.trim() })
       .then(({ status, data: { token } }) => {
         if (status === 201) {
           setToken(token)
           showToast("Successfully registered!", "success")
-          router.push("/sports")
+          router.push("/login")
         }
       })
       .catch((e: AxiosError) => {
@@ -74,6 +79,23 @@ export default function RegisterPage({ params: { ref } }: { params: { ref: strin
               onChange={(e) => setUsername(e.target.value)}
               className="w-full"
               placeholder="Enter Username"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="username" className="block mb-2 text-sm">
+            Email <span className="text-red-500">*</span>
+          </label>
+          <div className="bg-white/10 rounded-lg px-4 py-3">
+            <input
+              autoComplete="email"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full"
+              placeholder="yourname@yourdomain.com"
               required
             />
           </div>

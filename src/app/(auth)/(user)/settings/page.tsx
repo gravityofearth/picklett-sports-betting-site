@@ -9,15 +9,18 @@ import { useEffect, useRef, useState } from "react"
 
 export default function Settings() {
     const [sendingRequest, setSendingRequest] = useState(false)
+    const [isChangingEmail, setChangingEmail] = useState(false)
     const [showCurrentPassword, setShowCurrentPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const { username: currentUsername, fullname: currentFullName, oddstype: currentOddstype, avatar, setToken } = useUser()
+    const { username: currentUsername, fullname: currentFullName, email: currentEmail, emailVerified, oddstype: currentOddstype, avatar, setToken } = useUser()
     const [isError, setError] = useState(false)
     const [newUsername, setNewUsername] = useState(currentUsername)
+    const [newEmail, setNewEmail] = useState("")
     const [newFullname, setNewFullname] = useState(currentFullName)
     const [oddstype, setOddstype] = useState<"decimal" | "american">(currentOddstype)
     useEffect(() => { setOddstype(currentOddstype) }, [currentOddstype])
+    useEffect(() => { setNewEmail(currentEmail) }, [currentEmail])
 
     const [currentPassword, setCurrentPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
@@ -47,6 +50,29 @@ export default function Settings() {
             .catch((e: AxiosError) => {
                 showToast(e.response?.statusText || "Unknown Error", "error")
             }).finally(() => setSendingRequest(false))
+    }
+    const handleChangeEmail = async () => {
+        if (!isChangingEmail) {
+            setChangingEmail(true)
+            return
+        }
+        if (!newEmail || newEmail.trim() === currentEmail?.trim()) return
+        if (!/^.+@.+\..+$/.test(newEmail)) {
+            showToast("Input Correct Email", "warn")
+            return
+        }
+        setSendingRequest(true)
+        axios.put(`/api/profile/email`, { email: newEmail.trim() }, { headers: { token: localStorage.getItem("jwt") } })
+            .then(({ data: { token } }) => {
+                setToken(token)
+                showToast("Verification email sent to your email address", "success")
+            })
+            .catch((e: AxiosError) => {
+                showToast(e.response?.statusText || "Unknown Error", "error")
+            }).finally(() => {
+                setSendingRequest(false)
+                setChangingEmail(false)
+            })
     }
     const handleOddstype = async (oddstype: "decimal" | "american") => {
         setOddstype(oddstype)
@@ -169,6 +195,40 @@ export default function Settings() {
                                         className="bg-[#1E293999] w-full border border-[#E5E5E566] rounded-md px-2 py-3"
                                     />
                                     <button onClick={handleFullname} disabled={sendingRequest || !newFullname || newFullname.trim() === currentFullName?.trim()} className="w-25 bg-[#01A3DB] cursor-pointer hover:bg-[#0b6886] py-3 border border-[#01A3DB] rounded-md disabled:cursor-not-allowed disabled:bg-[#0b6886]">Update</button>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="fullname" className="block text-sm text-[#D1D5DC]">Email</label>
+                                    <div className="flex items-center gap-1">
+                                        <svg className="w-6 h-6"><use href={emailVerified ? "#svg-success" : "#svg-expired"} /></svg>
+                                        <span className="text-[14px]">{emailVerified ? "Verified" : "Not Verified"}</span>
+                                    </div>
+                                </div>
+                                <div className={`flex max-md:flex-col ${isChangingEmail ? "flex-col" : ""} justify-between items-center gap-3 text-sm`}>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        disabled={!isChangingEmail}
+                                        value={newEmail || currentEmail || ""}
+                                        onChange={(e) => {
+                                            setNewEmail(e.target.value)
+                                        }}
+                                        className="bg-[#1E293999] w-full border border-[#E5E5E566] rounded-md px-2 py-3"
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={handleChangeEmail} disabled={emailVerified || isChangingEmail && (sendingRequest || !newEmail || newEmail.trim() === currentEmail?.trim())} className="w-25 bg-[#01A3DB] cursor-pointer hover:bg-[#0b6886] py-3 border border-[#01A3DB] rounded-md disabled:cursor-not-allowed disabled:bg-[#0b6886]">
+                                            {isChangingEmail ? "Update" : "Edit"}
+                                        </button>
+                                        {isChangingEmail &&
+                                            <button onClick={() => {
+                                                setChangingEmail(false)
+                                                setNewEmail(currentEmail)
+                                            }} className="w-25 bg-[#c21d1d] cursor-pointer py-3 rounded-md ">
+                                                Cancel
+                                            </button>
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>

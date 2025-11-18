@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
     const user = await findUserByUsername(username)
+    if (!user.emailVerified) return NextResponse.json({ error: "Forbidden" }, { status: 403, statusText: "Email Not Verified" });
     if (user.balance < amount) return NextResponse.json({ error: "Insufficient balance for withdrawal" }, { status: 500, statusText: "Insufficient balance for withdrawal" });
     const depositVsBet = await compareDeopositVsBet(username)
     if (depositVsBet[0].bet < depositVsBet[0].deposit) return NextResponse.json({ error: "Your bet amount is less than deposit amount" }, { status: 500, statusText: "Your bet amount is less than deposit amount" });
