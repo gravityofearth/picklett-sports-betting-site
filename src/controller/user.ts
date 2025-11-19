@@ -223,43 +223,45 @@ export async function trackBalanceAndBets({ username, betId, amount, session }: 
         if (!user) {
             throw new Error('User not found');
         }
-        const clanId: string = user.clan.clanId
-        await clanModel.findByIdAndUpdate(
-            new mongoose.Types.ObjectId(clanId),
-            {
-                $inc: {
-                    bets: 1,
-                    xp: amount,
-                }
-            },
-            { new: true, session }
-        )
-        await clanWarModel.updateMany(
-            {
-                startsAt: {
-                    $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
-                    $lt: new Date().getTime(),
+        const clanId: string = user.clan?.clanId
+        if (clanId) {
+            await clanModel.findByIdAndUpdate(
+                new mongoose.Types.ObjectId(clanId),
+                {
+                    $inc: {
+                        bets: 1,
+                        xp: amount,
+                    }
                 },
-                'clans.clanId': clanId,
-            },
-            {
-                $inc: {
-                    'clans.$[clan].bets': 1,
-                },
-                $addToSet: {
-                    "clans.$[clan].betIds": betId
-                }
-            },
-            // Array Filters: Specify which elements in the 'clans' array to update
-            {
-                arrayFilters: [
-                    {
-                        'clan.clanId': clanId,
+                { new: true, session }
+            )
+            await clanWarModel.updateMany(
+                {
+                    startsAt: {
+                        $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
+                        $lt: new Date().getTime(),
                     },
-                ],
-                session
-            }
-        )
+                    'clans.clanId': clanId,
+                },
+                {
+                    $inc: {
+                        'clans.$[clan].bets': 1,
+                    },
+                    $addToSet: {
+                        "clans.$[clan].betIds": betId
+                    }
+                },
+                // Array Filters: Specify which elements in the 'clans' array to update
+                {
+                    arrayFilters: [
+                        {
+                            'clan.clanId': clanId,
+                        },
+                    ],
+                    session
+                }
+            )
+        }
 
         return user;
     } catch (error) {
