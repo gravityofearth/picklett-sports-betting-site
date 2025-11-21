@@ -4,7 +4,7 @@ import depositModel from "@/model/deposit";
 import connectMongoDB from "@/utils/mongodb";
 import axios from "axios";
 import mongoose from "mongoose";
-import { increaseBalance } from "./user";
+import { handleAppleDeposited, increaseBalance } from "./user";
 import userModel from "@/model/user";
 
 import * as bitcoin from "bitcoinjs-lib"
@@ -185,6 +185,7 @@ async function depositSuccess({ id, confirmations, depositAmount }: { id: string
 
         const savedBalance = await newBalance.save({ session });
         await session.commitTransaction();
+        if (user.refby) handleAppleDeposited({ username, depositAmount, refby: user.refby, depositId: id })
 
     } catch (error) {
         console.error('Error processing succeeded deposit:', error);

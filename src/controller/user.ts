@@ -5,6 +5,8 @@ import connectMongoDB from "@/utils/mongodb";
 import mongoose from "mongoose";
 import clanWarModel from "@/model/clan/clanwar";
 import clanModel from "@/model/clan/clan";
+import appleRefModel from "@/model/appleref";
+import balanceTransactionModel from "@/model/balanceTransaction";
 
 export async function createUser({ username, email, emailVerificationToken, password, refby }: { username: string, email: string, emailVerificationToken: string, password: string, refby: string }) {
     await connectMongoDB()
@@ -48,6 +50,106 @@ export async function findUserByRef(ref: string) {
         return user;
     } catch (error) {
         console.error('Error finding user:', error);
+    }
+}
+export async function findUserByAppleRef(ref: string) {
+    await connectMongoDB()
+    try {
+        const user = await appleRefModel.findOne({ ref })
+        return user;
+    } catch (error) {
+        console.error('Error finding apple ref:', error);
+    }
+}
+export async function handleAppleRegistered({ username, appleRef }: { username: string, appleRef: any }) {
+    await connectMongoDB()
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        if (!appleRef.active) return
+        const active = appleRef.referrees.length < 20 - 1
+        await appleRefModel.findOneAndUpdate(
+            { ref: appleRef.ref },
+            {
+                $set: {
+                    active
+                },
+                $push: {
+                    referrees: {
+                        username,
+                        deposited: false
+                    }
+                }
+            },
+            { new: true, session }
+        )
+        const updatedUser = await increaseBalance(appleRef.username, 5, session);
+        const newBalance = new balanceTransactionModel({
+            username: appleRef.username,
+            type: "apple_reward_register",
+            amount: 5,
+            balanceBefore: updatedUser.balance - 5,
+            balanceAfter: updatedUser.balance,
+            timestamp: new Date(),
+            description: `Apple Reward: $5 ${username} registered`
+        })
+        await newBalance.save({ session });
+        await session.commitTransaction();
+    } catch (error) {
+        console.error('Error finding apple ref:', error);
+        await session.abortTransaction();
+    } finally {
+        session.endSession();
+    }
+}
+export async function handleAppleDeposited({ username, depositAmount, refby, depositId }: { username: string, depositAmount: number, refby: string, depositId: string }) {
+    await connectMongoDB()
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const updatedApple = await appleRefModel.findOneAndUpdate(
+            {
+                username: refby,
+                referrees: {
+                    $elemMatch: {
+                        username: username,
+                        deposited: false
+                    }
+                },
+            },
+            {
+                $set: {
+                    "referrees.$[element].deposited": true,
+                },
+            },
+            {
+                new: true,
+                session,
+                arrayFilters: [
+                    { "element.username": username }
+                ],
+            }
+        )
+        if (!updatedApple) throw new Error("Not AppleRef OR Already Desposited")
+        const amount = Math.min(25, depositAmount)
+        const updatedUser = await increaseBalance(refby, amount, session);
+        const newBalance = new balanceTransactionModel({
+            username: refby,
+            type: "apple_reward_deposit",
+            amount,
+            balanceBefore: updatedUser.balance - amount,
+            balanceAfter: updatedUser.balance,
+            timestamp: new Date(),
+            depositId: new mongoose.Types.ObjectId(depositId),
+            description: `Apple Reward: ${username} deposited $${depositAmount}`
+        })
+        await newBalance.save({ session });
+        await session.commitTransaction();
+    } catch (error) {
+        console.error('Error in apple deposit:', error);
+        await session.abortTransaction();
+    } finally {
+        session.endSession();
     }
 }
 export async function verifyEmailByVerificationToken(token: string) {
