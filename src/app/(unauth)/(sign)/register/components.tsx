@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { showToast } from "@/utils"
+import { showToast, validateEmailAddress } from "@/utils"
 import axios, { AxiosError } from "axios"
 import { useRouter } from "next/navigation"
 import { useUser } from "@/store"
@@ -22,8 +22,8 @@ export default function RegisterPage({ params: { ref } }: { params: { ref: strin
       showToast("Invalid username", "warn")
       return
     }
-    if (!/^.+@.+\..+$/.test(email)) {
-      showToast("Invalid username", "warn")
+    if (!validateEmailAddress(email)) {
+      showToast("Incorrect email address", "warn")
       return
     }
     if (password?.trim() === "") {
