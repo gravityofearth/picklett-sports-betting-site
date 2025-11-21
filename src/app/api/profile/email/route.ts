@@ -13,7 +13,7 @@ export async function PUT(request: NextRequest) {
     if (!email || !/^.+@.+\..+$/.test(email)) return NextResponse.json({ error: "Invalid email" }, { status: 400, statusText: "Invalid username/password" })
     const emailVerificationToken = generateVerificationToken()
     const user = await changeUserEmail({ username, email, emailVerificationToken })
-    sendVerifyEmail({ email: email.trim(), link: `https://www.picklett.com/api/email-verify?code=${emailVerificationToken}` })
+    sendVerifyEmail({ email: email.trim(), username, link: `https://www.picklett.com/api/email-verify?code=${emailVerificationToken}` })
     const new_token = signToken(user)
     return getCookieResponse({
       response: NextResponse.json({ token: new_token }, { status: 201 }),

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const referrer = await findUserByRef(ref.trim())
     const emailVerificationToken = generateVerificationToken()
     const user = await createUser({ username, email, emailVerificationToken, password, refby: referrer?.username })
-    sendVerifyEmail({ email: email.trim(), link: `https://www.picklett.com/api/email-verify?code=${emailVerificationToken}` })
+    sendVerifyEmail({ email: email.trim(), username, link: `https://www.picklett.com/api/email-verify?code=${emailVerificationToken}` })
     const token = signToken(user)
     return getCookieResponse({
       response: NextResponse.json({ token }, { status: 201 }),
