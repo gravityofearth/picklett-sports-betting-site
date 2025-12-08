@@ -3,34 +3,27 @@ import { setSchemaLean } from ".";
 const betSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true,
         index: true,
     },
-    lineId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        index: true,
-    },
-    amount: {
-        type: Number,
-        required: true,
-    },
-    side: {
+    lineId: mongoose.Schema.Types.ObjectId,
+    num: String,
+    description: String,
+    oddsName: String,
+    point: String,
+    team_total_point: Number,
+    value: Number,
+    index: Number,
+    amount: Number,
+    result: {
         type: String,
-        required: true,
-        enum: ['yes', 'no'],
+        enum: ['pending', 'win', 'lose', 'draw', 'cancelled'],
     },
-    status: {
-        type: String,
-        required: true,
-        enum: ['pending', 'win', 'lose'],
-    },
-
-
 }, {
     timestamps: true, // Adds createdAt and updatedAt
 });
-
+betSchema.index({ lineId: 1, num: 1, oddsName: 1, point: 1, team_total_point: 1 })
+betSchema.index({ updatedAt: 1 })
+betSchema.index({ createdAt: 1 })
 setSchemaLean(betSchema)
 const betModel = mongoose.models.Bet || mongoose.model("Bet", betSchema);
 export default betModel;

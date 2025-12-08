@@ -52,43 +52,46 @@ function LoginPage() {
   return (
     <>
       <span className="text-2xl font-medium w-full">Log in to Picklett</span>
-      <div className="w-full flex flex-col gap-4">
-        <div>
-          <label htmlFor="username" className="block mb-2 text-sm">
-            Username <span className="text-red-500">*</span>
-          </label>
-          <div className="bg-white/10 rounded-lg px-4 py-3">
-            <input
-              id="username"
-              autoComplete="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full"
-              placeholder="Enter Username"
-              required
-            />
+      <form className="w-full" onSubmit={(event) => { event.preventDefault(); handleLogin() }}>
+        <div className="w-full flex flex-col gap-4">
+          <div>
+            <label htmlFor="username" className="block mb-2 text-sm">
+              Username <span className="text-red-500">*</span>
+            </label>
+            <div className="bg-white/10 rounded-lg px-4 py-3">
+              <input
+                id="username"
+                autoComplete="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full"
+                placeholder="Enter Username"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="password" className="block mb-2 text-sm">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <div className="flex justify-between items-center w-full px-4 py-3 rounded-lg bg-white/10">
+              <input
+                id="password"
+                autoComplete="current-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full"
+                placeholder="Enter Password"
+                required
+              />
+              <svg className="w-[18px] h-6 cursor-pointer" onClick={() => setShowPassword(!showPassword)}><use href={showPassword ? "#svg-password-hide" : "#svg-password-preview"} /></svg>
+            </div>
           </div>
         </div>
-        <div>
-          <label htmlFor="password" className="block mb-2 text-sm">
-            Password <span className="text-red-500">*</span>
-          </label>
-          <div className="flex justify-between items-center w-full px-4 py-3 rounded-lg bg-white/10">
-            <input
-              id="password"
-              autoComplete="current-password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full"
-              placeholder="Enter Password"
-              required
-            />
-            <svg className="w-[18px] h-6 cursor-pointer" onClick={() => setShowPassword(!showPassword)}><use href={showPassword ? "#svg-password-hide" : "#svg-password-preview"} /></svg>
-          </div>
-        </div>
-      </div>
+        <button className="hidden" type="submit" />
+      </form>
       <button onClick={handleLogin} className="w-full p-3 font-semibold bg-[#1475E1] rounded-lg hover:bg-[#3885dd] cursor-pointer">
         Login
       </button>

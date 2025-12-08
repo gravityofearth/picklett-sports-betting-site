@@ -1,5 +1,7 @@
 "use client"
-import { SportsType, UserClanType } from "@/types";
+import { ProgressProvider } from '@bprogress/next/app';
+import { UserClanType } from "@/types";
+import axios from "axios";
 import jwt from "jsonwebtoken"
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
@@ -16,9 +18,10 @@ type StoreType = {
     avatar: string,
     clan: UserClanType | undefined,
     email: string,
-    emailVerified: boolean
+    emailVerified: boolean,
+    lineCount: { sports: string; count: number; }[],
 }
-const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "", clan: undefined, email: "", emailVerified: false })
+const GlobalContext = createContext<StoreType>({ username: null, role: null, ref: null, balance: 0, token: "", setToken: () => { }, winstreak: 0, fullname: "", oddstype: "decimal", avatar: "", clan: undefined, email: "", emailVerified: false, lineCount: [] })
 export const GlobalContextProvider = ({ children }: { children: ReactNode }) => {
 
     const [username, setUsername] = useState<string | null>(null)
@@ -35,6 +38,8 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
     const [oddstype, setOddstype] = useState<"decimal" | "american">("decimal")
     const pathname = usePathname()
     const router = useRouter()
+
+    const [lineCount, setLineCount] = useState<{ sports: string; count: number; }[]>([])
     useEffect(() => {
         setToken(localStorage.getItem("jwt")!)
     }, [])
@@ -58,9 +63,19 @@ export const GlobalContextProvider = ({ children }: { children: ReactNode }) => 
         setEmail(decodedToken?.email)
         setEmailVerified(decodedToken?.emailVerified)
     }, [token, pathname])
+    useEffect(() => {
+        axios.get(`/api/line/count`, { headers: { token: localStorage.getItem("jwt") } }).then(({ data }) => setLineCount(data))
+    }, [pathname])
     return (
-        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar, clan, email, emailVerified }}>
-            {children}
+        <GlobalContext.Provider value={{ username, role, ref, balance, token, setToken, winstreak, fullname, oddstype, avatar, clan, email, emailVerified, lineCount }}>
+            <ProgressProvider
+                height="4px"
+                color="#1475E1"
+                options={{ showSpinner: false }}
+                shallowRouting
+            >
+                {children}
+            </ProgressProvider>
         </GlobalContext.Provider>
     )
 }
@@ -78,19 +93,5 @@ export const useUser = () => ({
     clan: useContext(GlobalContext).clan,
     email: useContext(GlobalContext).email,
     emailVerified: useContext(GlobalContext).emailVerified,
-})
-
-const SportsFilterContext = createContext<{ sportsFilter: SportsType | "", setSportsFilter: Dispatch<SetStateAction<"" | SportsType>> }>({ sportsFilter: "", setSportsFilter: () => { } })
-export const SportsFilterContextProvider = ({ children }: { children: ReactNode }) => {
-
-    const [sportsFilter, setSportsFilter] = useState<SportsType | "">("")
-    return (
-        <SportsFilterContext.Provider value={{ sportsFilter, setSportsFilter }}>
-            {children}
-        </SportsFilterContext.Provider>
-    )
-}
-export const useSportsFilter = () => ({
-    sportsFilter: useContext(SportsFilterContext).sportsFilter,
-    setSportsFilter: useContext(SportsFilterContext).setSportsFilter,
+    lineCount: useContext(GlobalContext).lineCount,
 })

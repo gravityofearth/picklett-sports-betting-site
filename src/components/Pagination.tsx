@@ -1,11 +1,11 @@
-import { AffiliateRewardType, BetType, DepositType, LeaderType, LineType, RedemptionType, WithdrawType } from "@/types";
+import { AffiliateRewardType, BetType, DepositType, LeaderType, LineType, RedemptionType, WithdrawType, WrappedLineType } from "@/types";
 import { useEffect, useState } from "react";
 
 export default function Pagination({ params: {
     items, itemsPerPage, startIndex, endIndex, currentPage, totalPages, goToPage }
 }: {
     params: {
-        items: (AffiliateRewardType | BetType | DepositType | LeaderType | RedemptionType | WithdrawType | LineType)[],
+        items: (AffiliateRewardType | BetType | DepositType | LeaderType | RedemptionType | WithdrawType | WrappedLineType)[],
         itemsPerPage: number,
         startIndex: number,
         endIndex: number,

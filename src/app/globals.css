@@ -65,6 +65,13 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+/* FireFox */
+* {
+  scrollbar-width: thin;
+  /* 'auto' or 'thin' */
+  scrollbar-color: #333 #181818;
+  /* thumb color track color */
+}
 
 /* width */
 ::-webkit-scrollbar {

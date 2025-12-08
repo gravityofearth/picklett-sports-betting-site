@@ -12,7 +12,6 @@ export default async function Page() {
             <div className="">
                 <div className="w-full flex flex-wrap justify-center items-center gap-2">
                     <img src="https://api.cron-job.org/jobs/6481181/74895d2b308e8173/status-3.svg" />
-                    <img src="https://api.cron-job.org/jobs/6609976/211a340519d547e6/status-3.svg" />
                     <img src="https://api.cron-job.org/jobs/6614970/ef8881450c16905e/status-3.svg" />
                 </div>
                 <LineManagement params={{ username, role }} />

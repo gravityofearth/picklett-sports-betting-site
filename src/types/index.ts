@@ -1,17 +1,32 @@
-export type SportsType = "Basketball" | "Soccer" | "Tennis" | "Baseball" | "Esports" | "Others"
 export type OddsType = "money_line" | "spreads" | "totals" | "team_total"
 export type LineType = {
     _id: string,
-    question: string,
-    sports: SportsType,
-    league: string,
-    event: string,
-    yes: number,
-    no: number,
-    endsAt: number,
-    result: "yes" | "no" | "pending" | null,
+    sports: string,
+    leagueName: string,
+    home: string,
+    away: string,
+    startsAt: number,
+    status: 'pending' | 'live' | 'finished' | 'cancelled',
     createdAt: string,
-    openedBy: string,
+    odds: any,
+}
+export type WrappedLineType = { league: string, data: LineType[] }
+export type BetSlipType = {
+    lineId: string,
+    num: string,
+    oddsName: string,
+    point: string,
+    team_total_point: string,
+    description: string,
+    value: string,
+    hash: string,
+    home: string,
+    away: string,
+    index: number,
+    leagueName: string,
+    amount: string,
+    sports: string,
+    startsAt: number,
 }
 export type LineCardAdminType = {
     yes_decimal: string;
@@ -23,24 +38,26 @@ export type LineCardAdminType = {
     changed: number;
     winning_side: string;
 }
-export type LineCardUserType = {
-    amount: string;
-    side: "yes" | "no" | null,
-}
+export type BetResultType = "win" | "lose" | "draw" | "cancelled"
 export type BetType = {
     username: string,
-    lineId?: string,
+    lineId: string,
+    num: string,
+    description: string,
+    oddsName: string,
+    point: string,
+    team_total_point: number,
+    value: number,
+    index: number,
     amount: number,
-    side: "yes" | "no",
-    status: "pending" | "win" | "lose",
-    question: string,
-    result: "pending" | "yes" | "no",
+    result: "pending" | BetResultType,
     lineData: {
-        yes: number,
-        no: number,
-        event: string,
-        league: string,
         sports: string,
+        leagueName: string,
+        home: string,
+        away: string,
+        startsAt: Number,
+        status: "pending" | "live" | "finished" | "cancelled",
     },
     createdAt: string,
 }
@@ -170,8 +187,11 @@ export type ClanTxType = {
 export type WarFeedType = {
     username: string,
     avatar: string,
-    event: string,
+    sports: string,
+    league: string,
+    home: string,
+    away: string,
     amount: number,
-    status: string,
+    result: string,
     updatedAt: string,
 }

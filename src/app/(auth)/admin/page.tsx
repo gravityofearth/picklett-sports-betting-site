@@ -1,4 +1,4 @@
 import { redirect } from "next/navigation"
 export default async function Page() {
-    redirect("/admin/line")
+    redirect("/admin/redemption")
 }

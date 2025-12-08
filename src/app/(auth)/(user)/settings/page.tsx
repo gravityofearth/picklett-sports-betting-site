@@ -1,6 +1,7 @@
 "use client"
 
 import AvatarCrop from "@/components/AvatarCrop"
+import { CircularIndeterminate } from "@/components/MUIs"
 import { useUser } from "@/store"
 import { showToast, validateUsername } from "@/utils"
 import axios, { AxiosError } from "axios"
@@ -116,6 +117,7 @@ export default function Settings() {
     }
     return (
         <div className="w-full flex justify-center">
+            {sendingRequest && <div className="fixed z-100 inset-0 bg-black/40 flex justify-center items-center"><CircularIndeterminate /></div>}
             {avatarFile &&
                 <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-50 overflow-y-auto">
                     <div className="w-3xl max-w-full bg-black p-4">
