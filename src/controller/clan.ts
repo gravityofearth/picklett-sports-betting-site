@@ -537,7 +537,7 @@ export async function getWarFeeds(warId: string) {
                     pipeline: [
                         {
                             $match: {
-                                status: { $ne: "pending" },
+                                result: { $ne: "pending" },
                                 updatedAt: { $gt: startDate, $lt: endDate },
                             }
                         },
@@ -561,10 +561,13 @@ export async function getWarFeeds(warId: string) {
                     "betInfo.username": 1,
                     "betInfo.lineId": 1,
                     "betInfo.amount": 1,
-                    "betInfo.status": 1,
+                    "betInfo.result": 1,
                     "betInfo.updatedAt": 1,
                     "lineInfo._id": 1,
-                    "lineInfo.event": 1,
+                    "lineInfo.home": 1,
+                    "lineInfo.away": 1,
+                    "lineInfo.sports": 1,
+                    "lineInfo.leagueName": 1,
                 }
             },
         ])

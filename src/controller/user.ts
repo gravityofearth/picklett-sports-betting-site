@@ -306,15 +306,15 @@ export async function increaseBalance(username: string, amount: number, session:
         throw error
     }
 }
-export async function trackBalanceAndBets({ username, betId, amount, session }: { username: string, betId: mongoose.Types.ObjectId, amount: number, session: mongoose.mongo.ClientSession }) {
+export async function trackBalanceAndBets({ username, insertedBets, amount_sum, session }: { username: string, insertedBets: any[], amount_sum: number, session: mongoose.mongo.ClientSession }) {
     await connectMongoDB()
     try {
         const user = await userModel.findOneAndUpdate(
             { username },
             {
                 $inc: {
-                    balance: -amount,
-                    bets: 1,
+                    balance: -amount_sum,
+                    bets: insertedBets.length,
                 }
             },
             {
@@ -331,8 +331,8 @@ export async function trackBalanceAndBets({ username, betId, amount, session }: 
                 new mongoose.Types.ObjectId(clanId),
                 {
                     $inc: {
-                        bets: 1,
-                        xp: amount,
+                        bets: insertedBets.length,
+                        xp: amount_sum,
                     }
                 },
                 { new: true, session }
@@ -347,10 +347,12 @@ export async function trackBalanceAndBets({ username, betId, amount, session }: 
                 },
                 {
                     $inc: {
-                        'clans.$[clan].bets': 1,
+                        'clans.$[clan].bets': amount_sum,
                     },
                     $addToSet: {
-                        "clans.$[clan].betIds": betId
+                        "clans.$[clan].betIds": {
+                            $each: insertedBets.map(bet => new mongoose.Types.ObjectId(bet._id as string))
+                        }
                     }
                 },
                 // Array Filters: Specify which elements in the 'clans' array to update
@@ -360,7 +362,7 @@ export async function trackBalanceAndBets({ username, betId, amount, session }: 
                             'clan.clanId': clanId,
                         },
                     ],
-                    session
+                    session,
                 }
             )
         }

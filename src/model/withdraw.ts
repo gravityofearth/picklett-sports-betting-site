@@ -37,7 +37,7 @@ const withdrawSchema = new mongoose.Schema({
 }, {
     timestamps: true, // Adds createdAt and updatedAt
 });
-
+withdrawSchema.index({ username: 1, result: 1, updatedAt: -1 })
 setSchemaLean(withdrawSchema)
 const withdrawModel = mongoose.models.Withdraw || mongoose.model("Withdraw", withdrawSchema);
 export default withdrawModel;

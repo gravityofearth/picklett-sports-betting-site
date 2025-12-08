@@ -23,12 +23,11 @@ async function connectMongoDB() {
         cached.promise = mongoose.connect(MONGO_URI, { bufferCommands: false }).then((mongoose) => {
             return mongoose;
         });
+        await Scheduler.init({ db: { address: MONGO_URI } }, { useLock: true });
+        await Scheduler.rescheduleJobs(rewardPrizeForEndedWar);
+        console.log("Scheduler.rescheduleJobs")
     }
-
     cached.conn = await cached.promise;
-    await Scheduler.init({ db: { address: MONGO_URI } }, { useLock: true });
-    await Scheduler.rescheduleJobs(rewardPrizeForEndedWar);
-    console.log("Scheduler.rescheduleJobs")
     return cached.conn;
 }
 

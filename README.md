@@ -61,3 +61,8 @@ db.getCollection("bets").aggregate([
     );
 })
 ```
+- Simplify lines(Remove unused lines)
+```js
+let betIds = db.getCollection("bets").distinct("lineId");
+db.getCollection("lines").deleteMany({ _id: { $nin: betIds }, result:{ $ne: "pending"} })
+```

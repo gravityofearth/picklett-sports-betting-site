@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { confirmDeposit, detectDeposit, getMonitoringDeposits } from "@/controller/deposit";
 import { WEBHOOK_SECRET } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
+import { openSportsLines } from "../line/auto/openline";
 
 export async function POST(request: NextRequest) {
   await connectMongoDB()
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
         confirmDeposit(deposit)
       }
     }
+    openSportsLines()
     return NextResponse.json("OK", { status: 200 });
   } catch (error: any) {
     console.error("Error processing commissions:", error);

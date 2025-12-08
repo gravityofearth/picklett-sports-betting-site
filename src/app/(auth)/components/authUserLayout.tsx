@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSportsFilter, useUser } from "@/store";
-import { ReactNode, useEffect, useState } from "react";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { useUser } from "@/store";
+import { useEffect, useState } from "react";
+import { redirect, usePathname } from "next/navigation";
 import axios, { AxiosError } from "axios";
-import { SportsType } from "@/types";
+import { sportsData } from "@/utils";
+import { LinkOrButton } from "@/components/MUIs";
 
 export default function AuthUserLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { username, fullname, role, balance, avatar, setToken } = useUser()
+    const { username, fullname, role, balance, avatar, setToken, lineCount } = useUser()
     const pathname = usePathname()
     const logout = () => {
         axios.get(`/api/logout`)
@@ -59,13 +60,9 @@ export default function AuthUserLayout({
                         </div>
                         <div className="border-b border-white/30 w-full"></div>
                         <div className="flex flex-col px-2">
-                            <SidebarItem to="/sports" filter="" svg="#svg-nav-all-sports" title="All Sports" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/sports" filter="Basketball" svg="#svg-nav-basketball" title="Basketball" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/sports" filter="Soccer" svg="#svg-nav-soccer" title="Soccer" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/sports" filter="Tennis" svg="#svg-nav-tennis" title="Tennis" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/sports" filter="Baseball" svg="#svg-nav-baseball" title="Baseball" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/sports" filter="Esports" svg="#svg-nav-esports" title="E-Sports" expandSidebar={expandSidebar} />
-                            <SidebarItem to="/sports" filter="Others" svg="#svg-nav-others" title="Others" expandSidebar={expandSidebar} />
+                            {sportsData.map(({ label, sports }, i) =>
+                                <SidebarItem key={i} href={`/sports/${sports}`} svg={`#svg-nav-${sports}`} title={label} expandSidebar={expandSidebar} count={lineCount.find(lc => lc.sports === sports)?.count || 0} />
+                            )}
                         </div>
                     </div>
                     <div className="w-full pb-4 flex justify-center">
@@ -185,30 +182,14 @@ export default function AuthUserLayout({
         </div>
     );
 }
-const LinkOrButton = ({ children, href, onClick, className }: { children: ReactNode, href?: string, onClick?: () => void, className: string }) => {
-    if (href) {
-        return <Link href={href} className={className}>
-            {children}
-        </Link>
-    }
-    if (onClick) {
-        return <button onClick={onClick} className={className}>
-            {children}
-        </button>
-    }
-}
-export const SidebarItem = ({ expandSidebar, href, to, svg, filter, title, highlight }: { expandSidebar: boolean, href?: string, to?: string, svg: string, filter?: SportsType | "", title: string, highlight?: boolean }) => {
+export const SidebarItem = ({ expandSidebar, href, svg, title, highlight, count }: { expandSidebar: boolean, href: string, svg: string, title: string, highlight?: boolean, count?: number }) => {
     const pathname = usePathname()
-    const router = useRouter()
-    const { setSportsFilter } = useSportsFilter()
+    if (count !== undefined && count === 0) return null
     return (
-        <LinkOrButton href={href} onClick={
-            filter !== undefined && to ?
-                () => { if (pathname !== to) router.push(to); setSportsFilter(filter) }
-                : undefined
-        } className={`p-2 rounded-md flex gap-3 items-center cursor-pointer ${highlight ? "bg-radial-[at_50%_75%] from-[#1475E1] via-[#3483dd] to-[#2067b8] to-90%" : pathname === href ? "bg-white/20" : "hover:bg-white/10 "}`}>
+        <LinkOrButton disabled={count === 0} href={href} className={`relative p-2 rounded-md flex gap-3 items-center cursor-pointer disabled:cursor-not-allowed ${highlight ? "bg-radial-[at_50%_75%] from-[#1475E1] via-[#3483dd] to-[#2067b8] to-90%" : pathname.includes(href) ? "bg-white/20" : "hover:bg-white/10 "}`}>
             <svg className="w-6 max-md:w-4 h-6 max-md:h-4 fill-white/70"><use href={svg} /></svg>
-            {expandSidebar && <span className="max-md:text-sm">{title}</span>}
+            {expandSidebar && <span className="text-sm text-left">{title}</span>}
+            {/* {expandSidebar && count !== undefined && count > 0 && <span className={`absolute ${expandSidebar ? "right-2" : "-right-3"} ${pathname === href ? "bg-[#1372ff88]" : "bg-[#06235af6]"}  min-w-6 h-6 p-1 text-center text-xs rounded-full`}>{count}</span>} */}
         </LinkOrButton>
     )
 }

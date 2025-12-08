@@ -1,19 +1,33 @@
 import { signToken } from "@/controller/auth";
-import { findBet, findLineById, placeBet } from "@/controller/bet";
+import { findBet, findLines, placeBet } from "@/controller/bet";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
-import { getCookieResponse, JWT_SECRET } from "@/utils";
+import { getCookieResponse, JWT_SECRET, signOdd } from "@/utils";
+import { BetSlipType } from "@/types";
+import mongoose from "mongoose";
 export async function POST(request: NextRequest) {
   try {
-    const { lineId, side, amount } = await request.json()
+    const { data: betSlips }: { data: BetSlipType[] } = await request.json()
     const token = request.headers.get('token') || '';
     const { username }: any = jwt.verify(token, JWT_SECRET)
-    if (Number(amount) < 5 || Number(amount) > 50) return NextResponse.json({ error: "Out of range" }, { status: 400, statusText: "Minimum $5, Maximum $50" });
-    const { endsAt } = await findLineById(lineId)
-    if (endsAt < new Date().getTime())
+    if (betSlips.some(betSlip => (Number(betSlip.amount) < 5 || Number(betSlip.amount) > 50))) return NextResponse.json({ error: "Out of range" }, { status: 400, statusText: "Minimum $5, Maximum $50" });
+    const lines = await findLines({ filter: { _id: { $in: betSlips.map(b => new mongoose.Types.ObjectId(b.lineId)) } } })
+    if (lines.some(line => line.startsAt < new Date().getTime()))
       return NextResponse.json({ error: "Bet already ended" }, { status: 400, statusText: "Bet already ended" });
-    // calc amount in user profile
-    const { user } = await placeBet({ lineId, username, amount, side })
+    /* NOTE: check odds hash */
+    if (betSlips.some(({ lineId, num, oddsName, point, value, hash, index }) => {
+      const eventId = lines.find(line => line._id.toString() === lineId).eventId
+      const ou_ha = [
+        oddsName.includes("total") ? "over" : "home",
+        oddsName.includes("total") ? "under" : "away"
+      ][index]
+      return hash !== signOdd({ eventId, period_num: num, oddsName, point, ou_ha, value })
+    })) {
+      console.error("Data malformed");
+      return NextResponse.json({ error: "Bad request" }, { status: 400, statusText: "Data malformed" });
+    }
+
+    const { user } = await placeBet({ betSlips, username })
     const new_token = signToken(user)
     return getCookieResponse({
       response: NextResponse.json({ token: new_token }, { status: 201 }),

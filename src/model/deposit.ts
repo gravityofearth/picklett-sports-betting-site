@@ -4,7 +4,6 @@ const depositSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        index: true,
     },
     currency: {
         type: String,
@@ -44,7 +43,7 @@ const depositSchema = new mongoose.Schema({
         required: true,
     }
 });
-
+depositSchema.index({ result: 1, username: 1 })
 setSchemaLean(depositSchema)
 const depositModel = mongoose.models.Deposit || mongoose.model("Deposit", depositSchema);
 export default depositModel;

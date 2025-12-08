@@ -19,8 +19,8 @@ const clanWarSchema = new mongoose.Schema({
     minMembers: Number,
     rewarded: String
 })
-clanWarSchema.index({ "clans.clanId": 1 }) // clanwars.find({"clans.clanId": someClanId}) 
-clanWarSchema.index({ startsAt: 1 })
+clanWarSchema.index({ "clans.clanId": 1, "clans.members": 1, startsAt: -1 })
+clanWarSchema.index({ startsAt: -1 })
 
 setSchemaLean(clanWarSchema)
 const clanWarModel = mongoose.models.ClanWar || mongoose.model("ClanWar", clanWarSchema);

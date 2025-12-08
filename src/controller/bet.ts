@@ -7,84 +7,140 @@ import mongoose from "mongoose";
 import { trackBalanceAndBets } from "./user";
 import { createPlaceBetTransaction } from "./balanceTransaction";
 import balanceTransactionModel from "@/model/balanceTransaction";
-import { decodeEntities } from "@/utils";
 import clanModel from "@/model/clan/clan";
 import clanWarModel from "@/model/clan/clanwar";
 import clanTxModel from "@/model/clan/clantx";
-export async function createLine({ eventId, oddsId, question, event, league, sports, yes, no, endsAt, result, openedBy }: { eventId?: string, oddsId?: string, question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, openedBy: string }) {
+import { extractTypicalOdds } from "@/utils";
+import { BetResultType, BetSlipType } from "@/types";
+export async function bulkLines_desctructing(operations: any[]) {
     await connectMongoDB()
     try {
-        const newLine = new lineModel({
-            eventId, oddsId, sports, endsAt, result, openedBy,
-            yes: Math.floor(yes * 100) / 100, no: Math.floor(no * 100) / 100,
-            question: decodeEntities(question), event: decodeEntities(event), league: decodeEntities(league),
-        });
-        const savedLine = await newLine.save();
-        return savedLine;
+        const chunkedOperations = [];
+        while (operations.length > 0) {
+            chunkedOperations.push(operations.splice(0, 50));
+        }
+        for (let operation of chunkedOperations) {
+            await lineModel.bulkWrite(operation, { ordered: false })
+        }
     } catch (error) {
-        console.error('Error creating line:', error);
+        console.error('Error upserting line:', error);
         throw error
     }
 }
-export async function updateLine({ question, event, league, sports, yes, no, endsAt, result, _id }: { question: string, event: string, league: string, sports: string, yes: number, no: number, endsAt: number, result: string, _id: string }) {
+export async function findLines({ filter, sort }: { filter: any, sort?: any }) {
     await connectMongoDB()
     try {
-        const updatedLine = await lineModel.findOneAndUpdate(
-            { _id: new mongoose.Types.ObjectId(_id) },
-            {
-                question: decodeEntities(question), event: decodeEntities(event), league: decodeEntities(league),
-                yes: Math.floor(yes * 100) / 100, no: Math.floor(no * 100) / 100,
-                sports, endsAt, result,
-            },
-            { new: true }
-        )
-        return updatedLine;
-    } catch (error) {
-        console.error('Error creating line:', error);
-        throw error
-    }
-}
-export async function updateLineEndsAt({ endsAt, _id }: { endsAt: number, _id: string }) {
-    await connectMongoDB()
-    try {
-        const updatedLine = await lineModel.findOneAndUpdate(
-            { _id: new mongoose.Types.ObjectId(_id) },
-            {
-                endsAt
-            },
-            { new: true }
-        )
-        return updatedLine;
-    } catch (error) {
-        console.error('Error updating Line EndsAt:', error);
-        throw error
-    }
-}
-export async function findPendingLines(role: string) {
-    await connectMongoDB()
-    try {
-        const filter = role === "admin" ? { result: "pending" } : { result: "pending", endsAt: { $gt: new Date().getTime() } }
-        const lines = await lineModel.find(filter).sort({ endsAt: 1, createdAt: -1 })
+        const lines = await lineModel.find(filter).sort(sort)
         return lines;
     } catch (error) {
         console.error('Error finding line:', error);
         throw error
     }
 }
-export async function findEndedLinesOpenedByBot() {
+export async function updateLinesStatus({ lineIds, status }: { lineIds: string[], status: string }) {
     await connectMongoDB()
     try {
-        const lines = await lineModel.find({ result: "pending", openedBy: "bot", endsAt: { $lt: new Date().getTime() } }).sort({ endsAt: 1, createdAt: -1 })
+        await lineModel.updateMany(
+            {
+                _id: { $in: lineIds.map(v => new mongoose.Types.ObjectId(v)) }
+            },
+            {
+                $set: {
+                    status
+                }
+            }
+        )
+    } catch (error) {
+        console.error('Error updating lines status:', error);
+        throw error
+    }
+}
+export async function fetchLinesBySports({ sports, isAdmin }: { sports: string, isAdmin: boolean }) {
+    await connectMongoDB()
+    try {
+        const filter = isAdmin ?
+            {
+                status: { $in: ["live", "pending"] },
+                sports: sports
+            } :
+            {
+                status: "pending",
+                sports: sports,
+            }
+        const wrappedLines = await lineModel.aggregate([
+            {
+                $match: filter
+            },
+            {
+                $group: {
+                    _id: '$leagueName',
+                    data: {
+                        $push: "$$ROOT"
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    league: '$_id',
+                    data: 1,
+                }
+            },
+        ])
+        wrappedLines.forEach(wL => {
+            wL.data.forEach((line: any) => extractTypicalOdds(line))
+        })
+        return wrappedLines
+            .map((wrappedLine) => ({
+                ...wrappedLine,
+                data: wrappedLine.data.filter((line: any) =>
+                    isAdmin ? line.odds :
+                        (line.odds && line.startsAt > new Date().getTime())
+                )
+            }))
+            .filter(wL => wL.data.length > 0);
+    } catch (error) {
+        console.error('Error fetching line:', error);
+        throw error
+    }
+}
+export async function getLineCountBySports(isAdmin: boolean) {
+    await connectMongoDB()
+    const filter = isAdmin ?
+        { status: { $in: ["live", "pending"] } } :
+        { status: 'pending' }
+    try {
+        const lines = await lineModel.aggregate([
+            {
+                $match: filter
+            },
+            {
+                $group: {
+                    _id: '$sports',
+                    leagues: {
+                        $addToSet: '$leagueName'
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    sports: '$_id',
+                    count: {
+                        $size: '$leagues'
+                    },
+                }
+            }
+        ])
         return lines;
     } catch (error) {
-        console.error('Error finding line:', error);
+        console.error('Error getting line count by sports', error);
         throw error
     }
 }
 export async function findLineById(id: string) {
     await connectMongoDB()
     try {
-        // Include password for login verification
         const line = await lineModel.findById(new mongoose.Types.ObjectId(id))
         return line;
     } catch (error) {
@@ -93,32 +149,31 @@ export async function findLineById(id: string) {
     }
 }
 
-export async function placeBet({ username, lineId, side, amount }: { username: string, lineId: string, side: string, amount: number }) {
+export async function placeBet({ betSlips, username }: { betSlips: BetSlipType[], username: string }) {
     await connectMongoDB()
     const session = await mongoose.startSession();
     session.startTransaction();
-
     try {
         const user = await userModel.findOne({ username }).session(session);
-        if (!user || user.balance < amount) {
+        const amount_sum = betSlips.reduce((sum, cur) => (sum + Number(cur.amount)), 0)
+        if (!user || user.balance < amount_sum) {
             throw new Error('Insufficient balance');
         }
-
-        const newBet = new betModel({ username, lineId: new mongoose.Types.ObjectId(lineId), side, amount, status: "pending" });
-
-        const savedBet = await newBet.save({ session });
-        const updatedUser = await trackBalanceAndBets({ username, betId: savedBet._id, amount, session });
+        const now = new Date().getTime()
+        const insertedBets = await betModel.insertMany(
+            betSlips.map(({ lineId, num, description, oddsName, point, team_total_point, value, index, amount }, i) => ({
+                username, result: "pending",
+                lineId: new mongoose.Types.ObjectId(lineId),
+                num, description, oddsName, point, team_total_point, value, index, amount: Number(amount),
+                createdAt: new Date(now + i), updatedAt: new Date(now + i)
+            })),
+            { session, lean: true }
+        );
+        const updatedUser = await trackBalanceAndBets({ username, insertedBets, amount_sum, session });
         await createPlaceBetTransaction({
-            username, amount,
-            balanceBefore: user.balance,
-            balanceAfter: updatedUser.balance,
-            description: `Bet placed: ${side} for $${amount}`,
-            betId: savedBet._id,
-            lineId: new mongoose.Types.ObjectId(lineId),
-            session
+            username, insertedBets, origin_balance: user.balance, session,
         })
         await session.commitTransaction();
-
         return {
             user: updatedUser
         }
@@ -130,7 +185,37 @@ export async function placeBet({ username, lineId, side, amount }: { username: s
         session.endSession();
     }
 }
-
+export async function getWrappedBetsByLineIds(lineIds: string[]) {
+    await connectMongoDB()
+    try {
+        const bets = await betModel.aggregate([
+            {
+                $match: {
+                    lineId: { $in: lineIds.map(v => new mongoose.Types.ObjectId(v)) }
+                }
+            },
+            {
+                $group: {
+                    _id: '$lineId',
+                    bets: {
+                        $push: "$$ROOT"
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    lineId: '$_id',
+                    bets: 1,
+                }
+            },
+        ])
+        return bets;
+    } catch (error) {
+        console.error('Error getting wrapped bets by lineId:', error);
+        throw error
+    }
+}
 export async function findBet(username: string) {
     await connectMongoDB()
     try {
@@ -156,17 +241,21 @@ export async function findBet(username: string) {
                 $project: {
                     // Include all bet fields
                     username: 1,
-                    amount: 1,
-                    createdAt: 1,
                     lineId: 1,
-                    side: 1,
-                    status: 1,
-                    question: "$lineData.question",
-                    result: "$lineData.result",
-                    lineData: 1
+                    num: 1,
+                    description: 1,
+                    oddsName: 1,
+                    point: 1,
+                    team_total_point: 1,
+                    value: 1,
+                    index: 1,
+                    amount: 1,
+                    result: 1,
+                    lineData: 1,
+                    createdAt: 1,
                 }
             },
-            { $sort: { _id: -1 } }
+            { $sort: { createdAt: -1 } }
         ]);
 
         return bet;
@@ -175,304 +264,177 @@ export async function findBet(username: string) {
         throw error
     }
 }
-
-export async function resolveBet(lineId: string, winningSide: "yes" | "no") {
+type resolveType = {
+    betResolver: {
+        [username: string]: {
+            bet: any;
+            result: BetResultType;
+        }[]
+    };
+    lineId: string; status: string;
+}
+export async function resolveBetsforLineId({ betResolver, lineId, status }: resolveType) {
     await connectMongoDB()
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const result = await lineModel.findOneAndUpdate({
-            _id: new mongoose.Types.ObjectId(lineId),
-            result: "pending"
-        }, { result: winningSide }, { new: true, session })
-        if (!result) {
-            throw new Error("Not found pending line")
-        }
-        const odd = Number(result[winningSide])
-
-        await betModel.updateMany(
-            {
-                lineId: new mongoose.Types.ObjectId(lineId),
-                status: "pending"
-            },
-            [
-                {
-                    $set: {
-                        status: {
-                            $cond: {
-                                if: { $eq: ["$side", winningSide] },
-                                then: "win",
-                                else: "lose"
-                            }
-                        }
-                    }
-                }
-            ],
+        await lineModel.findByIdAndUpdate(
+            new mongoose.Types.ObjectId(lineId),
+            { $set: { status } },
             { session }
-        );
-
-        const wonUsers = await betModel.aggregate([
-            // Match winning bets for the line
-            {
-                $match: {
-                    lineId: new mongoose.Types.ObjectId(lineId),
-                    status: "win"
-                }
-            },
-            // Group by username and sum amounts
-            {
-                $group: {
-                    _id: "$username",
-                    totalAmount: { $sum: "$amount" },
-                    wins: { $sum: 1 }
-                }
-            },
-            {
-                $addFields: {
-                    totalWinnings: { $multiply: ["$totalAmount", odd] },
-                    earns: { $multiply: ["$totalAmount", odd - 1] },
-                    username: "$_id"
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "username",
-                    foreignField: "username",
-                    as: "currentUser"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$currentUser",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $addFields: {
-                    balanceBefore: "$currentUser.balance",
-                    balanceAfter: {
-                        $add: [
-                            "$currentUser.balance",
-                            "$totalWinnings"
-                        ]
-                    }
-                }
-            },
-            {
-                $lookup: {
-                    from: "clans",
-                    localField: "currentUser.clan.clanId",
-                    foreignField: "_id",
-                    as: "currentClan"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$currentClan",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-        ]).session(session)
-        // Create transaction records
-        const getTax = (wonUser: any) => wonUser.currentClan?.level && wonUser.currentClan.level > 1 ? wonUser.earns * 0.001 : 0
-        const transactions = wonUsers.map(wonUser => ({
-            username: wonUser.username,
-            type: "bet_win",
-            amount: wonUser.totalWinnings - getTax(wonUser),
-            balanceBefore: wonUser.balanceBefore,
-            balanceAfter: wonUser.balanceAfter - getTax(wonUser),
-            timestamp: new Date(),
-            lineId: new mongoose.Types.ObjectId(lineId),
-            description: `Bet win: on ${winningSide}`
-        }));
-        // Insert transaction logs
-        if (transactions.length > 0) {
-            await balanceTransactionModel.insertMany(transactions, { session });
-        }
-        // Update user balances
-        const balanceUpdates = wonUsers.map(wonUser => ({
-            updateOne: {
-                filter: { username: wonUser.username },
-                update: {
-                    $inc: {
-                        balance: wonUser.totalWinnings - getTax(wonUser),
-                        wins: wonUser.wins,
-                        earns: wonUser.earns,
-                        "clan.contribution": getTax(wonUser),
-                    },
-                    $set: { lastUpdated: new Date() }
-                }
-            }
-        }));
-
-        const winstreaks = await betModel.aggregate([
-            { //NOTE: remove this to rollback
-                $match: {
-                    lineId: new mongoose.Types.ObjectId(lineId),
-                }
-            },
-            // {
-            //     $sort: {
-            //         username: 1,
-            //         createdAt: 1
-            //     }
-            // },
-
-            {
-                $group: {
-                    _id: "$username",
-                    bets: {
-                        $push: {
-                            status: "$status",
-                            time: "$createdAt"
-                        }
-                    }
-                }
-            },
-
-            // Stage 3: Find the latest lose time and count wins after that time
-            {
-                $addFields: {
-                    // Find all lose times
-                    loseTimes: {
-                        $filter: {
-                            input: "$bets",
-                            cond: { $eq: ["$$this.status", "lose"] }
-                        }
-                    }
-                }
-            },
-
-            // Stage 4: Calculate the latest lose time
-            {
-                $addFields: {
-                    latestLoseTime: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$loseTimes" }, 0] },
-                            then: {
-                                $max: "$loseTimes.time"
-                            },
-                            else: null
-                        }
-                    }
-                }
-            },
-
-            // Stage 5: Count wins after the latest lose time
-            {
-                $addFields: {
-                    winsAfterLatestLose: {
-                        $cond: {
-                            if: { $ne: ["$latestLoseTime", null] },
-                            then: {
-                                $size: {
-                                    $filter: {
-                                        input: "$bets",
-                                        cond: {
-                                            $gt: ["$$this.time", "$latestLoseTime"], // Or below $and
-                                            // $and: [ 
-                                            //     { $eq: ["$$this.status", "win"] },
-                                            //     { $gt: ["$$this.time", "$latestLoseTime"] },
-                                            // ]
-                                        }
-                                    }
-                                }
-                            },
-                            // else: { $size: "$bets" }
-                            else: 1
-                        }
-                    }
-                }
-            },
-
-            // Stage 6: Project final result
-            {
-                $project: {
-                    username: "$_id",
-                    winsAfterLatestLose: 1,
-                    latestLoseTime: 1, // Optional: include for debugging
-                    _id: 0
-                }
-            },
-            // {
-            //     $sort: {
-            //         username: 1
-            //     }
-            // }
-        ]).session(session)
-        const winstreakUpdates = winstreaks.map(winstreak => ({
-            updateOne: {
-                filter: { username: winstreak.username },
-                update:
-                    // { // NOTE: recover this to rollback
-                    //     $set: { winstreak: winstreak.winsAfterLatestLose }
-                    // }
-                    winstreak.latestLoseTime ?
-                        {
-                            $set: { winstreak: Math.min(winstreak.winsAfterLatestLose, 1) }
-                        }
-                        :
-                        {
-                            $inc: { winstreak: 1 }
-                        }
-            }
-        }));
-        const userUpdates = [...balanceUpdates, ...winstreakUpdates]
-        if (userUpdates.length > 0) {
-            await userModel.bulkWrite(userUpdates, { session });
-        }
-        const wonUsersForClan = wonUsers.filter((wonUser) => wonUser.currentUser.clan)
-        const clanUpdates = wonUsersForClan.map(wonUser => ({
-            updateOne: {
-                filter: { _id: new mongoose.Types.ObjectId(wonUser.currentUser.clan.clanId as string) },
-                update: {
-                    $inc: {
-                        wins: wonUser.wins,
-                        coffer: getTax(wonUser),
-                    },
-                }
-            }
-        }))
-        if (clanUpdates.length > 0) {
-            await clanModel.bulkWrite(clanUpdates, { session });
-        }
-        const clTxs = wonUsersForClan.filter(wonUser => wonUser.currentClan?.level && wonUser.currentClan.level > 1).map(wonUser => ({
-            clanId: wonUser.currentUser.clan.clanId,
-            type: "tax",
-            timestamp: new Date().getTime(),
-            cofferBefore: wonUser.currentClan.coffer,
-            // cofferAfter,
-            username: wonUser.username,
-            amount: wonUser.earns * 0.001,
-        }));
-        await clanTxModel.insertMany(clTxs, { session });
-        const warUpdates = wonUsersForClan.map(wonUser => ({
-            updateMany: {
-                filter: {
-                    startsAt: {
-                        $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
-                        $lt: new Date().getTime(),
-                    },
-                    'clans.clanId': new mongoose.Types.ObjectId(wonUser.currentUser.clan.clanId as string),
+        )
+        const betUpdates: any[] = []
+        const userUpdates: any[] = []
+        const balanceTxs: any[] = []
+        const clanUpdates: any[] = []
+        const clTxs: any[] = []
+        const warUpdates: any[] = []
+        for (let username in betResolver) {
+            const user = (await userModel.aggregate([
+                {
+                    $match: { username }
                 },
-                update: {
-                    $inc: {
-                        'clans.$[clan].wins': wonUser.wins,
-                    },
+                {
+                    $lookup: {
+                        from: "clans",
+                        localField: "clan.clanId",
+                        foreignField: "_id",
+                        as: "currentClan"
+                    }
                 },
-                arrayFilters: [
-                    {
-                        'clan.clanId': new mongoose.Types.ObjectId(wonUser.currentUser.clan.clanId as string),
-                    },
-                ],
+                {
+                    $unwind: {
+                        path: "$currentClan",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+            ]).session(session))[0];
+            let winstreak = user.winstreak;
+            let balanceBefore = user.balance;
+            let totalWinning = 0;
+            let totalEarn = 0;
+            let wins = 0
+            let refunds = 0
+            for (let { bet, result } of betResolver[username]) {
+                betUpdates.push({
+                    updateOne: {
+                        filter: { _id: new mongoose.Types.ObjectId(bet._id as string) },
+                        update: { $set: { result } },
+                    }
+                })
+                winstreak = result === "win" ? (winstreak + 1) : 0
+                if (result === "win") {
+                    const winning = bet.amount * bet.value
+                    const earn = winning - bet.amount
+                    const tax = user.currentClan?.level && user.currentClan.level > 1 ? earn * 0.001 : 0
+                    const amount = winning - tax
+                    const balanceAfter = balanceBefore + amount
+                    balanceTxs.push({
+                        username,
+                        type: "bet_win",
+                        amount,
+                        balanceBefore,
+                        balanceAfter,
+                        timestamp: new Date(),
+                        lineId: new mongoose.Types.ObjectId(lineId),
+                        betId: new mongoose.Types.ObjectId(bet._id as string),
+                        description: `Bet win: $${bet.amount}*${bet.value}-$${tax}=$${amount}`
+                    })
+                    balanceBefore = balanceAfter
+                    totalWinning += winning
+                    totalEarn += earn
+                    wins++
+                } else if (result === "draw" || result === "cancelled") {
+                    const amount = bet.amount
+                    const balanceAfter = balanceBefore + amount
+                    balanceTxs.push({
+                        username,
+                        type: result === "draw" ? "bet_draw_refund" : "bet_cancelled",
+                        amount,
+                        balanceBefore,
+                        balanceAfter,
+                        timestamp: new Date(),
+                        lineId: new mongoose.Types.ObjectId(lineId),
+                        betId: new mongoose.Types.ObjectId(bet._id as string),
+                        description: `Bet draw refund: $${amount}`
+                    })
+                    balanceBefore = balanceAfter
+                    refunds += amount
+                }
             }
-        }))
-        if (warUpdates.length > 0) {
-            await clanWarModel.bulkWrite(warUpdates, { session });
+            const tax = user.currentClan?.level && user.currentClan.level > 1 ? totalEarn * 0.001 : 0
+            const clanContribution = tax > 0 ? { "clan.contribution": tax } : undefined
+            userUpdates.push({
+                updateOne: {
+                    filter: { username },
+                    update: {
+                        $inc: {
+                            balance: totalWinning - tax + refunds,
+                            wins,
+                            earns: totalEarn,
+                            // "clan.contribution": tax,
+                            ...clanContribution,
+                        },
+                        $set: {
+                            winstreak,
+                            lastUpdated: new Date()
+                        }
+                    }
+                }
+            })
+            if (user.clan) {
+                clanUpdates.push({
+                    updateOne: {
+                        filter: { _id: new mongoose.Types.ObjectId(user.clan.clanId as string) },
+                        update: {
+                            $inc: {
+                                wins,
+                                coffer: tax,
+                            },
+                        }
+                    }
+                })
+                warUpdates.push({
+                    updateMany: {
+                        filter: {
+                            startsAt: {
+                                $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
+                                $lt: new Date().getTime(),
+                            },
+                            'clans.clanId': new mongoose.Types.ObjectId(user.clan.clanId as string),
+                        },
+                        update: {
+                            $inc: {
+                                'clans.$[clan].wins': wins,
+                            },
+                        },
+                        arrayFilters: [
+                            {
+                                'clan.clanId': new mongoose.Types.ObjectId(user.clan.clanId as string),
+                            },
+                        ],
+                    }
+                })
+                if (user.currentClan.level > 1) {
+                    clTxs.push({
+                        clanId: new mongoose.Types.ObjectId(user.clan.clanId as string),
+                        type: "tax",
+                        timestamp: new Date().getTime(),
+                        cofferBefore: user.currentClan.coffer,
+                        cofferAfter: user.currentClan.coffer + tax,
+                        username,
+                        amount: tax,
+                    })
+                }
+            }
         }
+        await betModel.bulkWrite(betUpdates, { ordered: true, session })
+        await userModel.bulkWrite(userUpdates, { ordered: true, session })
+        await clanModel.bulkWrite(clanUpdates, { ordered: true, session })
+        await clanWarModel.bulkWrite(warUpdates, { ordered: true, session })
+        await balanceTransactionModel.insertMany(balanceTxs, { ordered: true, session, lean: true });
+        await clanTxModel.insertMany(clTxs, { ordered: true, session, lean: true });
         await session.commitTransaction();
-        return result
     } catch (error) {
         console.error('Error resolving bet:', error);
         await session.abortTransaction();
