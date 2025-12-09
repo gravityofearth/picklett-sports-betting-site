@@ -19,8 +19,8 @@ export async function createDeposit({ username, currency, network }: { username:
         if (currency === "BTC") {
             const { data: { price: priceBTC } }: { data: { price: number } } = await axios.get("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT")
             const ECPair = ECPairFactory(ecc);
-            const keyPair = ECPair.makeRandom({ network: bitcoin.networks.bitcoin });
-            const { address } = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey })
+            const keyPair = ECPair.makeRandom();
+            const { address } = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network: bitcoin.networks.bitcoin })
             const newDeposit = new depositModel({
                 username, currency, network,
                 privateKey: keyPair.toWIF(),
