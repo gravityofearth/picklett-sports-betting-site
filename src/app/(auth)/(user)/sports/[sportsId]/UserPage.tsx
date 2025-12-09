@@ -102,11 +102,11 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
                     <div className="flex gap-2 items-center">
                         <svg className="w-8 max-md:w-6 h-8 max-md:h-6">{sportsId === "" ? <use href="#svg-nav-all-sports" /> : <use href={`#svg-nav-${sportsId?.toLowerCase()}`} />}</svg>
                         <span className="md:text-2xl">{sportsData.find(v => v.sports === sportsId)?.label || "Unknown"}</span>
-                        <span className="italic text-xs">{wrappedLines.length} leagues</span>
+                        <span className="text-xs p-1 rounded-sm bg-white/6">{wrappedLines.length} leagues</span>
                     </div>
                     <div className="flex items-center gap-2 pr-2">
-                        <button onClick={() => setOpens(currentWrappedLines.map(() => true))} className="p-2 rounded-md bg-[#143fff66] cursor-pointer text-xs">Expand All</button>
-                        <button onClick={() => setOpens(currentWrappedLines.map(() => false))} className="p-2 rounded-md bg-[#143fff66] cursor-pointer text-xs">Collapse All</button>
+                        <button onClick={() => setOpens(currentWrappedLines.map(() => true))} className="p-2 rounded-md bg-[#0E1B2F] cursor-pointer text-xs">Expand All</button>
+                        <button onClick={() => setOpens(currentWrappedLines.map(() => false))} className="p-2 rounded-md bg-[#0E1B2F] cursor-pointer text-xs">Collapse All</button>
                     </div>
                 </div>
                 <div className="flex flex-col gap-3 px-2">
@@ -114,7 +114,7 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
                     <div className="w-full flex items-center gap-2">
                         <div className="w-full flex items-center">
                             <input value={search} onChange={(e) => setSearch(e.target.value)}
-                                type="text" className="w-full p-2 max-md:p-1 border border-[#E5E5E5] bg-[#1E2939] max-md:rounded-sm rounded-lg text-sm" placeholder={`Use double quote(") for full match`} />
+                                type="text" className="w-full p-2 max-md:p-1 border border-white/70 bg-[#1E2939] max-md:rounded-sm rounded-lg text-sm" placeholder={`Use double quote(") for full match`} />
                             {search && <button onClick={() => setSearch("")} className="-translate-x-[20px] cursor-pointer w-0"><svg className="w-4 h-4"><use href="#svg-close-new" /></svg></button>}
                         </div>
                     </div>
@@ -152,20 +152,20 @@ const WrappedLine = ({ wrappedLine, timeRemains, open, onClick, search, sportsId
     const pathname = usePathname()
     const { setShowBetSlip, setBetSlips, betSlips } = useBetSlip()
     return (
-        <div key={wrappedLine.league} className="bg-[#090d13] rounded-md border border-[#fff2]">
+        <div key={wrappedLine.league} className="bg-[#0E1B2F] rounded-md p-2 flex flex-col gap-2">
             <div onClick={onClick} className="flex justify-between items-center cursor-pointer">
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-1 items-center">
                     <p className="px-2">
                         <SearchHighlight search={search} text={wrappedLine.league} />
                     </p>
-                    <span className={`flex justify-center items-center bg-[#1372ff88] min-w-5 h-5 text-center text-xs rounded-full`}>{wrappedLine.data.length}</span>
+                    <span className={`flex justify-center items-center bg-[#1475E1] min-w-5 h-5 text-center text-xs rounded-sm`}>{wrappedLine.data.length}</span>
                 </div>
                 <svg className={`w-6 h-6 ${open ? "rotate-180" : ""}`}><use href="#svg-arrow-down" /></svg>
             </div>
             {open &&
                 <div className="flex flex-col w-full md:gap-2 pl-2">
                     {wrappedLine.data.map(({ _id, home, away, startsAt, odds: { num, description, oddsName, point, v1, v2, team_total_point, h1, h2 } }) =>
-                        <div key={_id} className={`flex max-xl:flex-col justify-between gap-4 md:rounded-t-lg max-md:border-y max-md:border-white/70 p-4 max-md:p-2 ${timeRemains.filter(v => v.id === _id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-[#0E1B2F]"}`}>
+                        <div key={_id} className={`flex max-xl:flex-col justify-between gap-4 md:rounded-lg max-md:border-y max-md:border-white/70 p-4 max-md:p-2 ${timeRemains.filter(v => v.id === _id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-white/8"}`}>
                             <div className="w-full flex flex-col gap-2">
                                 <div className="w-full flex max-md:flex-col gap-2 max-md:gap-1">
                                     <div className="flex flex-col justify-center max-md:gap-2 gap-4 text-sm w-1/3 max-md:w-full">
@@ -216,7 +216,7 @@ const WrappedLine = ({ wrappedLine, timeRemains, open, onClick, search, sportsId
                                                                                         [home, away][i]
                                                                                 } search={search} />
                                                                                 {oddsName !== "money_line" &&
-                                                                                    <span className="bg-[#0E1B2F] p-1 rounded-sm">
+                                                                                    <span className="bg-[#1475E1] px-1 py-0.5 rounded-sm">
                                                                                         {formatOddsPointTitle({ oddsName, team: [home, away][i], point, team_total_point, index: i })}
                                                                                     </span>
                                                                                 }
