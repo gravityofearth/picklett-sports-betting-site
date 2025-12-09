@@ -56,7 +56,7 @@ export default function LineDetailPage({ line, oddstype }: { line: LineType, odd
                     <span className="leading-6 max-md:leading-4 select-none">Back to Home</span>
                 </Link>
                 <div className="relative flex flex-col items-center justify-around py-4 px-8 max-md:px-4 w-full h-44 max-md:h-[156px] rounded-lg text-center">
-                    <div className="absolute inset-0 opacity-50 -z-99 bg-[url(/noshow-hero-main.png)] bg-center bg-cover"></div>
+                    <div className="absolute inset-0 opacity-50 -z-99 bg-[url(/api/profile/avatar/noshow-hero-main.png)] bg-center bg-cover"></div>
                     <div>
                         <span className="font-bold">{sportsData.find(v => v.sports === line.sports)?.label} </span> -
                         <span className="underline italic"> {line.leagueName}</span>
