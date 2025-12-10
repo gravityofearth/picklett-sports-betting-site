@@ -25,34 +25,6 @@ type SportLineType = {
     status: string;
     odds: string;
 }
-type EsportsType = {
-    SportAbbr: string,
-    LG: {
-        LGName: string,
-        LGId: number,
-        ParentMatch: {
-            PMatchNo: number,
-            PHTName: string,
-            PHTAbbr: string,
-            PATName: string,
-            PATAbbr: string,
-            MatchGroup: string,
-            PMCDate: string,
-            Match: {
-                MatchNo: number,
-                GTCode: string,
-                GTName: string,
-                GameOrder: number,
-                Odds: {
-                    SEL: {
-                        SCode: number,
-                        Odds: number
-                    }[]
-                }[]
-            }[]
-        }[]
-    }[]
-}
 
 export const openSportsLines = async () => {
     while (1) {
@@ -62,128 +34,24 @@ export const openSportsLines = async () => {
             try {
                 const pendingLines = await findLines({ filter: { status: "pending", sports: sportsSlug } })
                 const lines: SportLineType[] = []
-                if (
-                    false && //TODO: true: esports.io, false: pinnacle
-                    sportsSlug === "e-sports") {
-                    const timezone = `${((24 - new Date().getUTCHours()) % 24).toString().padStart(2, '0')}:00:00`
-                    const { data: { Sport: esports } }: { data: { Sport: EsportsType[] } } = await axios.post(`https://w2e-api.esportsmatrix.io/api/esbull/api/GetIndexMatchV2`, {
-                        "GameCat": 1,
-                        "SportBLFilter": [
-                            {
-                                "SportId": 45,
-                                "BaseLGIDs": [
-                                    -99
-                                ]
-                            },
-                            {
-                                "SportId": 46,
-                                "BaseLGIDs": [
-                                    -99
-                                ]
-                            },
-                            {
-                                "SportId": 47,
-                                "BaseLGIDs": [
-                                    -99
-                                ]
-                            },
-                            // {
-                            //   "SportId": 57, // Rainbow
-                            //   "BaseLGIDs": [
-                            //     -99
-                            //   ]
-                            // }
-                        ],
-                        "MatchCnt": 150,
-                        "SortType": 1,
-                        "HasLive": false,
-                        "Token": null,
-                        "Language": "eng",
-                        "BettingChannel": 1,
-                        "MatchFilter": 1, // Today
-                        "Timezone": timezone,
-                        "Event": "",
-                        "TriggeredBy": 1,
-                        "TimeStamp": Math.floor(new Date().getTime() / 1000)
-                    })
-                    for (let esport of esports) {
-                        for (let leagueData of esport.LG) {
-                            for (let parentMatch of leagueData.ParentMatch) {
-                                if (parentMatch.MatchGroup !== "Upcoming") continue
-                                if (parentMatch.Match.length === 0) continue
-                                const eventId = parentMatch.PMatchNo.toString()
-                                const home = parentMatch.PHTName
-                                const away = parentMatch.PATName
-                                const leagueName = leagueData.LGName
-                                const leagueId = leagueData.LGId
-                                const startsAt = new Date(parentMatch.PMCDate).getTime()
-
-                                console.log("Getting ESports match detail info...", parentMatch.PMatchNo)
-                                const { data: { Sport: esports } }: { data: { Sport: EsportsType[] } } = await axios.post(`https://w2e-api.esportsmatrix.io/api/esbull/api/GetMatchDetailsByParentV2`, {
-                                    "GameCat": 1,
-                                    "PMatchNo": parentMatch.PMatchNo,
-                                    "Token": null,
-                                    "Language": "eng",
-                                    "BettingChannel": 1,
-                                    "Grp": -2,
-                                    "GTGrpCnt": 20,
-                                    "Timezone": timezone,
-                                    "TimeStamp": Math.floor(new Date().getTime() / 1000)
-                                })
-                                const odds: {
-                                    [K: string]: {
-                                        GameOrder: number;
-                                        GTCode: string;
-                                        GTName: string;
-                                        MoneyLine: {
-                                            home: number;
-                                            away: number;
-                                        }
-                                    }
-                                } = {}
-                                esports[0].LG[0].ParentMatch[0].Match
-                                    .filter((match) => (/* match.GameOrder <= 2 && */ !match.GTName.includes("+")))
-                                    .forEach(({ GameOrder, GTCode, GTName, Odds }) => {
-                                        odds[GTCode] = {
-                                            GameOrder, GTCode,
-                                            GTName: GTName.replace("{TeamA}", home).replace("{TeamB}", away).replace("Game", "Map"),
-                                            MoneyLine: {
-                                                home: Odds[0].SEL.filter(v => v.SCode === 1)[0].Odds,
-                                                away: Odds[0].SEL.filter(v => v.SCode === 2)[0].Odds
-                                            }
-                                        }
-                                    })
-                                const line = {
-                                    sports: sportsSlug,
-                                    eventId, leagueId, leagueName, home, away, startsAt,
-                                    odds: JSON.stringify(odds),
-                                    status: "pending", result: "",
-                                }
-                                lines.push(line)
-                                await new Promise((res) => setTimeout(res, 3000))
-                            }
-                        }
+                const { data: marketData }: { data: MarketType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/markets?event_type=prematch&sport_id=${sportsId}&is_have_odds=true`, {
+                    headers: RAPID_API_HEADERS
+                })
+                for (let event of marketData.events) {
+                    const { event_id, league_id, league_name, home, away, starts, periods } = event
+                    deleteUnnecessaryKeysAndRoundOdds(periods)
+                    const line = {
+                        eventId: event_id.toString(),
+                        sports: sportsSlug,
+                        leagueId: league_id,
+                        leagueName: league_name,
+                        home,
+                        away,
+                        startsAt: new Date(`${starts}Z`).getTime(),
+                        status: "pending",
+                        odds: JSON.stringify(periods),
                     }
-                } else {
-                    const { data: marketData }: { data: MarketType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/markets?event_type=prematch&sport_id=${sportsId}&is_have_odds=true`, {
-                        headers: RAPID_API_HEADERS
-                    })
-                    for (let event of marketData.events) {
-                        const { event_id, league_id, league_name, home, away, starts, periods } = event
-                        deleteUnnecessaryKeysAndRoundOdds(periods)
-                        const line = {
-                            eventId: event_id.toString(),
-                            sports: sportsSlug,
-                            leagueId: league_id,
-                            leagueName: league_name,
-                            home,
-                            away,
-                            startsAt: new Date(`${starts}Z`).getTime(),
-                            status: "pending",
-                            odds: JSON.stringify(periods),
-                        }
-                        if (line.startsAt > new Date().getTime() && line.startsAt < (new Date().getTime() + 24 * 60 * 60 * 1000)) lines.push(line)
-                    }
+                    if (line.startsAt > new Date().getTime() && line.startsAt < (new Date().getTime() + 24 * 60 * 60 * 1000)) lines.push(line)
                 }
                 const eventIds_line = new Set(lines.map(v => v.eventId.toString()))
                 const eventIds_pending_line = new Set(pendingLines.map(v => v.eventId.toString()))

@@ -17,26 +17,10 @@ type ResultType = {
     }[]
   }[]
 }
-type EsportsEventType = {
-  Data: {
-    Games: {
-      GameOrder: number,
-      OddsResults: {
-        Key: string,
-        Value: number,
-      }[]
-    }[],
-    TeamList: {
-      Id: number,
-      Code: string,
-    }[]
-  }[]
-}
 const resolveLines = async () => {
   const liveLines = await findLines({
     filter: { status: "live" }
   })
-  // const { data: { Data: leagueIdDataList } }: { data: { Data: { Id: number, Name: string }[] } } = await axios.get(`https://www.esportstatspro.com/en-US/matrix/Home/GetLeagues?timezone=0&date=`)
   const liveLineIds = liveLines.map(line => line._id.toString())
   const wrappedLiveBets: {
     lineId: string,
@@ -54,75 +38,54 @@ const resolveLines = async () => {
   for (let liveLine of activeLiveLines) {
     const start_time = performance.now()
     const { _id: lineId, eventId, sports }: { _id: string, eventId: string, sports: string } = liveLine
-    if (true || sports !== "e-sports") {
-      try {
-        const { data: { events: [event] } }: { data: ResultType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/details?event_id=${eventId}`, {
-          headers: RAPID_API_HEADERS
-        })
-        if (!event.period_results) continue
-        if (Object.keys(event.periods).length !== event.period_results.length) continue
-        const wrappedBet = wrappedLiveBets.find(v => v.lineId.toString() === lineId.toString())
-        if (!wrappedBet) continue
-        const bets_onLineId = wrappedBet.bets
-        const betResolver: { [username: string]: { bet: any, result: BetResultType }[] } = {}
-        let status = "finished"
-        for (let bet of bets_onLineId) {
-          const number = Number(bet.num.replace("num_", ""))
-          const period_result = event.period_results.filter(v => v.number === number)[0]
-          if (!period_result) continue
-          let result: BetResultType = "win"
-          if (period_result.cancellation_reason) {
-            console.error(`Cancellation ${lineId}: ${period_result.cancellation_reason}`)
-            status = "cancelled"
-            result = "cancelled"
-          }
-          const team_1_score = event.home_team_type === "Team1" ? period_result.team_1_score : period_result.team_2_score
-          const team_2_score = event.home_team_type === "Team1" ? period_result.team_2_score : period_result.team_1_score
-          if (result !== "cancelled") {
-            if (bet.oddsName.includes("total")) {//totals, team_total
-              const total_score = bet.oddsName === "totals" ?
-                (team_1_score + team_2_score) :
-                (bet.point === "home" ? team_1_score : team_2_score)
-              result = total_score === bet.team_total_point ? "draw" :
-                ((total_score > bet.team_total_point) === (bet.index === 0)) ? "win" : "lose"
-            } else {//money_line, spreads
-              const my_hdp = Number(bet.point) * ([1, -1][bet.index])
-              const my_score = [team_1_score, team_2_score][bet.index]
-              const op_score = [team_1_score, team_2_score][1 - bet.index]
-              result = my_score + my_hdp === op_score ? "draw" :
-                my_score + my_hdp > op_score ? "win" : "lose"
-            }
-          }
-          if (!Object.keys(betResolver).includes(bet.username)) {
-            betResolver[bet.username] = []
-          }
-          betResolver[bet.username].push({ bet, result })
+    try {
+      const { data: { events: [event] } }: { data: ResultType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/details?event_id=${eventId}`, {
+        headers: RAPID_API_HEADERS
+      })
+      if (!event.period_results) continue
+      if (Object.keys(event.periods).length !== event.period_results.length) continue
+      const wrappedBet = wrappedLiveBets.find(v => v.lineId.toString() === lineId.toString())
+      if (!wrappedBet) continue
+      const bets_onLineId = wrappedBet.bets
+      const betResolver: { [username: string]: { bet: any, result: BetResultType }[] } = {}
+      let status = "finished"
+      for (let bet of bets_onLineId) {
+        const number = Number(bet.num.replace("num_", ""))
+        const period_result = event.period_results.filter(v => v.number === number)[0]
+        if (!period_result) continue
+        let result: BetResultType = "win"
+        if (period_result.cancellation_reason) {
+          console.error(`Cancellation ${lineId}: ${period_result.cancellation_reason}`)
+          status = "cancelled"
+          result = "cancelled"
         }
-        await resolveBetsforLineId({ betResolver, lineId, status })
-        console.log("--- Sports line Resolved! ---", status, lineId)
-      } catch (error) {
-        console.error("Error in sports resolution:", error)
+        const team_1_score = event.home_team_type === "Team1" ? period_result.team_1_score : period_result.team_2_score
+        const team_2_score = event.home_team_type === "Team1" ? period_result.team_2_score : period_result.team_1_score
+        if (result !== "cancelled") {
+          if (bet.oddsName.includes("total")) {//totals, team_total
+            const total_score = bet.oddsName === "totals" ?
+              (team_1_score + team_2_score) :
+              (bet.point === "home" ? team_1_score : team_2_score)
+            result = total_score === bet.team_total_point ? "draw" :
+              ((total_score > bet.team_total_point) === (bet.index === 0)) ? "win" : "lose"
+          } else {//money_line, spreads
+            const my_hdp = Number(bet.point) * ([1, -1][bet.index])
+            const my_score = [team_1_score, team_2_score][bet.index]
+            const op_score = [team_1_score, team_2_score][1 - bet.index]
+            result = my_score + my_hdp === op_score ? "draw" :
+              my_score + my_hdp > op_score ? "win" : "lose"
+          }
+        }
+        if (!Object.keys(betResolver).includes(bet.username)) {
+          betResolver[bet.username] = []
+        }
+        betResolver[bet.username].push({ bet, result })
       }
+      await resolveBetsforLineId({ betResolver, lineId, status })
+      console.log("--- Sports line Resolved! ---", status, lineId)
+    } catch (error) {
+      console.error("Error in sports resolution:", error)
     }
-    // else {
-    //   const { GameOrder, GTCode, home, away, StartTime }: { GameOrder: number, GTCode: string, home: string, away: string, StartTime: string } = JSON.parse(oddsId)
-    //   const leagueId = leagueIdDataList.filter(v => v.Name === league)?.[0]?.Id
-    //   if (!leagueId) continue
-    //   try {
-    //     const { data: { Data: events } }: { data: EsportsEventType } = await axios.get(`https://www.esportstatspro.com/en-US/matrix/Home/FetchOddsResults?pageIndex=1&timezone=0&date=${StartTime}&leagueId=${leagueId}`)
-    //     const matchingEvent = events.filter(event => [home, away].every(teamAbbr => event.TeamList.map(v => v.Code).includes(teamAbbr)))?.[0]
-    //     if (matchingEvent) {
-    //       const result = matchingEvent.Games?.filter(v => v.GameOrder === GameOrder)?.[0]?.OddsResults?.filter(v => v.Key === GTCode)?.[0]
-    //       if (result) {
-    //         const homeId = matchingEvent.TeamList.filter(v => v.Code === home)[0].Id
-    //         await resolveBet(_id, result.Value === homeId ? "yes" : "no")
-    //         console.log("--- E-sports Line Resolved! ---", _id, result.Value === homeId ? "yes" : "no")
-    //       }
-    //     }
-    //   } catch (error) {
-    //     console.error("Error in esports resolution:", error)
-    //   }
-    // }
     console.log("Elapsed time:", performance.now() - start_time)
     await new Promise((res) => setTimeout(res, 500))
   }
