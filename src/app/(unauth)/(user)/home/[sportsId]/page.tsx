@@ -8,14 +8,14 @@ export default async function Page({ params }: { params: any }) {
   return (
     <UserPage
       params={{
-        activeWars: [], winstreak: 0, oddstype: "decimal", timeOffset: new Date().getTime() - basets,
+        activeWars: [], winstreak: 0, oddstype: "decimal", timeOffset: Date.now() - basets,
         sportsId,
         lines: lines
           .map((wrappedLine) => ({
             ...wrappedLine,
             data: wrappedLine.data
               .map(line => ({ ...line, odds: JSON.parse(line.odds) }))
-            // .filter(line => line.startsAt > new Date().getTime())
+            // .filter(line => line.startsAt > Date.now())
           }))
         // .filter(wL => wL.data.length > 0),
       }} />

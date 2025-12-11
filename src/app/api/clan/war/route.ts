@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
             $or: [
                 {
                     $or: [
-                        { startsAt: { $gt: new Date().getTime() - 24 * 60 * 60 * 1000 } },
+                        { startsAt: { $gt: Date.now() - 24 * 60 * 60 * 1000 } },
                         { startsAt: 0 }
                     ]
                 },

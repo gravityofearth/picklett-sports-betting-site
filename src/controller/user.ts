@@ -340,8 +340,8 @@ export async function trackBalanceAndBets({ username, insertedBets, amount_sum, 
             await clanWarModel.updateMany(
                 {
                     startsAt: {
-                        $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
-                        $lt: new Date().getTime(),
+                        $gt: Date.now() - 24 * 60 * 60 * 1000,
+                        $lt: Date.now(),
                     },
                     'clans.clanId': clanId,
                 },

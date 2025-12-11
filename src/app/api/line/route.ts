@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
       const { role }: any = jwt.verify(token, JWT_SECRET)
       const isAdmin = role === "admin"
       const lines = await fetchLinesBySports({ isAdmin, sports: sportsFilter })
-      return NextResponse.json({ lines, basets: new Date().getTime() }, { status: 200 })
+      return NextResponse.json({ lines, basets: Date.now() }, { status: 200 })
     } else {
       const lines = await fetchLinesBySports({ isAdmin: false, sports: sportsFilter })
-      return NextResponse.json({ lines, basets: new Date().getTime() }, { status: 200 })
+      return NextResponse.json({ lines, basets: Date.now() }, { status: 200 })
     }
   } catch (error: any) {
     console.error("Error processing commissions:", error);

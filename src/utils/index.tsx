@@ -165,7 +165,7 @@ export function decodeEntities(encodedStr: string) {
 }
 export const getWinRate = ({ wins, bets }: { wins: number, bets: number }) => `${Math.round(wins * 100 / Math.max(1, bets) * 10) / 10}%`
 export const formatAgo = (ts: number) => {
-    const mins = Math.floor((new Date().getTime() - ts) / 1000 / 60)
+    const mins = Math.floor((Date.now() - ts) / 1000 / 60)
     if (mins === 0) return "Now"
     if (mins < 60) return `${mins} mins ago`
     const hs = Math.floor(mins / 60)

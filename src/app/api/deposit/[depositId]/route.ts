@@ -15,11 +15,11 @@ export async function GET(request: NextRequest, { params }: { params: any }) {
       const user = await findUserByUsername(username)
       const new_token = signToken(user)
       return getCookieResponse({
-        response: NextResponse.json({ deposit: { currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }, basets: new Date().getTime(), token: new_token }, { status: 200 }),
+        response: NextResponse.json({ deposit: { currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }, basets: Date.now(), token: new_token }, { status: 200 }),
         token: new_token
       })
     } else {
-      return NextResponse.json({ deposit: { currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }, basets: new Date().getTime() }, { status: 200 })
+      return NextResponse.json({ deposit: { currency, network, address, depositAmount, lockedPrice, result, confirmations, expiresAt }, basets: Date.now() }, { status: 200 })
     }
   } catch (error: any) {
     console.error("Error processing commissions:", error);

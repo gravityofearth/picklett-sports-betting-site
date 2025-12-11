@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
         const wars = clan?.joined ?
             await findWars({
                 startsAt: {
-                    $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
-                    $lt: new Date().getTime()
+                    $gt: Date.now() - 24 * 60 * 60 * 1000,
+                    $lt: Date.now()
                 },
                 "clans.clanId": new mongoose.Types.ObjectId(clan.clanId as string),
                 "clans.members": username,

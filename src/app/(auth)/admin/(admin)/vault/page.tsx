@@ -14,11 +14,11 @@ export default function VaultBalances() {
         axios.get('/api/vault/balance', { headers: { token: localStorage.getItem("jwt") }, })
             .then(({ data: { balances, basets } }: { data: { balances: VaultBalanceType[], basets: number } }) => {
                 setBalances(balances)
-                timeOffset_ref.current = new Date().getTime() - basets
+                timeOffset_ref.current = Date.now() - basets
             })
         const t_out = setInterval(() => {
             const UTC_0 = new Date().setUTCHours(0, 0, 0) + 24 * 60 * 60 * 1000
-            setTimeReamining(convertTimestamp2HumanReadablePadded(UTC_0 - timeOffset_ref.current - new Date().getTime()))
+            setTimeReamining(convertTimestamp2HumanReadablePadded(UTC_0 - timeOffset_ref.current - Date.now()))
         }, 1000);
         return () => clearInterval(t_out)
     }, [])

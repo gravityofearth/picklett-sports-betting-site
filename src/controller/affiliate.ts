@@ -132,7 +132,7 @@ export const distributeAffiliateRewards = async ({ startsAt, endsAt }: { startsA
                 $addFields: {
                     startsAt: startsAt,
                     endsAt: endsAt,
-                    timestamp: new Date().getTime(),
+                    timestamp: Date.now(),
                     revenue: { $multiply: ["$totalAmount", -1] },
                     totalBets: { $multiply: ["$totalBetPlaceAmount", -1] },
                     earning: { $multiply: ["$totalAmount", -0.05] },

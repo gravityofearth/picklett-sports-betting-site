@@ -44,7 +44,7 @@ export function SportsLayout({ children, loggedIn, oddstype }: Readonly<{ childr
     }
     let passed = true
     for (let betSlip of betSlips) {
-      const timestampDiff = betSlip.startsAt - Math.floor(new Date().getTime())
+      const timestampDiff = betSlip.startsAt - Math.floor(Date.now())
       if (timestampDiff < 0) {
         showToast(
           <ul>

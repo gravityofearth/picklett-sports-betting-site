@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const { username }: any = jwt.verify(token, JWT_SECRET)
     if (betSlips.some(betSlip => (Number(betSlip.amount) < 5 || Number(betSlip.amount) > 50))) return NextResponse.json({ error: "Out of range" }, { status: 400, statusText: "Minimum $5, Maximum $50" });
     const lines = await findLines({ filter: { _id: { $in: betSlips.map(b => new mongoose.Types.ObjectId(b.lineId)) } } })
-    if (lines.some(line => line.status !== "pending" || line.startsAt < new Date().getTime()))
+    if (lines.some(line => line.status !== "pending" || line.startsAt < Date.now()))
       return NextResponse.json({ error: "Bad Bet" }, { status: 400, statusText: "Bet placed on unavailable line" });
     /* NOTE: check odds hash */
     if (betSlips.some(({ unit, lineId, num, oddsName, point, value, hash, index }) => {

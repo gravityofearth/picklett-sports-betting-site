@@ -28,7 +28,7 @@ export async function createClan({ title, ownerUserName, description, icon }: { 
                         joined: true,
                         role: "owner",
                         contribution: 0,
-                        timestamp: new Date().getTime()
+                        timestamp: Date.now()
                     },
                 },
                 $inc: {
@@ -153,7 +153,7 @@ export async function joinClan({ username, id }: { username: string, id: string 
                     joined: false,
                     role: "member",
                     contribution: 0,
-                    timestamp: new Date().getTime()
+                    timestamp: Date.now()
                 },
             }
         }, { new: true })
@@ -227,8 +227,8 @@ export async function leaveClan({ clanId, username, role, usernameToTransfer }: 
     try {
         const clanwars = await clanWarModel.find({
             startsAt: {
-                $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
-                // $lt: new Date().getTime(),
+                $gt: Date.now() - 24 * 60 * 60 * 1000,
+                // $lt: Date.now(),
             },
             clans: {
                 $elemMatch: {
@@ -262,7 +262,7 @@ export async function leaveClan({ clanId, username, role, usernameToTransfer }: 
                                     joined: true,
                                     role: "owner",
                                     contribution: 0,
-                                    timestamp: new Date().getTime()
+                                    timestamp: Date.now()
                                 },
                             }
                         }
@@ -310,7 +310,7 @@ export async function depositClan({ id, username, amount }: { id: string, userna
         const newClanTx = new clanTxModel({
             clanId: id,
             type: "deposit",
-            timestamp: new Date().getTime(),
+            timestamp: Date.now(),
             cofferBefore: clan.coffer,
             cofferAfter: clan.coffer + amount,
             username, amount,
@@ -351,7 +351,7 @@ export async function distributeClan({ id, selectedMember, amount }: { id: strin
         const newClanTx = new clanTxModel({
             clanId: new mongoose.Types.ObjectId(id),
             type: "distribute",
-            timestamp: new Date().getTime(),
+            timestamp: Date.now(),
             cofferBefore: clan.coffer,
             cofferAfter: clan.coffer - amount,
             username: selectedMember, amount,
@@ -620,7 +620,7 @@ export async function joinWar({ warId, clanId, members, startsAt, stake }: { war
         const newClanTx = new clanTxModel({
             clanId, warId,
             type: "stake",
-            timestamp: new Date().getTime(),
+            timestamp: Date.now(),
             cofferBefore: clan.coffer + stake,
             cofferAfter: clan.coffer,
             amount: stake,
@@ -644,7 +644,7 @@ export async function rewardPrizeForEndedWar(job: any) {
     try {
         const { warId }: { warId: string } = job
         const { prize, clans, startsAt } = await clanWarModel.findById(new mongoose.Types.ObjectId(warId)).session(session)
-        if (new Date().getTime() < startsAt + 24 * 60 * 60 * 1000) throw new Error("Clan War Not Ended")
+        if (Date.now() < startsAt + 24 * 60 * 60 * 1000) throw new Error("Clan War Not Ended")
         clans.sort((b: any, a: any) => a.wins - b.wins)
         const wonClan = clans[0]
         if (wonClan.wins === clans[1].wins) {
@@ -662,7 +662,7 @@ export async function rewardPrizeForEndedWar(job: any) {
             clanId: wonClan.clanId,
             warId,
             type: "prize",
-            timestamp: new Date().getTime(),
+            timestamp: Date.now(),
             cofferBefore: clan.coffer,
             cofferAfter: clan.coffer + prize,
             amount: prize,

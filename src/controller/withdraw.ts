@@ -54,7 +54,7 @@ export async function createWithdraw({ username, currency, network, address, amo
                     : 1)
             / lockedPrice)
         if (vaultBalance >= amount_satlamp) {
-            const viewPoint = new Date(new Date().getTime() - 20 * 60 * 60 * 1000);
+            const viewPoint = new Date(Date.now() - 20 * 60 * 60 * 1000);
             const sumFromPoint = await withdrawModel.aggregate([
                 {
                     $match: {

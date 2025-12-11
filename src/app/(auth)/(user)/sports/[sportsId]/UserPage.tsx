@@ -60,7 +60,7 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
     const timeRemains = useMemo(() => (wrappedLines
         .reduce((prev: LineType[], cur: WrappedLineType) => ([...prev, ...cur.data]), [])
         .map(line => {
-            const timestampDiff = line.startsAt - Math.floor(new Date().getTime()) + timeOffset
+            const timestampDiff = line.startsAt - Math.floor(Date.now()) + timeOffset
             return {
                 id: line._id,
                 text: convertTimestamp2HumanReadablePadded(timestampDiff)

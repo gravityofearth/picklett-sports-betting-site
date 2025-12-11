@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: any }) {
     })).json()
     return (
       <UserPage params={{
-        activeWars, winstreak, oddstype, timeOffset: new Date().getTime() - basets, sportsId,
+        activeWars, winstreak, oddstype, timeOffset: Date.now() - basets, sportsId,
         lines: lines
           .map((wrappedLine) => ({
             ...wrappedLine,

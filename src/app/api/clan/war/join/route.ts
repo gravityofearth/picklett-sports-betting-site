@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     if (war.slots === clan_length) return NextResponse.json({ error: "Slots full" }, { status: 400, statusText: "All slots are in full" })
     if (war.minMembers !== members.length) return NextResponse.json({ error: "Bad request" }, { status: 400, statusText: "Mismatching members" })
     if (war.clans?.find((v: any) => v.clanId.toString() === clanId)) return NextResponse.json({ error: "Already joined" }, { status: 400, statusText: "Already joined" });
-    const startsAt = war.slots - clan_length === 1 ? (new Date().getTime() + 1 * 60 * 60 * 1000) : 0
+    const startsAt = war.slots - clan_length === 1 ? (Date.now() + 1 * 60 * 60 * 1000) : 0
     await joinWar({ warId, clanId, members, startsAt, stake: war.stake })
     return NextResponse.json("OK", { status: 200 })
   } catch (error: any) {

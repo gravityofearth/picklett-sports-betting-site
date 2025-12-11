@@ -67,7 +67,7 @@ export async function fetchLinesBySports({ sports, isAdmin }: { sports: string, 
             } :
             {
                 status: "pending",
-                startsAt: { $gt: new Date().getTime() },
+                startsAt: { $gt: Date.now() },
                 ...sportsFilter,
             }
         if (sports === "all-sports") {
@@ -269,7 +269,7 @@ export async function placeBet({ betSlips, username }: { betSlips: BetSlipType[]
         if (!user || user.balance < amount_sum) {
             throw new Error('Insufficient balance');
         }
-        const now = new Date().getTime()
+        const now = Date.now()
         const insertedBets = await betModel.insertMany(
             betSlips.map(({ lineId, unit, num, description, oddsName, point, team_total_point, value, index, amount }, i) => ({
                 username, result: "pending",
@@ -509,8 +509,8 @@ export async function resolveBetsforLineId({ betResolver, lineId, status }: reso
                     updateMany: {
                         filter: {
                             startsAt: {
-                                $gt: new Date().getTime() - 24 * 60 * 60 * 1000,
-                                $lt: new Date().getTime(),
+                                $gt: Date.now() - 24 * 60 * 60 * 1000,
+                                $lt: Date.now(),
                             },
                             'clans.clanId': new mongoose.Types.ObjectId(user.clan.clanId as string),
                         },
@@ -530,7 +530,7 @@ export async function resolveBetsforLineId({ betResolver, lineId, status }: reso
                     clTxs.push({
                         clanId: new mongoose.Types.ObjectId(user.clan.clanId as string),
                         type: "tax",
-                        timestamp: new Date().getTime(),
+                        timestamp: Date.now(),
                         cofferBefore: user.currentClan.coffer,
                         cofferAfter: user.currentClan.coffer + tax,
                         username,

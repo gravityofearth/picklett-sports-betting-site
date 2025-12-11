@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const vault_btc_address = bitcoin.payments.p2wpkh({ pubkey: ECPair.fromWIF(VAULT_PRIV_KEYS.btc).publicKey }).address
     const vault_sol_address = Keypair.fromSecretKey(bs58.decode(VAULT_PRIV_KEYS.sol)).publicKey.toBase58()
     return NextResponse.json({
-      basets: new Date().getTime(),
+      basets: Date.now(),
       balances: [
         {
           network: "Bitcoin",

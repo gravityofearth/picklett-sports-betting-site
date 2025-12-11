@@ -32,10 +32,10 @@ export default function Page({
   useEffect(() => {
     if (!war) return
     const t = setInterval(() => {
-      if (new Date().getTime() < war.startsAt) {
+      if (Date.now() < war.startsAt) {
         setTiming("Waiting...")
-      } else if (new Date().getTime() - war.startsAt < 24 * 60 * 60 * 1000) {
-        const seconds = Math.floor((24 * 60 * 60 * 1000 + war.startsAt - new Date().getTime()) / 1000)
+      } else if (Date.now() - war.startsAt < 24 * 60 * 60 * 1000) {
+        const seconds = Math.floor((24 * 60 * 60 * 1000 + war.startsAt - Date.now()) / 1000)
         const h = Math.floor(seconds / 3600).toString().padStart(2, "0")
         const m = (Math.floor(seconds / 60) % 60).toString().padStart(2, "0")
         const s = (seconds % 60).toString().padStart(2, "0")

@@ -53,7 +53,7 @@ export const openSportsLines = async () => {
                 for (let event of marketData.events) {
                     const { event_id, parent_id, resulting_unit, league_id, league_name, home, away, starts, periods } = event
                     const startsAt = new Date(`${starts}Z`).getTime()
-                    if (!(startsAt > new Date().getTime() && startsAt < (new Date().getTime() + 24 * 60 * 60 * 1000))) continue
+                    if (!(startsAt > Date.now() && startsAt < (Date.now() + 24 * 60 * 60 * 1000))) continue
                     deleteUnnecessaryKeysAndRoundOddsInPeriods(periods)
                     const refinedOdds = refinePeriods(periods)
                     const odds_resulting_unit = `odds_${resulting_unit.replaceAll(" ", "_").toLowerCase()}` as OddsUnitType

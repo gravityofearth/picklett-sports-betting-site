@@ -44,7 +44,7 @@ export default function DepositPage() {
         clearInterval(tout!)
         return
       }
-      const seconds = Math.floor((timeOffsetRef.current - new Date().getTime()) / 1000)
+      const seconds = Math.floor((timeOffsetRef.current - Date.now()) / 1000)
       if (seconds > 0) {
         setTimeRemaining(`${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}`)
       } else {
@@ -59,7 +59,7 @@ export default function DepositPage() {
     axios.get(`/api/deposit/${params.depositId}`, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ data: { deposit, basets, token } }: { data: { deposit: DepositType, basets: number, token?: string } }) => {
         setDeposit(deposit)
-        setTimeOffset(deposit.expiresAt + new Date().getTime() - basets)
+        setTimeOffset(deposit.expiresAt + Date.now() - basets)
         setPrices(prev => prev[0] === "0" && prev[1] === "0" ? [deposit.lockedPrice.toString(), "1"] : prev)
         if (["initiated", "confirming"].includes(deposit.result)) {
           tout_ref.current = setTimeout(fetchDeposit, 2_000);

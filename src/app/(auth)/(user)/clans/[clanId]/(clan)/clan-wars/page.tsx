@@ -54,11 +54,11 @@ const ClanWar = ({ war, callback }: { war: WarType, callback: (war: WarType) => 
 
   const timing =
     war.startsAt === 0 ? "Unknown" :
-      new Date().getTime() < war.startsAt ? `Starts at ${new Date(war.startsAt).toLocaleTimeString()}` :
-        new Date().getTime() < war.startsAt + 24 * 60 * 60 * 1000 ? `Ends at ${new Date(war.startsAt + 24 * 60 * 60 * 1000).toLocaleTimeString()}` :
+      Date.now() < war.startsAt ? `Starts at ${new Date(war.startsAt).toLocaleTimeString()}` :
+        Date.now() < war.startsAt + 24 * 60 * 60 * 1000 ? `Ends at ${new Date(war.startsAt + 24 * 60 * 60 * 1000).toLocaleTimeString()}` :
           "Ended"
   const action =
-    war.startsAt > new Date().getTime() ? "waiting" :
+    war.startsAt > Date.now() ? "waiting" :
       war.startsAt === 0 && (war.clans ? war.clans.length : 0) < war.slots ?
         war.clans?.find(v => v.clanId === userClan?.clanId) ?
           "waiting" :

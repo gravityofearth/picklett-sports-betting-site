@@ -29,7 +29,7 @@ export async function createDeposit({ username, currency, network }: { username:
                 lockedPrice: priceBTC,
                 result: "initiated",
                 confirmations: 0,
-                expiresAt: new Date().getTime() + 20 * 60 * 1000
+                expiresAt: Date.now() + 20 * 60 * 1000
             });
             const savedDeposit = await newDeposit.save();
             return savedDeposit;
@@ -47,7 +47,7 @@ export async function createDeposit({ username, currency, network }: { username:
                 lockedPrice: priceSOL,
                 result: "initiated",
                 confirmations: 0,
-                expiresAt: new Date().getTime() + 20 * 60 * 1000
+                expiresAt: Date.now() + 20 * 60 * 1000
             });
             const savedDeposit = await newDeposit.save();
             return savedDeposit;
@@ -91,7 +91,7 @@ export async function updateDeposit({ id, result, depositAmount, confirmations, 
 }
 export async function detectDeposit(deposit: any) {
     let expired = true
-    while (deposit.expiresAt + 20 * 60 * 1000 > new Date().getTime()) {
+    while (deposit.expiresAt + 20 * 60 * 1000 > Date.now()) {
         try {
             if (deposit.network === "Bitcoin") {
                 const { data: { unspent_outputs } }: {
@@ -132,8 +132,8 @@ export async function detectDeposit(deposit: any) {
     }
 }
 export async function confirmDeposit(deposit: any) {
-    const start_time = new Date().getTime()
-    while (start_time + 60 * 60 * 1000 > new Date().getTime()) {
+    const start_time = Date.now()
+    while (start_time + 60 * 60 * 1000 > Date.now()) {
         try {
             const { data: { unspent_outputs } }: {
                 data: {
