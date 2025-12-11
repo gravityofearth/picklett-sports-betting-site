@@ -6,7 +6,7 @@ import { useUser } from "@/store";
 import { useEffect, useState } from "react";
 import { redirect, usePathname } from "next/navigation";
 import axios, { AxiosError } from "axios";
-import { sportsData } from "@/utils";
+import { sportsDataAll } from "@/utils/line";
 import { LinkOrButton } from "@/components/MUIs";
 
 export default function AuthUserLayout({
@@ -60,7 +60,7 @@ export default function AuthUserLayout({
                         </div>
                         <div className="border-b border-white/30 w-full"></div>
                         <div className="flex flex-col px-2">
-                            {sportsData.map(({ label, sports }, i) =>
+                            {sportsDataAll.map(({ label, sports }, i) =>
                                 <SidebarItem key={i} href={`/sports/${sports}`} svg={`#svg-nav-${sports}`} title={label} expandSidebar={expandSidebar} count={lineCount.find(lc => lc.sports === sports)?.count || 0} />
                             )}
                         </div>
@@ -189,7 +189,7 @@ export const SidebarItem = ({ expandSidebar, href, svg, title, highlight, count 
         <LinkOrButton disabled={count === 0} href={href} className={`relative p-2 rounded-md flex gap-3 items-center cursor-pointer disabled:cursor-not-allowed ${highlight ? "bg-radial-[at_50%_75%] from-[#1475E1] via-[#3483dd] to-[#2067b8] to-90%" : pathname.includes(href) ? "bg-white/20" : "hover:bg-white/10 "}`}>
             <svg className="w-6 max-md:w-4 h-6 max-md:h-4 fill-white/70"><use href={svg} /></svg>
             {expandSidebar && <span className="text-sm text-left">{title}</span>}
-            {/* {expandSidebar && count !== undefined && count > 0 && <span className={`absolute ${expandSidebar ? "right-2" : "-right-3"} ${pathname === href ? "bg-[#1372ff88]" : "bg-[#06235af6]"}  min-w-6 h-6 p-1 text-center text-xs rounded-full`}>{count}</span>} */}
+            {expandSidebar && count !== undefined && count > 0 && <span className={`absolute ${expandSidebar ? "right-2" : "-right-3"} ${pathname === href ? "bg-[#1372ff88]" : "bg-[#06235af6]"}  min-w-6 h-6 p-1 text-center text-xs rounded-full`}>{count}</span>}
         </LinkOrButton>
     )
 }

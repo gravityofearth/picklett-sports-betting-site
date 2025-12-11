@@ -1,6 +1,7 @@
 "use client"
 import { WarFeedType } from "@/types"
-import { formatAgo, sportsData } from "@/utils"
+import { formatAgo } from "@/utils"
+import { sportsDataAll } from "@/utils/line"
 import axios from "axios"
 import Image from "next/image"
 import { useParams } from "next/navigation"
@@ -27,7 +28,7 @@ const WarFeed = ({ feed }: { feed: WarFeedType }) => {
           <span className="md:text-2xl">{feed.username}</span>
           <p className="flex items-center gap-4 max-md:text-xs">
             <span>{feed.league}</span>
-            <span className="px-2 py-1 rounded-sm bg-[#1c67bd88]">{sportsData.find(v => v.sports === feed.sports)?.label}</span>
+            <span className="px-2 py-1 rounded-sm bg-[#1c67bd88]">{sportsDataAll.find(v => v.sports === feed.sports)?.label}</span>
           </p>
           <span className="max-md:text-xs">{feed.home} vs {feed.away}</span>
         </div>

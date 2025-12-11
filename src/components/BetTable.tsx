@@ -3,7 +3,7 @@
 import { BetType } from "@/types"
 import { useMemo, useState } from "react"
 import Pagination from "./Pagination"
-import { formatOddsPointTitle, ODDS_TITLE, sportsData } from "@/utils"
+import { formatOddsPointTitle, ODDS_TITLE, sportsDataAll, UNIT_TITLE } from "@/utils/line"
 
 const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], username: string, adminPage?: boolean }) => {
     // Pagination
@@ -51,7 +51,7 @@ const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], user
                                             return (
                                                 <>
                                                     {adminPage && <td className="pl-6 py-1 pr-2 whitespace-nowrap text-sm">{bet.username}</td>}
-                                                    <td className="py-4 px-2 text-sm">{sportsData.find(v => v.sports === bet.lineData.sports)?.label}</td>
+                                                    <td className="py-4 px-2 text-sm">{sportsDataAll.find(v => v.sports === bet.lineData.sports)?.label}</td>
                                                     <td className="py-4 px-2 text-sm">{bet.lineData.leagueName}</td>
                                                     <td className="py-4 px-2 text-xs">
                                                         <p className={`${bet.oddsName !== "totals" && teamName === bet.lineData.home ? "text-[#006fee]" : ""}`}>{bet.lineData.home}</p>
@@ -59,7 +59,7 @@ const BetTable = ({ userBets, username, adminPage }: { userBets: BetType[], user
                                                     </td>
                                                     <td className="py-4 px-2 text-xs">
                                                         {bet.oddsName !== "totals" && <p className="text-[#1475E1]">{teamName}</p>}
-                                                        <p>{ODDS_TITLE[bet.oddsName]} - {bet.description}</p>
+                                                        <p>{UNIT_TITLE[bet.unit]}{ODDS_TITLE[bet.oddsName]} - {bet.description}</p>
                                                         <p className="underline">{
                                                             formatOddsPointTitle({
                                                                 oddsName: bet.oddsName,

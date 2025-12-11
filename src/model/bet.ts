@@ -6,6 +6,7 @@ const betSchema = new mongoose.Schema({
         index: true,
     },
     lineId: mongoose.Schema.Types.ObjectId,
+    unit: String,
     num: String,
     description: String,
     oddsName: String,
@@ -21,7 +22,7 @@ const betSchema = new mongoose.Schema({
 }, {
     timestamps: true, // Adds createdAt and updatedAt
 });
-betSchema.index({ lineId: 1, num: 1, oddsName: 1, point: 1, team_total_point: 1 })
+betSchema.index({ lineId: 1, unit: 1, num: 1, oddsName: 1, point: 1, team_total_point: 1 })
 betSchema.index({ updatedAt: 1 })
 betSchema.index({ createdAt: 1 })
 setSchemaLean(betSchema)

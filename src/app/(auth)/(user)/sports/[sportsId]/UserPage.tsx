@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react"
 import { BetSlipType, LineType, WarType, WrappedLineType } from "@/types"
-import { convertTimestamp2HumanReadablePadded, formatOddsPointTitle, formatOddsValue, ODDS_TITLE, sportsData } from "@/utils"
+import { convertTimestamp2HumanReadablePadded, formatOddsValue, } from "@/utils"
 import { useUser } from "@/store"
 import Pagination from "@/components/Pagination"
 import { usePathname } from "next/navigation"
@@ -11,6 +11,7 @@ import { LinkOrButton, SearchHighlight } from "@/components/MUIs"
 import { handlerBetSlipClick, isInSlips } from "./[lineId]/lineId"
 import { useBetSlip } from "../components/sportsLayout"
 import HeroSection from "../components/heroSection"
+import { formatOddsPointTitle, ODDS_TITLE, sportsDataAll, UNIT_TITLE } from "@/utils/line"
 
 export default function UserPage({ params: { activeWars, winstreak, oddstype, timeOffset, lines: lines_origin, sportsId } }: {
     params: {
@@ -30,7 +31,7 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
         const pattern = escapedKeywords.join('|');
         const regex = new RegExp(pattern, 'i');
         return lines_origin.map((wL) => ({
-            ...wL, data: wL.data.filter(line => regex.test(wL.league) || [line.home, line.away, line.leagueName].some(text => regex.test(text)))
+            ...wL, data: wL.data.filter(line => [line.sports, wL.league, line.home, line.away, line.leagueName].some(text => regex.test(text)))
         })).filter(wL => wL.data.length > 0)
     }, [search])
     const { clan, lineCount } = useUser()
@@ -72,7 +73,7 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
             <div className={`w-full flex flex-col gap-4 max-md:gap-2`}>
                 <HeroSection />
                 <div className="w-full overflow-x-auto flex gap-1">
-                    {sportsData.map(({ label, sports }, i) =>
+                    {sportsDataAll.map(({ label, sports }, i) =>
                         <SportsTab key={i} selected={sports === sportsId} href={sports} icon={`nav-${sports}`} category={label} count={lineCount.find(lc => lc.sports === sports)?.count || 0} />
                     )}
                 </div>
@@ -101,8 +102,8 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
                 <div className="flex max-md:flex-col md:gap-2 justify-between md:items-center">
                     <div className="flex gap-2 items-center">
                         <svg className="w-8 max-md:w-6 h-8 max-md:h-6">{sportsId === "" ? <use href="#svg-nav-all-sports" /> : <use href={`#svg-nav-${sportsId?.toLowerCase()}`} />}</svg>
-                        <span className="md:text-2xl">{sportsData.find(v => v.sports === sportsId)?.label || "Unknown"}</span>
-                        <span className="text-xs p-1 rounded-sm bg-white/6">{wrappedLines.length} leagues</span>
+                        <span className="md:text-2xl">{sportsDataAll.find(v => v.sports === sportsId)?.label || "Unknown"}</span>
+                        {sportsId !== "all-sports" && <span className="text-xs p-1 rounded-sm bg-white/6">{wrappedLines.length} leagues</span>}
                     </div>
                     <div className="flex items-center gap-2 pr-2">
                         <button onClick={() => setOpens(currentWrappedLines.map(() => true))} className="p-2 rounded-md bg-[#0E1B2F] cursor-pointer text-xs">Expand All</button>
@@ -158,17 +159,26 @@ const WrappedLine = ({ wrappedLine, timeRemains, open, onClick, search, sportsId
                     <p className="px-2">
                         <SearchHighlight search={search} text={wrappedLine.league} />
                     </p>
-                    <span className={`flex justify-center items-center bg-[#1475E1] min-w-5 h-5 text-center text-xs rounded-sm`}>{wrappedLine.data.length}</span>
+                    {sportsId !== "all-sports" &&
+                        <span className={`flex justify-center items-center bg-[#1475E1] min-w-5 h-5 text-center text-xs rounded-sm`}>{wrappedLine.data.length}</span>
+                    }
                 </div>
                 <svg className={`w-6 h-6 ${open ? "rotate-180" : ""}`}><use href="#svg-arrow-down" /></svg>
             </div>
             {open &&
                 <div className="flex flex-col w-full md:gap-2 pl-2">
-                    {wrappedLine.data.map(({ _id, home, away, startsAt, odds: { num, description, oddsName, point, v1, v2, team_total_point, h1, h2 } }) =>
+                    {wrappedLine.data.map(({ _id, sports, leagueName, home, away, startsAt, odds: { unit, num, description, oddsName, point, v1, v2, team_total_point, h1, h2 } }) =>
                         <div key={_id} className={`flex max-xl:flex-col justify-between gap-4 md:rounded-lg max-md:border-y max-md:border-white/70 p-4 max-md:p-2 ${timeRemains.filter(v => v.id === _id)[0]?.text?.includes("ago") ? "bg-[#202828]" : "bg-white/8"}`}>
                             <div className="w-full flex flex-col gap-2">
                                 <div className="w-full flex max-md:flex-col gap-2 max-md:gap-1">
                                     <div className="flex flex-col justify-center max-md:gap-2 gap-4 text-sm w-1/3 max-md:w-full">
+                                        {sportsId === "all-sports" &&
+                                            <div className="flex gap-2 items-center">
+                                                <svg className="w-8 max-md:w-6 h-8 max-md:h-6"><use href={`#svg-nav-${sports.toLowerCase()}`} /></svg>
+                                                <SearchHighlight search={search} text={sportsDataAll.find(v => v.sports === sports)?.label || "Unknown"} />
+                                                <SearchHighlight search={search} text={leagueName} />
+                                            </div>
+                                        }
                                         <div className="flex items-center">
                                             <svg className="w-4 h-4 shrink-0 fill-white/70 stroke-white/50"><use href="#svg-clock-new" /></svg>
                                             <p className="text-sm text-white/70">
@@ -185,10 +195,9 @@ const WrappedLine = ({ wrappedLine, timeRemains, open, onClick, search, sportsId
                                         </div>
                                     </div>
                                     <div className="flex flex-col w-2/3 max-md:w-full gap-1">
-                                        <div className="text-sm">
-                                            <span>{ODDS_TITLE[oddsName]} </span>
-                                            <span> - {description}</span>
-                                        </div>
+                                        <span className="text-sm">
+                                            {UNIT_TITLE[unit]}{ODDS_TITLE[oddsName]} - {description}
+                                        </span>
                                         <div className="w-full flex gap-2 max-md:gap-1">
                                             <div className="w-full flex max-md:flex-col gap-2 max-md:gap-1">
                                                 {[0, 1].map((i) =>
@@ -196,13 +205,13 @@ const WrappedLine = ({ wrappedLine, timeRemains, open, onClick, search, sportsId
                                                         {(() => {
                                                             const betSlip: BetSlipType = {
                                                                 // Should match
-                                                                lineId: _id, num, oddsName, point, team_total_point, description,
+                                                                lineId: _id, unit, num, oddsName, point, team_total_point, description,
                                                                 // To submit
                                                                 value: [v1, v2][i], hash: [h1, h2][i], index: i,
                                                                 // Not to submit, to display
                                                                 home, away,
-                                                                leagueName: wrappedLine.league,
-                                                                amount: "", sports: sportsData.find(v => v.sports === sportsId)?.label || "", startsAt
+                                                                leagueName,
+                                                                amount: "", sports: sportsDataAll.find(v => v.sports === sportsId)?.label || "", startsAt
                                                             }
                                                             return (
                                                                 <button onClick={() => handlerBetSlipClick({ betSlip, setBetSlips, setShowBetSlip })} className={`w-full rounded-lg max-md:rounded-sm p-2 ${isInSlips(betSlips, betSlip) ? "bg-[#1372ff88]" : "bg-white/10"} flex flex-col justify-between text-left gap-2 max-md:gap-1 cursor-pointer`}>
@@ -252,11 +261,11 @@ export const SportsTab = ({ selected, icon, category, count, href }: { selected?
         <LinkOrButton disabled={disabled} href={href} className={`flex flex-col gap-1 items-center p-3 cursor-pointer ${disabled ? "cursor-not-allowed" : ""}`}>
             <div className={`relative px-[11px] py-[6px] rounded-[11px] ${selected ? "bg-[#1475E133]" : "bg-[#24232A]"} border border-[#1E2939B2] hover:border hover:border-[#01A3DB] ${disabled ? "hover:border-[#1E2939B2] cursor-not-allowed" : ""}`}>
                 <svg className="w-10 max-md:w-6 h-10 max-md:h-6"><use href={`#svg-${icon}`} /></svg>
-                {/* {count > 0 &&
+                {count > 0 &&
                     <div className={`absolute top-0 right-0 min-w-6 translate-x-[50%] leading-4 -translate-y-[50%] p-1 rounded-md text-sm max-md:text-xs text-center ${selected ? "bg-[#1475E1]" : "bg-[#434343]"}`}>
                         {count}
                     </div>
-                } */}
+                }
             </div>
             <p className="max-md:hidden max-w-20">{category}</p>
         </LinkOrButton>

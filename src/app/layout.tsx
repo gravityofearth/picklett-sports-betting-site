@@ -5,12 +5,13 @@ import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import SVGs from "@/components/SVG";
 import { GlobalContextProvider } from "@/store";
+import { patchConsole } from "@/utils/patch";
+patchConsole()
 
 export const metadata: Metadata = {
   title: "Picklett Sports Betting",
   description: "A sports betting website that offers a seamless gateway for users to place bets and access betting services.",
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{

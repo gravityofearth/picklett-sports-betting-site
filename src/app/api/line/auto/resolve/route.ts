@@ -1,20 +1,21 @@
 
 import { getWrappedBetsByLineIds, findLines, resolveBetsforLineId, updateLinesStatus } from "@/controller/bet";
-import { BetResultType, OddsType } from "@/types";
+import { BetResultType, OddsType, OddsUnitType } from "@/types";
 import { WEBHOOK_SECRET, RAPID_API_HEADERS } from "@/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
+type PeroidResultType = {
+  "number": number,
+  "team_1_score": number,
+  "team_2_score": number,
+  "cancellation_reason": any
+}
 type ResultType = {
   events: {
     starts?: string,
     home_team_type?: string,
     periods: any,
-    period_results?: {
-      "number": number,
-      "team_1_score": number,
-      "team_2_score": number,
-      "cancellation_reason": any
-    }[]
+    period_results?: PeroidResultType[]
   }[]
 }
 const resolveLines = async () => {
@@ -25,7 +26,7 @@ const resolveLines = async () => {
   const wrappedLiveBets: {
     lineId: string,
     bets: {
-      _id: string, username: string, num: string, oddsName: string, point: string, team_total_point: number, index: number,
+      _id: string, username: string, unit: OddsUnitType, num: string, oddsName: string, point: string, team_total_point: number, index: number,
     }[]
   }[] = await getWrappedBetsByLineIds(liveLineIds)
   const lineIds_in_LiveBets = new Set(wrappedLiveBets.map(v => v.lineId.toString()));
@@ -34,24 +35,34 @@ const resolveLines = async () => {
   console.log(`Marked ${inactiveLineIds.length} lines as inactive`)
 
   const activeLiveLines = liveLines.filter(line => lineIds_in_LiveBets.has(line._id.toString()))
-  console.log(`Resolving ${activeLiveLines.length} lines`)
+  console.log(`================= Resolving ${activeLiveLines.length} lines ====================`)
   for (let liveLine of activeLiveLines) {
     const start_time = performance.now()
-    const { _id: lineId, eventId, sports }: { _id: string, eventId: string, sports: string } = liveLine
+    const { _id: lineId, eventId, children: child_unit_eventIds }: { _id: string, eventId: string, sports: string, children: { unit: string, eventId: string }[] } = liveLine
     try {
       const { data: { events: [event] } }: { data: ResultType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/details?event_id=${eventId}`, {
         headers: RAPID_API_HEADERS
       })
       if (!event.period_results) continue
       if (Object.keys(event.periods).length !== event.period_results.length) continue
+      const lineResults: Partial<{ [K in OddsUnitType]: PeroidResultType[] }> = {}
+      lineResults["odds_regular"] = event.period_results
       const wrappedBet = wrappedLiveBets.find(v => v.lineId.toString() === lineId.toString())
       if (!wrappedBet) continue
       const bets_onLineId = wrappedBet.bets
       const betResolver: { [username: string]: { bet: any, result: BetResultType }[] } = {}
       let status = "finished"
       for (let bet of bets_onLineId) {
+        if (!lineResults[bet.unit]) {
+          const eventId = child_unit_eventIds.find(v => v.unit === bet.unit)?.eventId
+          if (!eventId) continue
+          const { data: { events: [event] } }: { data: ResultType } = await axios.get(`https://pinnacle-odds.p.rapidapi.com/kit/v1/details?event_id=${eventId}`, {
+            headers: RAPID_API_HEADERS
+          })
+          lineResults[bet.unit] = event.period_results
+        }
         const number = Number(bet.num.replace("num_", ""))
-        const period_result = event.period_results.filter(v => v.number === number)[0]
+        const period_result = lineResults[bet.unit]?.filter(v => v.number === number)[0]
         if (!period_result) continue
         let result: BetResultType = "win"
         if (period_result.cancellation_reason) {

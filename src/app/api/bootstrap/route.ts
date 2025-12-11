@@ -3,8 +3,10 @@ import { confirmDeposit, detectDeposit, getMonitoringDeposits } from "@/controll
 import { WEBHOOK_SECRET } from "@/utils";
 import connectMongoDB from "@/utils/mongodb";
 import { openSportsLines } from "../line/auto/openline";
+import { patchConsole } from "@/utils/patch";
 
 export async function POST(request: NextRequest) {
+  patchConsole()
   await connectMongoDB()
   try {
     const token = request.headers.get('token') || ''

@@ -25,11 +25,8 @@ export default async function Page({ params }: { params: any }) {
         lines: lines
           .map((wrappedLine) => ({
             ...wrappedLine,
-            data: wrappedLine.data
-              .map(line => ({ ...line, odds: JSON.parse(line.odds) }))
-            // .filter(line => line.odds?.num)
+            data: wrappedLine.data.map(line => ({ ...line, odds: JSON.parse(line.odds) }))
           }))
-        // .filter(wL => wL.data.length > 0),
       }} />
     )
   } catch (error) {

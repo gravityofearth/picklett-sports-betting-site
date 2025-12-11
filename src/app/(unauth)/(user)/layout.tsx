@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { SidebarItem } from "@/app/(auth)/components/authUserLayout";
-import { sportsData } from "@/utils";
+import { sportsDataAll } from "@/utils/line";
 import { useUser } from "@/store";
 
 export default function UnauthUserLayout({
@@ -38,7 +38,7 @@ export default function UnauthUserLayout({
                         </div>
                         <div className="border-b border-white/30 w-full"></div>
                         <div className="flex flex-col px-2">
-                            {sportsData.map(({ label, sports }, i) =>
+                            {sportsDataAll.map(({ label, sports }, i) =>
                                 <SidebarItem key={i} href={`/home/${sports}`} svg={`#svg-nav-${sports}`} title={label} expandSidebar={expandSidebar} count={lineCount.find(lc => lc.sports === sports)?.count || 0} />
                             )}
                         </div>

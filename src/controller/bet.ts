@@ -10,7 +10,7 @@ import balanceTransactionModel from "@/model/balanceTransaction";
 import clanModel from "@/model/clan/clan";
 import clanWarModel from "@/model/clan/clanwar";
 import clanTxModel from "@/model/clan/clantx";
-import { extractTypicalOdds } from "@/utils";
+import { extractTypicalOdds } from "@/utils/line";
 import { BetResultType, BetSlipType } from "@/types";
 export async function bulkLines_desctructing(operations: any[]) {
     await connectMongoDB()
@@ -58,45 +58,115 @@ export async function updateLinesStatus({ lineIds, status }: { lineIds: string[]
 export async function fetchLinesBySports({ sports, isAdmin }: { sports: string, isAdmin: boolean }) {
     await connectMongoDB()
     try {
+        let wrappedLines: any[]
+        const sportsFilter = sports === "all-sports" ? undefined : { sports }
         const filter = isAdmin ?
             {
                 status: { $in: ["live", "pending"] },
-                sports: sports
+                ...sportsFilter,
             } :
             {
                 status: "pending",
-                sports: sports,
+                startsAt: { $gt: new Date().getTime() },
+                ...sportsFilter,
             }
-        const wrappedLines = await lineModel.aggregate([
-            {
-                $match: filter
-            },
-            {
-                $group: {
-                    _id: '$leagueName',
-                    data: {
-                        $push: "$$ROOT"
+        if (sports === "all-sports") {
+            wrappedLines = await lineModel.aggregate([
+                {
+                    $match: filter
+                },
+                { $sort: { startsAt: 1 } },
+                // { $skip: 250 },
+                // { $limit: 10 },
+                {
+                    $project: {
+                        eventId: 1,
+                        children: 1,
+                        sports: 1,
+                        leagueId: 1,
+                        leagueName: 1,
+                        home: 1,
+                        away: 1,
+                        startsAt: 1,
+                        status: 1,
+                        odds: {
+                            odds_regular: "$odds_regular",
+                            odds_corners: "$odds_corners",
+                            odds_sets: "$odds_sets",
+                            odds_games: "$odds_games",
+                            odds_points: "$odds_points",
+                            odds_bookings: "$odds_bookings",
+                            odds_daily_total: "$odds_daily_total",
+                        }
                     }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    league: '$_id',
-                    data: 1,
-                }
-            },
-        ])
+                },
+                {
+                    $group: {
+                        _id: null,
+                        data: {
+                            $push: "$$ROOT"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        league: 'All',
+                        data: 1,
+                    }
+                },
+            ])
+        } else {
+            wrappedLines = await lineModel.aggregate([
+                {
+                    $match: filter
+                },
+                {
+                    $project: {
+                        eventId: 1,
+                        children: 1,
+                        sports: 1,
+                        leagueId: 1,
+                        leagueName: 1,
+                        home: 1,
+                        away: 1,
+                        startsAt: 1,
+                        status: 1,
+                        odds: {
+                            odds_regular: "$odds_regular",
+                            odds_corners: "$odds_corners",
+                            odds_sets: "$odds_sets",
+                            odds_games: "$odds_games",
+                            odds_points: "$odds_points",
+                            odds_bookings: "$odds_bookings",
+                            odds_daily_total: "$odds_daily_total",
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$leagueName',
+                        data: {
+                            $push: "$$ROOT"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        league: '$_id',
+                        data: 1,
+                    }
+                },
+            ])
+        }
         wrappedLines.forEach(wL => {
             wL.data.forEach((line: any) => extractTypicalOdds(line))
         })
         return wrappedLines
             .map((wrappedLine) => ({
                 ...wrappedLine,
-                data: wrappedLine.data.filter((line: any) =>
-                    isAdmin ? line.odds :
-                        (line.odds && line.startsAt > new Date().getTime())
-                )
+                data: wrappedLine.data.filter((line: any) => line.odds)
             }))
             .filter(wL => wL.data.length > 0);
     } catch (error) {
@@ -117,21 +187,37 @@ export async function getLineCountBySports(isAdmin: boolean) {
             {
                 $group: {
                     _id: '$sports',
-                    leagues: {
-                        $addToSet: '$leagueName'
-                    }
+                    count: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $or: [
+                                        { $eq: [{ $type: "$odds_regular" }, "string"] },
+                                        { $eq: [{ $type: "$odds_corners" }, "string"] },
+                                        { $eq: [{ $type: "$odds_sets" }, "string"] },
+                                        { $eq: [{ $type: "$odds_games" }, "string"] },
+                                        { $eq: [{ $type: "$odds_points" }, "string"] },
+                                        { $eq: [{ $type: "$odds_bookings" }, "string"] },
+                                        { $eq: [{ $type: "$odds_daily_total" }, "string"] },
+                                    ]
+                                },
+                                1, 0
+                            ]
+                        }
+                    },
+                    data: { $push: "$$ROOT" }
                 }
             },
             {
                 $project: {
                     _id: 0,
                     sports: '$_id',
-                    count: {
-                        $size: '$leagues'
-                    },
+                    count: 1,
                 }
             }
         ])
+        const sum = lines.reduce((prev, cur) => (prev + cur.count), 0)
+        lines.push({ count: sum, sports: "all-sports" })
         return lines;
     } catch (error) {
         console.error('Error getting line count by sports', error);
@@ -141,8 +227,32 @@ export async function getLineCountBySports(isAdmin: boolean) {
 export async function findLineById(id: string) {
     await connectMongoDB()
     try {
-        const line = await lineModel.findById(new mongoose.Types.ObjectId(id))
-        return line;
+        const line = await lineModel.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(id) } },
+            {
+                $project: {
+                    eventId: 1,
+                    children: 1,
+                    sports: 1,
+                    leagueId: 1,
+                    leagueName: 1,
+                    home: 1,
+                    away: 1,
+                    startsAt: 1,
+                    status: 1,
+                    odds: {
+                        odds_regular: "$odds_regular",
+                        odds_corners: "$odds_corners",
+                        odds_sets: "$odds_sets",
+                        odds_games: "$odds_games",
+                        odds_points: "$odds_points",
+                        odds_bookings: "$odds_bookings",
+                        odds_daily_total: "$odds_daily_total",
+                    }
+                }
+            }
+        ])
+        return line[0];
     } catch (error) {
         console.error('Error finding line:', error);
         throw error
@@ -161,10 +271,10 @@ export async function placeBet({ betSlips, username }: { betSlips: BetSlipType[]
         }
         const now = new Date().getTime()
         const insertedBets = await betModel.insertMany(
-            betSlips.map(({ lineId, num, description, oddsName, point, team_total_point, value, index, amount }, i) => ({
+            betSlips.map(({ lineId, unit, num, description, oddsName, point, team_total_point, value, index, amount }, i) => ({
                 username, result: "pending",
                 lineId: new mongoose.Types.ObjectId(lineId),
-                num, description, oddsName, point, team_total_point, value, index, amount: Number(amount),
+                unit, num, description, oddsName, point, team_total_point, value, index, amount: Number(amount),
                 createdAt: new Date(now + i), updatedAt: new Date(now + i)
             })),
             { session, lean: true }
@@ -242,6 +352,7 @@ export async function findBet(username: string) {
                     // Include all bet fields
                     username: 1,
                     lineId: 1,
+                    unit: 1,
                     num: 1,
                     description: 1,
                     oddsName: 1,

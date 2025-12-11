@@ -1,4 +1,3 @@
-import { LineType } from '@/types'
 import { cookies } from 'next/headers'
 import jwt from "jsonwebtoken"
 import { SportsLayout } from "./components/sportsLayout";

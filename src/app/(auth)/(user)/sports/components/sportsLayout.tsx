@@ -3,7 +3,8 @@
 import { CircularIndeterminate, SearchHighlight } from "@/components/MUIs";
 import { useUser } from "@/store";
 import { BetSlipType } from "@/types";
-import { formatOddsPointTitle, formatOddsValue, ODDS_TITLE, showToast, validateCurrency } from "@/utils";
+import { formatOddsValue, showToast, validateCurrency } from "@/utils";
+import { formatOddsPointTitle, ODDS_TITLE, UNIT_TITLE } from "@/utils/line";
 import axios from "axios";
 import { createContext, Dispatch, SetStateAction, useContext, useState } from "react";
 
@@ -84,7 +85,7 @@ export function SportsLayout({ children, loggedIn, oddstype }: Readonly<{ childr
       return
     }
     setSending(true)
-    const data = betSlips.map(({ lineId, num, description, oddsName, point, team_total_point, value, hash, index, amount }) => ({ lineId, num, description, oddsName, point, team_total_point, value, hash, index, amount }))
+    const data = betSlips.map(({ lineId, unit, num, description, oddsName, point, team_total_point, value, hash, index, amount }) => ({ lineId, unit, num, description, oddsName, point, team_total_point, value, hash, index, amount }))
     axios.post("/api/bet", { data }, { headers: { token: localStorage.getItem("jwt") } })
       .then(({ status, data: { token } }) => {
         if (status === 201) {
@@ -160,9 +161,9 @@ export function SportsLayout({ children, loggedIn, oddstype }: Readonly<{ childr
   )
 }
 const BetSlip = ({ betSlip, oddstype }: { betSlip: BetSlipType, oddstype: "decimal" | "american" }) => {
-  const { home, away, leagueName, point, team_total_point, description, oddsName, index, value, amount } = betSlip
+  const { home, away, leagueName, point, team_total_point, description, oddsName, index, value, amount, unit } = betSlip
   const { setSearch, setBetSlips } = useBetSlip()
-  const shoudMatchKeys: (keyof BetSlipType)[] = ["lineId", "num", "oddsName", "point", "team_total_point"]
+  const shoudMatchKeys: (keyof BetSlipType)[] = ["lineId", "unit", "num", "oddsName", "point", "team_total_point"]
   const filter = (v: BetSlipType) => shoudMatchKeys.every(key => v[key] === betSlip[key])
   const setAmount = (amount: string) => setBetSlips(prevSlips => prevSlips.map(v => filter(v) ? ({ ...v, amount }) : v))
   return (
@@ -182,7 +183,7 @@ const BetSlip = ({ betSlip, oddstype }: { betSlip: BetSlipType, oddstype: "decim
                   <SearchHighlight className="italic underline bg-transparent text-white/70" text={`${home} vs ${away}`} search={`"${teamName}"`} />
                 </button>
                 <button onClick={() => setSearch(`"${teamName}"`)} className="text-white/70 text-xs cursor-pointer hover:bg-[#333] text-left">
-                  <SearchHighlight className="underline bg-transparent text-white/70" text={`${prefix}${ODDS_TITLE[oddsName]} - ${description}`} search={`"${teamName}"`} />
+                  <SearchHighlight className="underline bg-transparent text-white/70" text={`${UNIT_TITLE[unit]}${prefix}${ODDS_TITLE[oddsName]} - ${description}`} search={`"${teamName}"`} />
                 </button>
                 <div className="flex justify-between">
                   <span className="text-xs">

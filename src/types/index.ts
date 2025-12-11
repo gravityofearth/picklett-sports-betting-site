@@ -13,6 +13,7 @@ export type LineType = {
 export type WrappedLineType = { league: string, data: LineType[] }
 export type BetSlipType = {
     lineId: string,
+    unit: string,
     num: string,
     oddsName: string,
     point: string,
@@ -42,6 +43,7 @@ export type BetResultType = "win" | "lose" | "draw" | "cancelled"
 export type BetType = {
     username: string,
     lineId: string,
+    unit: string,
     num: string,
     description: string,
     oddsName: string,
@@ -194,4 +196,17 @@ export type WarFeedType = {
     amount: number,
     result: string,
     updatedAt: string,
+}
+export const ODDS_UNIT_TYPES = [
+    "odds_regular",
+    "odds_corners",
+    "odds_sets",
+    "odds_games",
+    "odds_points",
+    "odds_bookings",
+    "odds_daily_total"
+] as const;
+export type OddsUnitType = typeof ODDS_UNIT_TYPES[number];
+export function isOddsUnitType(value: string): value is OddsUnitType {
+    return ODDS_UNIT_TYPES.includes(value as OddsUnitType);
 }

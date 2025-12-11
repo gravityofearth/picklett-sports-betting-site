@@ -2,9 +2,10 @@ import { signToken } from "@/controller/auth";
 import { findBet, findLines, placeBet } from "@/controller/bet";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken"
-import { getCookieResponse, JWT_SECRET, signOdd } from "@/utils";
+import { getCookieResponse, JWT_SECRET } from "@/utils";
 import { BetSlipType } from "@/types";
 import mongoose from "mongoose";
+import { signOdd } from "@/utils/line";
 export async function POST(request: NextRequest) {
   try {
     const { data: betSlips }: { data: BetSlipType[] } = await request.json()
@@ -12,16 +13,16 @@ export async function POST(request: NextRequest) {
     const { username }: any = jwt.verify(token, JWT_SECRET)
     if (betSlips.some(betSlip => (Number(betSlip.amount) < 5 || Number(betSlip.amount) > 50))) return NextResponse.json({ error: "Out of range" }, { status: 400, statusText: "Minimum $5, Maximum $50" });
     const lines = await findLines({ filter: { _id: { $in: betSlips.map(b => new mongoose.Types.ObjectId(b.lineId)) } } })
-    if (lines.some(line => line.startsAt < new Date().getTime()))
-      return NextResponse.json({ error: "Bet already ended" }, { status: 400, statusText: "Bet already ended" });
+    if (lines.some(line => line.status !== "pending" || line.startsAt < new Date().getTime()))
+      return NextResponse.json({ error: "Bad Bet" }, { status: 400, statusText: "Bet placed on unavailable line" });
     /* NOTE: check odds hash */
-    if (betSlips.some(({ lineId, num, oddsName, point, value, hash, index }) => {
+    if (betSlips.some(({ unit, lineId, num, oddsName, point, value, hash, index }) => {
       const eventId = lines.find(line => line._id.toString() === lineId).eventId
       const ou_ha = [
         oddsName.includes("total") ? "over" : "home",
         oddsName.includes("total") ? "under" : "away"
       ][index]
-      return hash !== signOdd({ eventId, period_num: num, oddsName, point, ou_ha, value })
+      return hash !== signOdd({ unit, eventId, period_num: num, oddsName, point, ou_ha, value })
     })) {
       console.error("Data malformed");
       return NextResponse.json({ error: "Bad request" }, { status: 400, statusText: "Data malformed" });
