@@ -39,7 +39,7 @@ export default function AuthUserLayout({
         <div className="flex">
             <div className={expandSidebar ? "max-md:fixed max-md:inset-0 max-md:flex max-md:z-100" : undefined}>
                 {expandSidebar && <div onClick={() => setExpandSidebar(false)} className="md:hidden max-md:w-full backdrop-blur-[2px]"></div>}
-                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-100 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
+                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-100 overflow-y-auto bg-[#121b2f] h-screen px-2 max-md:px-1 transition-[width] ease-in-out`}>
                     <div className={`flex flex-col ${!expandSidebar && "items-center"} gap-4`}>
                         <div className="w-full flex items-center justify-between px-2 py-4 pb-1">
                             <div onClick={() => { setExpandSidebar(prev => !prev) }} className="p-2 max-md:p-1 rounded-full hover:bg-white/10">
@@ -66,7 +66,7 @@ export default function AuthUserLayout({
                         </div>
                     </div>
                     <div className="w-full pb-4 flex justify-center">
-                        <div className={`flex justify-center items-center p-[1px] bg-linear-to-b from-white/40 to-[#1D2731]/40 ${expandSidebar ? "rounded-2xl max-md:rounded-lg" : "rounded-lg"}`}>
+                        <div className={`flex justify-center items-center p-px bg-linear-to-b from-white/40 to-[#1D2731]/40 ${expandSidebar ? "rounded-2xl max-md:rounded-lg" : "rounded-lg"}`}>
                             <div className={`w-fit flex flex-col gap-4 items-center bg-linear-to-b from-[#182e54] to-[#111b30] ${expandSidebar ? "p-4 rounded-2xl max-md:p-2 max-md:rounded-lg" : "p-2 cursor-pointer rounded-lg"}`}>
                                 {expandSidebar ?
                                     <div className="flex flex-col gap-2">
@@ -102,15 +102,15 @@ export default function AuthUserLayout({
                                 <div className="font-semibold text-sm"><span className="max-md:hidden">Balance: </span>${balance.toFixed(2)}</div>
                             </div>
                             {showBalanceDropdown &&
-                                <div className="absolute md:left-0 max-md:right-0 -bottom-2 translate-y-[100%] flex flex-col p-2 rounded-lg bg-[#0F212E] z-20">
+                                <div className="absolute md:left-0 max-md:right-0 -bottom-2 translate-y-full flex flex-col p-2 rounded-lg bg-[#0F212E] z-20">
                                     <div onClick={() => { setShowBalanceDropdown(false) }}>
-                                        <Link href={role === "admin" ? "/admin/deposit" : "/deposit"} className="flex items-center text-sm font-semibold px-1 py-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                        <Link href={role === "admin" ? "/admin/deposit" : "/deposit"} className="flex items-center text-sm font-semibold px-1 py-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-md">
                                             <svg className="w-6 h-6 max-md:hidden"><use href="#svg-nav-deposit" /></svg>
                                             <span>Deposit</span>
                                         </Link>
                                     </div>
                                     <div onClick={() => { setShowBalanceDropdown(false) }}>
-                                        <Link href={role === "admin" ? "/admin/withdraw" : "/withdraw"} className="flex items-center text-sm font-semibold px-1 py-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                        <Link href={role === "admin" ? "/admin/withdraw" : "/withdraw"} className="flex items-center text-sm font-semibold px-1 py-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-md">
                                             <svg className="w-6 h-6 max-md:hidden"><use href="#svg-nav-withdraw" /></svg>
                                             <span>Withdraw</span>
                                         </Link>
@@ -123,7 +123,7 @@ export default function AuthUserLayout({
                             <svg className="w-8 h-8 max-md:w-6 max-md:h-6 cursor-pointer"><use href="#svg-nav-notification" /></svg>
                         </div>
                         <svg className="w-8 h-8 max-md:w-6 max-md:h-6 cursor-pointer"><use href="#svg-nav-message" /></svg> */}
-                        <div className="flex gap-[10px] items-center relative">
+                        <div className="flex gap-2.5 items-center relative">
                             <div onClick={() => { setShowUserDropdown(prev => !prev); setShowBalanceDropdown(false) }} className="flex flex-col max-md:hidden z-20 select-none cursor-pointer">
                                 <p className="">{fullname}</p>
                                 <p className="text-sm text-white/80">@{username}</p>
@@ -131,40 +131,40 @@ export default function AuthUserLayout({
                             {showUserDropdown && <div onClick={() => setShowUserDropdown(false)} className="fixed top-0 bottom-0 left-0 right-0 z-10"></div>}
                             <div className="cursor-pointer select-none">
                                 <div onClick={() => { setShowUserDropdown(prev => !prev); setShowBalanceDropdown(false) }}>
-                                    <Image alt="avatar" src={`/api/profile/avatar/${avatar}`} width={32} height={32} className="shrink-0 rounded-full max-md:rounded-lg w-[32px] max-md:w-5 h-[32px] max-md:h-5" />
+                                    <Image alt="avatar" src={`/api/profile/avatar/${avatar}`} width={32} height={32} className="shrink-0 rounded-full max-md:rounded-lg w-8 max-md:w-5 h-8 max-md:h-5" />
                                 </div>
                                 {showUserDropdown &&
-                                    <div className="absolute right-0 -bottom-2 translate-y-[100%] flex flex-col p-2 rounded-lg bg-[#0F212E] z-20">
+                                    <div className="absolute right-0 -bottom-2 translate-y-full flex flex-col p-2 rounded-lg bg-[#0F212E] z-20">
                                         <div className="flex flex-col p-2 md:hidden">
                                             <p className="">{fullname}</p>
                                             <p className="text-sm text-white/80">@{username}</p>
                                         </div>
                                         <div onClick={() => { setShowUserDropdown(false) }}>
-                                            <Link href="/settings" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                            <Link href="/settings" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-md">
                                                 <svg className="w-6 h-6 shrink-0"><use href="#svg-nav-acc-settings" /></svg>
                                                 <span className="text-nowrap">Account Settings</span>
                                             </Link>
                                         </div>
                                         <div onClick={() => { setShowUserDropdown(false) }}>
-                                            <Link href="/rewards" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                            <Link href="/rewards" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-md">
                                                 <svg className="w-6 h-6 shrink-0"><use href="#svg-nav-acc-vip-club" /></svg>
                                                 <span className="text-nowrap">VIP Club</span>
                                             </Link>
                                         </div>
                                         <div onClick={() => { setShowUserDropdown(false) }}>
-                                            <Link href="/redemption" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                            <Link href="/redemption" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-md">
                                                 <svg className="w-6 h-6 shrink-0"><use href="#svg-nav-acc-redeem" /></svg>
                                                 <span className="text-nowrap">Redemption</span>
                                             </Link>
                                         </div>
                                         <div onClick={() => { setShowUserDropdown(false) }}>
-                                            <Link href="/transactions/deposit" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-[6px]">
+                                            <Link href="/transactions/deposit" className="flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#343C4C] rounded-md">
                                                 <svg className="w-6 h-6 shrink-0"><use href="#svg-nav-acc-transaction" /></svg>
                                                 <span className="text-nowrap">Transactions</span>
                                             </Link>
                                         </div>
                                         <div onClick={() => { setShowUserDropdown(false) }}>
-                                            <button onClick={logout} className="w-full flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#EF4444]/12 rounded-[6px]">
+                                            <button onClick={logout} className="w-full flex items-center text-sm font-medium p-2 gap-2 cursor-pointer hover:bg-[#EF4444]/12 rounded-md">
                                                 <svg className="w-6 h-6 shrink-0"><use href="#svg-nav-acc-logout" /></svg>
                                                 <span className="text-[#EF4444]">Logout</span>
                                             </button>

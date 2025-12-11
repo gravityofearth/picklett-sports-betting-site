@@ -73,7 +73,7 @@ const ClanWar = ({ war, callback }: { war: WarType, callback: (war: WarType) => 
         <div className="flex flex-col gap-1">
           <span className="text-nowrap">24h Wins War</span>
           <div className="flex gap-2 items-center p-1 rounded-lg bg-[#1475E1]/30">
-            <svg className="w-[14px] h-[14px]"><use href="#svg-member" /></svg>
+            <svg className="w-3.5 h-3.5]"><use href="#svg-member" /></svg>
             <span className="text-xs text-nowrap">{war.minMembers} Members</span>
           </div>
         </div>
@@ -94,7 +94,7 @@ const ClanWar = ({ war, callback }: { war: WarType, callback: (war: WarType) => 
           </div>
         )}
         {war.slots - (war.clans ? war.clans.length : 0) > 0 &&
-          <div className="rounded-lg text-sm py-[2px] px-2 w-fit bg-[#3D4149] border border-white/40 align-middle text-center">
+          <div className="rounded-lg text-sm py-0.5 px-2 w-fit bg-[#3D4149] border border-white/40 align-middle text-center">
             {war.slots - (war.clans ? war.clans.length : 0)} slot open
           </div>
         }
@@ -196,7 +196,7 @@ const ParticipantSelectionModal = ({ selectedWar, close, fetchWars }: {
             </div>
             <div className="flex flex-col gap-2 items-end">
               <span className="text-sm">Required Members</span>
-              <div className={`text-sm bg-[#F59E0B]/4 p-1 border-[0.5px] rounded-[6px] w-fit ${selectedUsernames.length !== selectedWar?.minMembers ? "text-[#F59E0B] border-[#F59E0B]" : "text-[#0b78f5] border-[#0b78f5]"}`}>{selectedUsernames.length}/{selectedWar?.minMembers}</div>
+              <div className={`text-sm bg-[#F59E0B]/4 p-1 border-[0.5px] rounded-md w-fit ${selectedUsernames.length !== selectedWar?.minMembers ? "text-[#F59E0B] border-[#F59E0B]" : "text-[#0b78f5] border-[#0b78f5]"}`}>{selectedUsernames.length}/{selectedWar?.minMembers}</div>
             </div>
           </div>
           <div className="w-full bg-[#0D111B] px-2 py-3 border border-white/20 flex gap-2 items-center rounded-lg">
@@ -230,7 +230,7 @@ const ParticipantSelectionModal = ({ selectedWar, close, fetchWars }: {
                         label={
                           <div className="flex gap-2 items-center max-md:w-3xs md:w-md justify-between">
                             <div className="flex gap-2 items-center">
-                              <Image alt="avatar" src={`/api/profile/avatar/${member.avatar}`} width={24} height={24} className="shrink-0 rounded-full w-[24px] h-[24px]" />
+                              <Image alt="avatar" src={`/api/profile/avatar/${member.avatar}`} width={24} height={24} className="shrink-0 rounded-full w-6 h-6" />
                               <div className="flex flex-col gap-1">
                                 <span className="text-left">{member.username}</span>
                                 <div className="text-xs"><span className="text-white/80">Contribution:</span> ${member.clan.contribution}</div>

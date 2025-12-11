@@ -79,7 +79,7 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
                 </div>
                 {winstreak > 1 &&
                     <div className="flex items-center gap-3 bg-[#FCC8002B] rounded-[14px] p-4">
-                        <svg className="w-[20px] h-[19px]"><use href="#svg-star" /></svg>
+                        <svg className="w-5 h-[19px]"><use href="#svg-star" /></svg>
                         <div>
                             <p className="font-semibold">You are on {winstreak} winstreak!</p>
                             <p className="text-sm text-[#D1D5DC]">Hit the next milestone {winstreak >= 7 ? 10 : winstreak >= 5 ? 7 : 5} winstreak, to receive your reward!</p>
@@ -116,7 +116,7 @@ export default function UserPage({ params: { activeWars, winstreak, oddstype, ti
                         <div className="w-full flex items-center">
                             <input value={search} onChange={(e) => setSearch(e.target.value)}
                                 type="text" className="w-full p-2 max-md:p-1 border border-white/70 bg-[#1E2939] max-md:rounded-sm rounded-lg text-sm" placeholder={`Use double quote(") for full match`} />
-                            {search && <button onClick={() => setSearch("")} className="-translate-x-[20px] cursor-pointer w-0"><svg className="w-4 h-4"><use href="#svg-close-new" /></svg></button>}
+                            {search && <button onClick={() => setSearch("")} className="-translate-x-5 cursor-pointer w-0"><svg className="w-4 h-4"><use href="#svg-close-new" /></svg></button>}
                         </div>
                     </div>
                 </div>
@@ -259,7 +259,7 @@ export const SportsTab = ({ selected, icon, category, count, href }: { selected?
     if (count === 0) return null
     return (
         <LinkOrButton disabled={disabled} href={href} className={`flex flex-col gap-1 items-center p-3 cursor-pointer ${disabled ? "cursor-not-allowed" : ""}`}>
-            <div className={`relative px-[11px] py-[6px] rounded-[11px] ${selected ? "bg-[#1475E133]" : "bg-[#24232A]"} border border-[#1E2939B2] hover:border hover:border-[#01A3DB] ${disabled ? "hover:border-[#1E2939B2] cursor-not-allowed" : ""}`}>
+            <div className={`relative px-[11px] py-1.5 rounded-[11px] ${selected ? "bg-[#1475E133]" : "bg-[#24232A]"} border border-[#1E2939B2] hover:border hover:border-[#01A3DB] ${disabled ? "hover:border-[#1E2939B2] cursor-not-allowed" : ""}`}>
                 <svg className="w-10 max-md:w-6 h-10 max-md:h-6"><use href={`#svg-${icon}`} /></svg>
                 {count > 0 &&
                     <div className={`absolute top-0 right-0 min-w-6 translate-x-[50%] leading-4 -translate-y-[50%] p-1 rounded-md text-sm max-md:text-xs text-center ${selected ? "bg-[#1475E1]" : "bg-[#434343]"}`}>

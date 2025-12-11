@@ -22,7 +22,7 @@ export default function UnauthUserLayout({
         <div className="flex">
             <div className={expandSidebar ? "max-md:fixed max-md:inset-0 max-md:flex max-md:z-100" : undefined}>
                 {expandSidebar && <div onClick={() => setExpandSidebar(false)} className="md:hidden max-md:w-full backdrop-blur-[2px]"></div>}
-                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-100 overflow-y-auto bg-[#121b2f] h-[100vh] px-2 max-md:px-1 transition-[width] ease-in-out`}>
+                <div className={`${expandSidebar ? "w-52 max-md:w-48" : "w-20 max-md:w-14 items-center"} flex flex-col justify-between gap-4 fixed z-100 overflow-y-auto bg-[#121b2f] h-screen px-2 max-md:px-1 transition-[width] ease-in-out`}>
                     <div className={`flex flex-col ${!expandSidebar && "items-center"} gap-4`}>
                         <div className="w-full flex items-center justify-between px-2 py-4">
                             <div onClick={() => { setExpandSidebar(prev => !prev) }} className="p-2 max-md:p-1 rounded-full hover:bg-white/10">
@@ -44,7 +44,7 @@ export default function UnauthUserLayout({
                         </div>
                     </div>
                     <div className="w-full pb-4 flex justify-center">
-                        <div className={`flex justify-center items-center p-[1px] bg-linear-to-b from-white/40 to-[#1D2731]/40 ${expandSidebar ? "rounded-2xl max-md:rounded-lg" : "rounded-lg"}`}>
+                        <div className={`flex justify-center items-center p-px bg-linear-to-b from-white/40 to-[#1D2731]/40 ${expandSidebar ? "rounded-2xl max-md:rounded-lg" : "rounded-lg"}`}>
                             <div className={`w-fit flex flex-col gap-4 items-center bg-linear-to-b from-[#182e54] to-[#111b30] ${expandSidebar ? "p-4 rounded-2xl max-md:p-2 max-md:rounded-lg" : "p-2 cursor-pointer rounded-lg"}`}>
                                 {expandSidebar ?
                                     <div className="flex flex-col gap-2">
