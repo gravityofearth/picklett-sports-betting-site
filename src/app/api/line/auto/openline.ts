@@ -72,12 +72,12 @@ export const openSportsLines = async () => {
                             status: "pending",
                             ...odds,
                         },
-                        addToSet: parent_id ? {
+                        addToSet: {
                             children: {
                                 unit: odds_resulting_unit,
                                 eventId: event_id.toString()
                             }
-                        } : undefined,
+                        },
                     }
                     lines.push(line)
                 }

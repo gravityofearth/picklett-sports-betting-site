@@ -8,7 +8,7 @@ export const UNIT_TITLE: { [K: string]: string } = {
     "odds_sets": "Sets - ",
     "odds_games": "Games - ",
     "odds_points": "Points - ",
-    "odds_bookings": "Bookings- ",
+    "odds_bookings": "Bookings - ",
     "odds_daily_total": "Daily Total - "
 }
 export const formatOddsPointTitle = ({ team_total_point, point, index, oddsName, team }: { team_total_point: string, point: string, index: number, oddsName: string, team: string }) => {
