@@ -4,8 +4,8 @@ import { JWT_SECRET } from '.';
 export const ODDS_TITLE: { [K: string]: string } = { "money_line": "To Win", "spreads": "Handicap", "totals": "Total", "team_total": "Team Total" }
 export const UNIT_TITLE: { [K: string]: string } = {
     "odds_regular": "",
+    "odds_sets": "",
     "odds_corners": "Corners - ",
-    "odds_sets": "Sets - ",
     "odds_games": "Games - ",
     "odds_points": "Points - ",
     "odds_bookings": "Bookings - ",

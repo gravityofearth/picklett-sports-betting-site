@@ -8,11 +8,13 @@ import Link from 'next/link'
 export default async function Page({ params }: { params: any }) {
   const { lineId } = await params
   let oddstype: "decimal" | "american" = "decimal"
+  let isAdmin = false
   try {
     const cookieStore = await cookies()
     const token = cookieStore.get('jwt')?.value ?? ""
-    const { oddstype: _oddstype }: any = jwt.verify(token, JWT_SECRET)
+    const { oddstype: _oddstype, role }: any = jwt.verify(token, JWT_SECRET)
     oddstype = _oddstype
+    isAdmin = role === "admin"
   } catch (error) { }
   const { line }: { line: LineType } = await (await fetch(`http://localhost:3000/api/line/id/${lineId}`, {
     // headers: { token },
@@ -26,6 +28,6 @@ export default async function Page({ params }: { params: any }) {
     </Link>
   </>
   return (
-    <LineDetailPage line={line} oddstype={oddstype} />
+    <LineDetailPage line={line} oddstype={oddstype} isAdmin={isAdmin} />
   )
 }

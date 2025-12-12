@@ -91,8 +91,8 @@ export async function fetchLinesBySports({ sports, isAdmin }: { sports: string, 
                         status: 1,
                         odds: {
                             odds_regular: "$odds_regular",
-                            odds_corners: "$odds_corners",
                             odds_sets: "$odds_sets",
+                            odds_corners: "$odds_corners",
                             odds_games: "$odds_games",
                             odds_points: "$odds_points",
                             odds_bookings: "$odds_bookings",
@@ -134,8 +134,8 @@ export async function fetchLinesBySports({ sports, isAdmin }: { sports: string, 
                         status: 1,
                         odds: {
                             odds_regular: "$odds_regular",
-                            odds_corners: "$odds_corners",
                             odds_sets: "$odds_sets",
+                            odds_corners: "$odds_corners",
                             odds_games: "$odds_games",
                             odds_points: "$odds_points",
                             odds_bookings: "$odds_bookings",
@@ -193,8 +193,8 @@ export async function getLineCountBySports(isAdmin: boolean) {
                                 {
                                     $or: [
                                         { $eq: [{ $type: "$odds_regular" }, "string"] },
-                                        { $eq: [{ $type: "$odds_corners" }, "string"] },
                                         { $eq: [{ $type: "$odds_sets" }, "string"] },
+                                        { $eq: [{ $type: "$odds_corners" }, "string"] },
                                         { $eq: [{ $type: "$odds_games" }, "string"] },
                                         { $eq: [{ $type: "$odds_points" }, "string"] },
                                         { $eq: [{ $type: "$odds_bookings" }, "string"] },
@@ -242,8 +242,8 @@ export async function findLineById(id: string) {
                     status: 1,
                     odds: {
                         odds_regular: "$odds_regular",
-                        odds_corners: "$odds_corners",
                         odds_sets: "$odds_sets",
+                        odds_corners: "$odds_corners",
                         odds_games: "$odds_games",
                         odds_points: "$odds_points",
                         odds_bookings: "$odds_bookings",
@@ -258,7 +258,43 @@ export async function findLineById(id: string) {
         throw error
     }
 }
-
+export async function cancelLine({ id: lineId }: { id: string }) {
+    await connectMongoDB()
+    try {
+        const line = await lineModel.findById(new mongoose.Types.ObjectId(lineId))
+        if (!["pending", "live"].includes(line.status)) throw new Error("Operation Failed")
+        const username_bets_arr: { username: string, bets: any[] }[] = await betModel.aggregate([
+            { $match: { lineId: new mongoose.Types.ObjectId(lineId) } },
+            {
+                $group: {
+                    _id: "$username",
+                    bets: {
+                        $push: "$$ROOT"
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    username: "$_id",
+                    bets: 1,
+                }
+            }
+        ])
+        const resolve: resolveType = {
+            betResolver: {},
+            lineId,
+            status: "cancelled"
+        }
+        for (let username_bets of username_bets_arr) {
+            resolve.betResolver[username_bets.username] = username_bets.bets.filter(bet => bet.result === "pending").map(bet => ({ bet, result: "cancelled" }))
+        }
+        resolveBetsforLineId(resolve)
+    } catch (error) {
+        console.error('Error cancelling bet:', error);
+        throw error
+    }
+}
 export async function placeBet({ betSlips, username }: { betSlips: BetSlipType[], username: string }) {
     await connectMongoDB()
     const session = await mongoose.startSession();
@@ -467,7 +503,7 @@ export async function resolveBetsforLineId({ betResolver, lineId, status }: reso
                         timestamp: new Date(),
                         lineId: new mongoose.Types.ObjectId(lineId),
                         betId: new mongoose.Types.ObjectId(bet._id as string),
-                        description: `Bet draw refund: $${amount}`
+                        description: `${result === "draw" ? "Bet draw refund" : "Bet Cancelled"}: $${amount}`
                     })
                     balanceBefore = balanceAfter
                     refunds += amount

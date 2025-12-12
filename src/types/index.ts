@@ -199,8 +199,8 @@ export type WarFeedType = {
 }
 export const ODDS_UNIT_TYPES = [
     "odds_regular",
-    "odds_corners",
     "odds_sets",
+    "odds_corners",
     "odds_games",
     "odds_points",
     "odds_bookings",

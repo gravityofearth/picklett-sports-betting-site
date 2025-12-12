@@ -22,8 +22,8 @@ const lineSchema = new mongoose.Schema({
     },
     /* ODDS */
     odds_regular: String,
-    odds_corners: String,
     odds_sets: String,
+    odds_corners: String,
     odds_games: String,
     odds_points: String,
     odds_bookings: String,

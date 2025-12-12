@@ -2,12 +2,17 @@
 
 import Link from "next/link"
 import { BetSlipType, LineType } from "@/types"
-import { formatOddsValue } from "@/utils"
+import { formatOddsValue, showToast } from "@/utils"
 import { Dispatch, SetStateAction, useState } from "react"
 import { useBetSlip } from "../../components/sportsLayout"
 import { formatOddsPointTitle, ODDS_TITLE, sportsDataAll, UNIT_TITLE } from "@/utils/line"
+import { CircularIndeterminate } from "@/components/MUIs"
+import axios from "axios"
 
-export default function LineDetailPage({ line, oddstype }: { line: LineType, oddstype: "decimal" | "american" }) {
+export default function LineDetailPage({ line, oddstype, isAdmin }: { line: LineType, oddstype: "decimal" | "american", isAdmin?: boolean }) {
+    const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [sending, setSending] = useState(false)
+    const closeModal = () => setShowConfirmModal(false)
     const odds = JSON.parse(line.odds)
     const filteredOdds: {
         unit: string,
@@ -54,6 +59,18 @@ export default function LineDetailPage({ line, oddstype }: { line: LineType, odd
             }
         }
     }
+    const handleCancelLine = () => {
+        setSending(true)
+        axios.post(`/api/line/cancel`, { id: line._id }, { headers: { token: localStorage.getItem("jwt") } })
+            .then(() => {
+                showToast("Marked this line as cancelled", "success")
+            }).catch((e) => {
+                showToast(e.response?.statusText || "Unknown Error", "error")
+            }).finally(() => {
+                setSending(false)
+                setShowConfirmModal(false)
+            })
+    }
     return (
         <div className="relative w-full flex">
             <div className={`w-full px-8 max-md:px-4 pb-8 flex flex-col gap-4`}>
@@ -75,6 +92,37 @@ export default function LineDetailPage({ line, oddstype }: { line: LineType, odd
                         <span className={`font-medium w-40`}>{line.away}</span>
                     </div>
                 </div>
+                {isAdmin && line.status !== "cancelled" &&
+                    <div className="w-full">
+                        {showConfirmModal &&
+                            <div className="fixed flex justify-center-safe items-center-safe z-100 inset-0 overflow-y-auto">
+                                <div onClick={closeModal} className="fixed inset-0 bg-black/70 z-50"></div>
+                                <div className="w-xl max-md:w-full p-6 rounded-3xl bg-[#0E1B2F] flex flex-col items-center gap-4 z-50">
+                                    <span className="text-2xl text-white">Are you sure?</span>
+                                    <div className="text-white/80 text-center">
+                                        <p>Are you sure you want to cancel this line? </p>
+                                        <p>This action cannot be undone.</p>
+                                    </div>
+                                    <div className="flex gap-4 w-full items-center justify-center">
+                                        {sending ? <CircularIndeterminate /> :
+                                            <>
+                                                <button onClick={handleCancelLine} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-[#e11414] hover:bg-[#f1141488]">Yes, Cancel and Refund</button>
+                                                <button onClick={closeModal} className="px-6 py-2 rounded-lg cursor-pointer select-none bg-white/30 hover:bg-white/10">No</button>
+                                            </>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <button onClick={() => setShowConfirmModal(true)} className="flex items-center gap-2 bg-[#e11414] hover:bg-[#f1141488] rounded-md px-4 py-2 cursor-pointer">
+                            <svg className="w-6 h-6"><use href="#svg-close-new" /></svg>
+                            <span>Cancel Line</span>
+                        </button>
+                    </div>
+                }
+                {(line.status !== "pending" || line.startsAt < Date.now()) &&
+                    <span className="w-fit bg-[#e19914] rounded-xs px-2 py-1 text-xs">Unavailable to bet</span>
+                }
                 <div className="w-full flex flex-col">
                     {filteredOdds.map((odd, i) =>
                         <OddRow key={i} initOpen={i === 0} odd={odd} sportsId={line.sports} startsAt={line.startsAt} oddstype={oddstype} />)}
