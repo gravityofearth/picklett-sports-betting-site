@@ -1,5 +1,14 @@
 # Tips
 
+- Fit mobile viewport
+
+```jsx
+<div className="flex flex-col h-dvh">
+  <div>...</div>
+  <div className="overflow-y-auto grow"></div>
+</div>
+```
+
 - Update bets, wins, earns based on aggregate
 
 ```js

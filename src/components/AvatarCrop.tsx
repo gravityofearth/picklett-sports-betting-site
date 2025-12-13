@@ -1,5 +1,4 @@
 "use client"
-import { useUser } from '@/store'
 import { showToast } from '@/utils'
 import axios, { AxiosError } from 'axios'
 import React, { useState, useRef, useEffect, DependencyList } from 'react'
@@ -72,13 +71,11 @@ function useDebounceEffect(fn: () => void, waitTime: number, deps: DependencyLis
 }
 export default function AvatarCrop({ params: { avatarFile, closeModal, callback, api } }: { params: { avatarFile: File, closeModal: () => void, callback: (data: any) => void, api: string } }) {
     const [step, setStep] = useState(1)
-    const { setToken } = useUser()
     const [sendingRequest, setSendingRequest] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(0)
     const [imgSrc, setImgSrc] = useState('')
     const previewCanvasRef = useRef<HTMLCanvasElement>(null)
     const imgRef = useRef<HTMLImageElement>(null)
-    const hiddenAnchorRef = useRef<HTMLAnchorElement>(null)
     const [crop, setCrop] = useState<Crop>()
     const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
     const [scale, setScale] = useState(1)
@@ -149,16 +146,6 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
             setSendingRequest(false)
             setUploadProgress(0)
         })
-
-        // if (blobUrlRef.current) {
-        //     URL.revokeObjectURL(blobUrlRef.current)
-        // }
-        // blobUrlRef.current = URL.createObjectURL(blob)
-
-        // if (hiddenAnchorRef.current) {
-        //     hiddenAnchorRef.current.href = blobUrlRef.current
-        //     hiddenAnchorRef.current.click()
-        // }
     }
 
     useDebounceEffect(
@@ -190,12 +177,14 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
 
     return (
         <div className='pb-8'>
-            <button className='cursor-pointer underline' onClick={closeModal}>Back</button>
-            <p className='w-full text-center text-2xl'>
-                Crop Image And Upload
-            </p>
-            {!!imgSrc &&
-                <div className={`${step !== 1 && "hidden"}`}>
+            <div>
+                <button className='cursor-pointer underline' onClick={closeModal}>Back</button>
+                <p className='w-full text-center text-2xl'>
+                    Crop Image And Upload
+                </p>
+            </div>
+            {!!imgSrc && step === 1 &&
+                <>
                     <div>
                         <div className='flex items-center gap-8'>
                             <p className="w-10">Scale: </p>
@@ -212,7 +201,7 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
                             <Checkbox onClick={handleToggleAspectClick} color="success" sx={{ color: green[800], '&.Mui-checked': { color: green[600] } }} />
                         </div>
                     </div>
-                    <div className='w-full flex justify-center'>
+                    <div className='w-full flex justify-center mb-8'>
                         <ReactCrop
                             crop={crop}
                             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -231,12 +220,14 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
                             />
                         </ReactCrop>
                     </div>
-                    <div>
-                        <button onClick={() => setStep(2)} className="max-md:col-span-2 w-full py-[14px] max-md:py-[6px] rounded-[10px] border border-[#364153] text-white bg-[#14679F] hover:bg-[#3c85b6] text-[14px] font-semibold cursor-pointer disabled:cursor-not-allowed">
-                            Next
-                        </button>
+                    <div className='fixed bottom-0 left-0 right-0 flex justify-center'>
+                        <div className='max-w-3xl w-full px-4'>
+                            <button onClick={() => setStep(2)} className="w-full h-12 max-md:col-span-2 py-[14px] max-md:py-[6px] rounded-[10px] border border-[#364153] text-white bg-[#14679F] hover:bg-[#3c85b6] text-[14px] font-semibold cursor-pointer disabled:cursor-not-allowed">
+                                Next
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </>
             }
             {!!completedCrop &&
                 <div className={`${step !== 2 && "hidden"}`}>
@@ -259,12 +250,6 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
                             </div>
                         </div>
                     }
-                    {/* <div>
-                        <button onClick={uploadAvatar}>Download Crop</button>
-                        <a download href="#hidden" ref={hiddenAnchorRef} style={{ position: 'absolute', top: '-200vh', visibility: 'hidden', }}>
-                            Hidden download
-                        </a>
-                    </div> */}
                     <div className='w-full flex gap-4'>
                         <button onClick={() => setStep(1)} className="max-md:col-span-2 w-full py-[14px] max-md:py-[6px] rounded-[10px] border border-[#364153] text-white bg-[#14679F] hover:bg-[#3c85b6] text-[14px] font-semibold cursor-pointer disabled:cursor-not-allowed" disabled={sendingRequest}>
                             Back

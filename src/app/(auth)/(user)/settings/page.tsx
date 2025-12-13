@@ -119,8 +119,8 @@ export default function Settings() {
         <div className="w-full flex justify-center">
             {sendingRequest && <div className="fixed z-100 inset-0 bg-black/40 flex justify-center items-center"><CircularIndeterminate /></div>}
             {avatarFile &&
-                <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-50 overflow-y-auto">
-                    <div className="w-3xl max-w-full bg-black p-4">
+                <div className="fixed left-0 right-0 top-0 bottom-0 flex justify-center bg-black z-101 overflow-y-auto">
+                    <div className="max-w-3xl w-full bg-black p-4">
                         <AvatarCrop params={{
                             avatarFile,
                             closeModal: () => setAvatarFile(undefined),
