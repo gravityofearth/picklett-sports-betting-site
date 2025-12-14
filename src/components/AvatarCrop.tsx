@@ -183,8 +183,8 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
                     Crop Image And Upload
                 </p>
             </div>
-            {!!imgSrc && step === 1 &&
-                <>
+            {!!imgSrc &&
+                <div className={`${step !== 1 && "hidden"}`}>
                     <div>
                         <div className='flex items-center gap-8'>
                             <p className="w-10">Scale: </p>
@@ -227,7 +227,7 @@ export default function AvatarCrop({ params: { avatarFile, closeModal, callback,
                             </button>
                         </div>
                     </div>
-                </>
+                </div>
             }
             {!!completedCrop &&
                 <div className={`${step !== 2 && "hidden"}`}>
