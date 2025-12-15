@@ -56,6 +56,13 @@
       "valibot@>=0.31.0 <1.2.0": ">=1.2.0",
       "nodemailer@<=7.0.10": ">=7.0.11",
       "jws@<3.2.3": ">=3.2.3"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "bufferutil",
+      "sharp",
+      "unrs-resolver",
+      "utf-8-validate"
+    ]
   }
 }
