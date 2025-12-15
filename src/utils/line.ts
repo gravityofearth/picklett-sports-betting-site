@@ -13,7 +13,8 @@ export const UNIT_TITLE: { [K: string]: string } = {
 }
 export const formatOddsPointTitle = ({ team_total_point, point, index, oddsName, team }: { team_total_point: string, point: string, index: number, oddsName: string, team: string }) => {
     if (oddsName === "money_line") return ""
-    const val = oddsName === "team_total" ? team_total_point : point
+    const _val = oddsName === "team_total" ? team_total_point : point
+    const val = `${_val}${_val.includes(".") ? "" : ".0"}`
     const prefix = oddsName === "team_total" ? `${team} ` : ""
     if (oddsName === "spreads") {
         const num = Number(val) * ([1, -1][index])

@@ -14,22 +14,24 @@ export default function LineDetailPage({ line, oddstype, isAdmin }: { line: Line
     const [sending, setSending] = useState(false)
     const closeModal = () => setShowConfirmModal(false)
     const odds = JSON.parse(line.odds)
-    const filteredOdds: {
-        unit: string,
-        num: string;
-        oddsName: string;
-        point: string;
-        description: any;
-        home: string;
-        away: string;
-        team_total_point: any;
-        v1: any;
-        v2: any;
-        h1: any;
-        h2: any;
-        leagueName: string;
-        _id: string;
-    }[] = []
+    const groupedOdds: {
+        [K: string]: {
+            unit: string,
+            num: string;
+            oddsName: string;
+            point: string;
+            description: any;
+            home: string;
+            away: string;
+            team_total_point: any;
+            v1: any;
+            v2: any;
+            h1: any;
+            h2: any;
+            leagueName: string;
+            _id: string;
+        }[]
+    } = {}
     for (let unit in odds) {
         const odds_unit = odds[unit]
         if (!odds_unit) continue
@@ -41,9 +43,10 @@ export default function LineDetailPage({ line, oddstype, isAdmin }: { line: Line
                 for (let point in odds_point) {
                     const odds_key1 = oddsName.includes("total") ? "over" : "home"
                     const odds_key2 = oddsName.includes("total") ? "under" : "away"
+                    const description = period.description
                     const filteredOdd = {
                         unit, num, oddsName, point,
-                        description: period.description,
+                        description,
                         home: line.home,
                         away: line.away,
                         team_total_point: odds_point[point]["points"],
@@ -54,7 +57,9 @@ export default function LineDetailPage({ line, oddstype, isAdmin }: { line: Line
                         leagueName: line.leagueName,
                         _id: line._id,
                     }
-                    filteredOdds.push(filteredOdd)
+                    const title = `${UNIT_TITLE[unit]}${ODDS_TITLE[oddsName]} - ${description}`
+                    if (!groupedOdds[title]) groupedOdds[title] = []
+                    groupedOdds[title].push(filteredOdd)
                 }
             }
         }
@@ -124,8 +129,9 @@ export default function LineDetailPage({ line, oddstype, isAdmin }: { line: Line
                     <span className="w-fit bg-[#e19914] rounded-xs px-2 py-1 text-xs">Unavailable to bet</span>
                 }
                 <div className="w-full flex flex-col">
-                    {filteredOdds.map((odd, i) =>
-                        <OddRow key={i} initOpen={i === 0} odd={odd} sportsId={line.sports} startsAt={line.startsAt} oddstype={oddstype} />)}
+                    {Object.keys(groupedOdds).map((title, i) =>
+                        <OddRow key={i} initOpen={i === 0} title={title} odds={groupedOdds[title]} sportsId={line.sports} startsAt={line.startsAt} oddstype={oddstype} />)
+                    }
                 </div>
             </div>
         </div>
@@ -146,36 +152,46 @@ export const isInSlips = (betSlips: BetSlipType[], betSlip: BetSlipType) => {
     const filter = (v: BetSlipType) => v.index === betSlip.index && shoudMatchKeys.every(key => v[key] === betSlip[key])
     return betSlips.some(betslip => filter(betslip))
 }
-const OddRow = ({ initOpen, odd: { unit, num, v1, v2, h1, h2, description, home, away, oddsName, point, team_total_point, _id, leagueName }, sportsId, startsAt, oddstype }: { initOpen: boolean, odd: { unit: string; num: string; oddsName: string; point: string; description: string; home: string; away: string; team_total_point: string; v1: any; v2: any; h1: string; h2: string; _id: string; leagueName: string; }, sportsId: string, startsAt: number, oddstype: "decimal" | "american" }) => {
+const OddRow = ({ initOpen, title, odds, sportsId, startsAt, oddstype }: { initOpen: boolean, title: string, odds: { unit: string; num: string; oddsName: string; point: string; description: string; home: string; away: string; team_total_point: string; v1: any; v2: any; h1: string; h2: string; _id: string; leagueName: string; }[], sportsId: string, startsAt: number, oddstype: "decimal" | "american" }) => {
     const { setShowBetSlip, setBetSlips, betSlips } = useBetSlip()
     const [open, setOpen] = useState(initOpen)
     return (
         <div className="w-full p-4 rounded-lg bg-[#0E1B2F] flex flex-col gap-4 mb-2">
             <div onClick={() => setOpen(p => !p)} className="flex justify-between items-center cursor-pointer">
                 <div className="flex gap-2 items-center text-sm">
-                    {UNIT_TITLE[unit]}{ODDS_TITLE[oddsName]} - {description}
+                    <span>{title}</span>
+                    <span className="bg-[#1475E1] min-w-6 px-1 py-0.5 rounded-sm text-center">{odds.length}</span>
                 </div>
                 <svg className={`w-6 h-6 ${open ? "rotate-180" : ""}`}><use href="#svg-arrow-down" /></svg>
             </div>
             {open &&
-                <div className={`flex gap-2`}>
-                    {[{ team: home, v: v1 }, { team: away, v: v2 }].map(({ team, v }, i) =>
-                        <div key={i} className="w-full">
-                            {(() => {
-                                const betSlip: BetSlipType = {
-                                    lineId: _id, unit, num, oddsName, point, team_total_point, description,
-                                    value: [v1, v2][i], hash: [h1, h2][i], index: i,
-                                    home, away,
-                                    leagueName,
-                                    amount: "", sports: sportsDataAll.find(v => v.sports === sportsId)?.label || "", startsAt
-                                }
-                                return (
-                                    <button key={i} onClick={() => handlerBetSlipClick({ betSlip, setBetSlips, setShowBetSlip })} className={`w-full rounded-lg p-2 ${isInSlips(betSlips, betSlip) ? "bg-[#1372ff88]" : "bg-white/10"} flex flex-col gap-2 cursor-pointer text-left text-sm`}>
-                                        {formatOddsPointTitle({ oddsName, team, point, team_total_point, index: i })}
-                                        <span className="text-sm font-bold">{formatOddsValue(v, oddstype)}</span>
-                                    </button>
-                                )
-                            })()}
+                <div className="flex flex-col gap-0.5 w-full">
+                    {odds.map(({ unit, num, v1, v2, h1, h2, description, home, away, oddsName, point, team_total_point, _id, leagueName }, r) =>
+                        <div key={r} className={`flex gap-0.5`}>
+                            {[{ team: home, v: v1 }, { team: away, v: v2 }].map(({ team, v }, i) =>
+                                <div key={i} className="w-full">
+                                    {(() => {
+                                        const betSlip: BetSlipType = {
+                                            lineId: _id, unit, num, oddsName, point, team_total_point, description,
+                                            value: [v1, v2][i], hash: [h1, h2][i], index: i,
+                                            home, away,
+                                            leagueName,
+                                            amount: "", sports: sportsDataAll.find(v => v.sports === sportsId)?.label || "", startsAt
+                                        }
+                                        return (
+                                            <button key={i} onClick={() => handlerBetSlipClick({ betSlip, setBetSlips, setShowBetSlip })} style={{
+                                                borderTopLeftRadius: r === 0 && i === 0 ? 12 : 0,
+                                                borderTopRightRadius: r === 0 && i === 1 ? 12 : 0,
+                                                borderBottomLeftRadius: r + 1 === odds.length && i === 0 ? 12 : 0,
+                                                borderBottomRightRadius: r + 1 === odds.length && i === 1 ? 12 : 0,
+                                            }} className={`w-full p-2 ${isInSlips(betSlips, betSlip) ? "bg-[#1372ff88]" : "bg-white/10"} flex flex-col gap-2 cursor-pointer text-left text-sm`}>
+                                                {formatOddsPointTitle({ oddsName, team, point, team_total_point, index: i })}
+                                                <span className="text-sm font-bold">{formatOddsValue(v, oddstype)}</span>
+                                            </button>
+                                        )
+                                    })()}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
