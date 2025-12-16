@@ -205,7 +205,6 @@ export async function getLineCountBySports(isAdmin: boolean) {
                             ]
                         }
                     },
-                    data: { $push: "$$ROOT" }
                 }
             },
             {
