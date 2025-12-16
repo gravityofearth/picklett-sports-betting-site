@@ -267,7 +267,7 @@ export const SportsTab = ({ selected, icon, category, count, href }: { selected?
                     </div>
                 }
             </div>
-            <p className="max-md:hidden max-w-20">{category}</p>
+            <p className="max-md:hidden max-w-20 text-center">{category}</p>
         </LinkOrButton>
     )
 }
