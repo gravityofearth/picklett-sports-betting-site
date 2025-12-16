@@ -73,7 +73,7 @@ const ClanWar = ({ war, callback }: { war: WarType, callback: (war: WarType) => 
         <div className="flex flex-col gap-1">
           <span className="text-nowrap">24h Wins War</span>
           <div className="flex gap-2 items-center p-1 rounded-lg bg-[#1475E1]/30">
-            <svg className="w-3.5 h-3.5]"><use href="#svg-member" /></svg>
+            <svg className="w-3.5 h-3.5"><use href="#svg-member" /></svg>
             <span className="text-xs text-nowrap">{war.minMembers} Members</span>
           </div>
         </div>
