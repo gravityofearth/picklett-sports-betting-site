@@ -15,4 +15,4 @@ export default async function Page({ children }: Readonly<{ children: React.Reac
       {children}
     </SportsLayout>
   )
-}
+} 
